@@ -1,0 +1,17 @@
+.idea/
+
+data/
+
+**/__pycache__/
+*.pyc
+
+framework_download/checkpoints/
+framework_download/visualizations/
+framework_download/lightning_logs/
+
+*.ckpt
+*.pth
+*.pt
+
+.DS_Store
+Thumbs.db
