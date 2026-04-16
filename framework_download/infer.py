@@ -1,6 +1,7 @@
-"""推理与可视化脚本"""
-import os
+"""推理与可视化脚本。"""
+
 import argparse
+import os
 import warnings
 
 os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
@@ -10,26 +11,20 @@ warnings.filterwarnings(
     message=r"`isinstance\(treespec, LeafSpec\)` is deprecated.*",
     module=r"lightning\.pytorch\.utilities\._pytree",
 )
-# 同eval
-import torch
-import matplotlib.pyplot as plt
 
-from src.data_module import NYUDataset, AlbumentationsTransform, get_val_transform
-from src.models.advanced_lit_module import LitAdvancedRGBD
-from src.models.attention_fusion_model import LitAttentionFusion
-from src.models.dformer_model import LitDFormerInspired
+import matplotlib.pyplot as plt
+import torch
+
+from src.data_module import AlbumentationsTransform, NYUDataset, get_val_transform
 from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitMidFusion
 from src.utils.visualize import visualize_prediction
 
-
 MODEL_REGISTRY = {
     "early": LitEarlyFusion,
     "mid_fusion": LitMidFusion,
-    "attention": LitAttentionFusion,
-    "advanced": LitAdvancedRGBD,
-    "dformer": LitDFormerInspired,
 }
+
 
 def parse_eval_tta_flag(value: str):
     value = str(value).strip().lower()
@@ -59,10 +54,8 @@ def main():
     elif device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
 
-    ModelClass = MODEL_REGISTRY[args.model]
-    model = ModelClass.load_from_checkpoint(args.checkpoint)# 从checkpoints里面恢复
-    if args.eval_tta != "auto" and hasattr(model, "hparams") and hasattr(model.hparams, "eval_tta"):
-        model.hparams.eval_tta = args.eval_tta
+    model_class = MODEL_REGISTRY[args.model]
+    model = model_class.load_from_checkpoint(args.checkpoint)
     model.eval()
     model.to(device)
 
@@ -74,7 +67,7 @@ def main():
     for i in range(min(args.num_vis, len(dataset))):
         sample = dataset[i]
         rgb = sample["rgb"].unsqueeze(0).to(device)
-        depth = sample["depth"].unsqueeze(0).to(device) # 单个照片所以手动补一个batch为1
+        depth = sample["depth"].unsqueeze(0).to(device)
         gt = sample["label"]
 
         with torch.no_grad():
@@ -88,7 +81,7 @@ def main():
         fig.savefig(save_path, dpi=150, bbox_inches="tight")
         plt.close(fig)
         print(f"Saved: {save_path}")
-    # 保存成png
+
     print(f"所有可视化结果已保存至: {args.save_dir}")
 
 
