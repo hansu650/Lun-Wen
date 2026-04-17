@@ -488,6 +488,135 @@ class FdamLocalFreqEnhanceBlock(nn.Module):
         return enhanced_feat
 
 
+class DepthPromptGenerator(nn.Module):
+    """Turn c4 depth features into a small set of geometry-aware prompt tokens.
+
+    The design keeps two ideas:
+    1. depth is treated as a geometry prior instead of another plain semantic map
+    2. prompts are lightweight tokens, not a second heavy transformer branch
+
+    We first refine the depth map with a depthwise local conv, then pool it into
+    a coarse prompt grid. A learnable base prompt is added so the prompt tokens
+    are not purely pooled features and can adapt during training.
+    """
+
+    def __init__(self, dim, prompt_hw=(2, 4)):
+        super().__init__()
+        self.prompt_hw = prompt_hw
+        self.num_prompts = prompt_hw[0] * prompt_hw[1]
+
+        self.depth_prior = nn.Sequential(
+            nn.Conv2d(dim, dim, kernel_size=3, padding=1, groups=dim, bias=False),
+            nn.BatchNorm2d(dim),
+            nn.GELU(),
+            nn.Conv2d(dim, dim, kernel_size=1, bias=False),
+            nn.BatchNorm2d(dim),
+            nn.GELU(),
+        )
+        self.prompt_pool = nn.AdaptiveAvgPool2d(prompt_hw)
+        self.prompt_embed = nn.Parameter(torch.zeros(1, self.num_prompts, dim))
+        nn.init.trunc_normal_(self.prompt_embed, std=0.02)
+        self.norm = nn.LayerNorm(dim)
+
+    def forward(self, depth_feat):
+        batch_size = depth_feat.shape[0]
+        depth_prior = self.depth_prior(depth_feat)
+        prompt_map = self.prompt_pool(depth_prior)
+        prompt_tokens = nchw_to_nlc(prompt_map)
+
+        # The learnable prompt base keeps this block close to VPT-style prompt
+        # tuning, while the pooled depth prior gives the prompts geometry cues.
+        prompt_tokens = prompt_tokens + self.prompt_embed.expand(batch_size, -1, -1)
+        prompt_tokens = self.norm(prompt_tokens)
+        return prompt_tokens
+
+
+class PromptTokenMixer(nn.Module):
+    """A lightweight token mixer for image tokens plus prompt tokens.
+
+    We intentionally keep this block small:
+    - one pre-norm multi-head self-attention
+    - one small MLP
+    - residual connections
+
+    This is enough for a first prompt-token experiment without turning the whole
+    high-level branch into a new transformer backbone.
+    """
+
+    def __init__(self, dim, num_heads=8, mlp_ratio=2.0, drop=0.0):
+        super().__init__()
+        hidden_dim = int(dim * mlp_ratio)
+        self.norm1 = nn.LayerNorm(dim)
+        self.attn = nn.MultiheadAttention(dim, num_heads=num_heads, dropout=drop, batch_first=True)
+        self.norm2 = nn.LayerNorm(dim)
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
+            nn.GELU(),
+            nn.Dropout(drop),
+            nn.Linear(hidden_dim, dim),
+            nn.Dropout(drop),
+        )
+
+    def forward(self, joint_tokens):
+        attn_input = self.norm1(joint_tokens)
+        attn_output, _ = self.attn(attn_input, attn_input, attn_input, need_weights=False)
+        joint_tokens = joint_tokens + attn_output
+        joint_tokens = joint_tokens + self.mlp(self.norm2(joint_tokens))
+        return joint_tokens
+
+
+class DepthPromptTokenBlock(nn.Module):
+    """Block 3: use depth prompts to refine c4 fused tokens.
+
+    Input:
+        fused_feat_c4 : (B, C, H, W)
+        depth_feat_c4 : (B, C, H, W)
+    Output:
+        enhanced_feat : (B, C, H, W)
+
+    The output shape is kept identical so the current FPN decoder can remain
+    completely unchanged.
+    """
+
+    def __init__(self, dim, prompt_hw=(2, 4), num_heads=8, mlp_ratio=2.0, drop=0.0):
+        super().__init__()
+        self.prompt_generator = DepthPromptGenerator(dim=dim, prompt_hw=prompt_hw)
+        self.token_mixer = PromptTokenMixer(dim=dim, num_heads=num_heads, mlp_ratio=mlp_ratio, drop=drop)
+        self.out_proj = nn.Sequential(
+            nn.Conv2d(dim, dim, kernel_size=3, padding=1, groups=dim, bias=False),
+            nn.BatchNorm2d(dim),
+            nn.GELU(),
+            nn.Conv2d(dim, dim, kernel_size=1, bias=False),
+            nn.BatchNorm2d(dim),
+        )
+
+    def forward(self, fused_feat_c4, depth_feat_c4):
+        if fused_feat_c4.shape != depth_feat_c4.shape:
+            raise ValueError(
+                "DepthPromptTokenBlock expects fused c4 and depth c4 to share the same shape, "
+                f"got {tuple(fused_feat_c4.shape)} vs {tuple(depth_feat_c4.shape)}."
+            )
+
+        _, _, height, width = fused_feat_c4.shape
+
+        image_tokens = nchw_to_nlc(fused_feat_c4)                 # (B, H*W, C)
+        prompt_tokens = self.prompt_generator(depth_feat_c4)      # (B, K,   C)
+        num_image_tokens = image_tokens.shape[1]
+
+        # Put prompts after image tokens so the image-token order stays stable.
+        joint_tokens = torch.cat([image_tokens, prompt_tokens], dim=1)
+        joint_tokens = self.token_mixer(joint_tokens)
+
+        # Drop prompt tokens after interaction and keep only the updated image tokens.
+        image_tokens = joint_tokens[:, :num_image_tokens, :]
+        enhanced_feat = nlc_to_nchw(image_tokens, (height, width))
+
+        # Residual refinement keeps the c4 distribution close to what the
+        # existing FPN decoder already expects.
+        enhanced_feat = fused_feat_c4 + self.out_proj(enhanced_feat)
+        return enhanced_feat
+
+
 class MidFusionSegmentor(nn.Module):
     def __init__(self, num_classes=40):
         super().__init__()
@@ -521,6 +650,18 @@ class MidFusionSegmentor(nn.Module):
             ]
         )
 
+        # Block 3 is only inserted on c4.
+        # We keep K small by using a 2x4 prompt grid, so K = 8 prompt tokens.
+        # This is large enough to carry coarse geometry layout, but still much
+        # lighter than adding a full prompt stack on every stage.
+        self.c4_prompt_block = DepthPromptTokenBlock(
+            dim=self.rgb_encoder.out_channels[3],
+            prompt_hw=(2, 4),
+            num_heads=8,
+            mlp_ratio=2.0,
+            drop=0.0,
+        )
+
         self.decoder = SimpleFPNDecoder(self.rgb_encoder.out_channels, num_classes=num_classes)
 
     def forward(self, rgb, depth):
@@ -540,9 +681,13 @@ class MidFusionSegmentor(nn.Module):
             fused_feats.append(self.low_level_fusions[idx](rgb_feats[idx], aligned_depth[idx]))
 
         # c3/c4: KTB fusion first, then FDAM enhancement.
+        # c4 only: one extra prompt-token block that lets depth act as a small
+        # geometry-guided token prior before features enter the decoder.
         for idx in range(2, 4):
             fused = self.high_level_fusions[idx - 2](rgb_feats[idx], aligned_depth[idx])
             fused = self.high_level_enhancers[idx - 2](fused)
+            if idx == 3:
+                fused = self.c4_prompt_block(fused, aligned_depth[idx])
             fused_feats.append(fused)
 
         return self.decoder(fused_feats, input_size=rgb.shape[-2:])
