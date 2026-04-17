@@ -55,6 +55,91 @@ class GatedFusion(nn.Module):
         return self.refine(fused)
 
 
+class DepthAwareLocalRefineFusion(nn.Module):
+    """Clean ablation c3 fusion block.
+
+    Goal:
+    - keep the stable gate-style fused base
+    - let depth act as a light geometry prior
+    - add only a small local refine branch
+
+    Input:
+        rgb_feat   : (B, C, H, W)
+        depth_feat : (B, C_d, H, W)
+    Output:
+        fused_feat : (B, C, H, W)
+
+    The output shape is unchanged so the downstream decoder/FPN does not need
+    any modification.
+    """
+
+    def __init__(self, rgb_channels, depth_channels, reduction=4):
+        super().__init__()
+        self.depth_proj = nn.Conv2d(depth_channels, rgb_channels, kernel_size=1, bias=False)
+
+        # Keep a simple base fusion first so this block is still anchored to the
+        # project's original stable fusion path.
+        self.base_gate = nn.Sequential(
+            nn.Conv2d(rgb_channels * 2, rgb_channels, kernel_size=1, bias=False),
+            nn.BatchNorm2d(rgb_channels),
+            nn.Sigmoid(),
+        )
+
+        hidden_dim = max(rgb_channels // reduction, 1)
+
+        # Channel guidance from depth: (B, C, H, W) -> (B, C, 1, 1)
+        self.channel_guidance = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(rgb_channels, hidden_dim, kernel_size=1, bias=True),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden_dim, rgb_channels, kernel_size=1, bias=True),
+            nn.Sigmoid(),
+        )
+
+        # Spatial guidance from depth: (B, C, H, W) -> (B, 1, H, W)
+        self.spatial_guidance = nn.Sequential(
+            nn.Conv2d(rgb_channels, hidden_dim, kernel_size=1, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden_dim, 1, kernel_size=3, padding=1, bias=True),
+            nn.Sigmoid(),
+        )
+
+        # Local refine branch keeps the block lightweight and c3-friendly.
+        self.local_refine = nn.Sequential(
+            nn.Conv2d(rgb_channels, rgb_channels, kernel_size=3, padding=1, groups=rgb_channels, bias=False),
+            nn.BatchNorm2d(rgb_channels),
+            nn.GELU(),
+            nn.Conv2d(rgb_channels, rgb_channels, kernel_size=1, bias=False),
+            nn.BatchNorm2d(rgb_channels),
+        )
+
+        self.out_norm = nn.Sequential(
+            nn.ReLU(inplace=True),
+            nn.Conv2d(rgb_channels, rgb_channels, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(rgb_channels),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, rgb_feat, depth_feat):
+        depth_feat = self.depth_proj(depth_feat)
+
+        # Step 1: simple stable base fusion
+        gate = self.base_gate(torch.cat([rgb_feat, depth_feat], dim=1))
+        base_fused = gate * rgb_feat + (1.0 - gate) * depth_feat
+
+        # Step 2: depth-guided modulation
+        channel_guide = self.channel_guidance(depth_feat)    # (B, C, 1, 1)
+        spatial_guide = self.spatial_guidance(depth_feat)    # (B, 1, H, W)
+
+        guided = base_fused * (1.0 + channel_guide)
+        guided = guided * (1.0 + spatial_guide)
+
+        # Step 3: lightweight local refinement with residual return
+        refined = guided + self.local_refine(guided)
+        return self.out_norm(base_fused + refined)
+
+
 class KTBChannelWeights(nn.Module):
     """KTB FRM-style channel reweighting."""
 
@@ -623,8 +708,9 @@ class MidFusionSegmentor(nn.Module):
         self.rgb_encoder = RGBEncoder()
         self.depth_encoder = DepthEncoder()
 
-        # c1/c2 still use the original lightweight gate.
-        self.low_level_fusions = nn.ModuleList(
+        # Keep the lowest two stages on the original simple gate so the new
+        # ablation only changes one semantic stage at a time.
+        self.simple_fusions = nn.ModuleList(
             [
                 GatedFusion(rgb_ch, depth_ch)
                 for rgb_ch, depth_ch in zip(
@@ -634,26 +720,19 @@ class MidFusionSegmentor(nn.Module):
             ]
         )
 
-        # c3/c4 use block 1: KTB-style cross-modal fusion.
-        self.high_level_fusions = nn.ModuleList(
-            [
-                KTBStyleFusionBlock(self.rgb_encoder.out_channels[2], reduction=4, token_reduction=2, num_heads=4),
-                KTBStyleFusionBlock(self.rgb_encoder.out_channels[3], reduction=4, token_reduction=4, num_heads=8),
-            ]
+        # c3 is the only stage upgraded in this experiment.
+        self.c3_fusion = DepthAwareLocalRefineFusion(
+            rgb_channels=self.rgb_encoder.out_channels[2],
+            depth_channels=self.depth_encoder.out_channels[2],
+            reduction=4,
         )
 
-        # c3/c4 then pass through block 2: FDAM-style local/frequency enhancement.
-        self.high_level_enhancers = nn.ModuleList(
-            [
-                FdamLocalFreqEnhanceBlock(self.rgb_encoder.out_channels[2], num_heads=8, mlp_ratio=4.0, group=16, base_size=14),
-                FdamLocalFreqEnhanceBlock(self.rgb_encoder.out_channels[3], num_heads=8, mlp_ratio=4.0, group=32, base_size=14),
-            ]
+        # c4 stays on the simple fusion path first, then keeps the existing
+        # prompt-token refinement block unchanged.
+        self.c4_fusion = GatedFusion(
+            self.rgb_encoder.out_channels[3],
+            self.depth_encoder.out_channels[3],
         )
-
-        # Block 3 is only inserted on c4.
-        # We keep K small by using a 2x4 prompt grid, so K = 8 prompt tokens.
-        # This is large enough to carry coarse geometry layout, but still much
-        # lighter than adding a full prompt stack on every stage.
         self.c4_prompt_block = DepthPromptTokenBlock(
             dim=self.rgb_encoder.out_channels[3],
             prompt_hw=(2, 4),
@@ -676,19 +755,18 @@ class MidFusionSegmentor(nn.Module):
 
         fused_feats = []
 
-        # c1/c2: old gate only.
-        for idx in range(2):
-            fused_feats.append(self.low_level_fusions[idx](rgb_feats[idx], aligned_depth[idx]))
+        # c1 / c2: keep the old simple stable gate
+        fused_feats.append(self.simple_fusions[0](rgb_feats[0], aligned_depth[0]))
+        fused_feats.append(self.simple_fusions[1](rgb_feats[1], aligned_depth[1]))
 
-        # c3/c4: KTB fusion first, then FDAM enhancement.
-        # c4 only: one extra prompt-token block that lets depth act as a small
-        # geometry-guided token prior before features enter the decoder.
-        for idx in range(2, 4):
-            fused = self.high_level_fusions[idx - 2](rgb_feats[idx], aligned_depth[idx])
-            fused = self.high_level_enhancers[idx - 2](fused)
-            if idx == 3:
-                fused = self.c4_prompt_block(fused, aligned_depth[idx])
-            fused_feats.append(fused)
+        # c3: this is the only new variable in the current clean ablation.
+        fused_c3 = self.c3_fusion(rgb_feats[2], aligned_depth[2])
+        fused_feats.append(fused_c3)
+
+        # c4: keep the simple fusion, then refine with the existing prompt block.
+        fused_c4 = self.c4_fusion(rgb_feats[3], aligned_depth[3])
+        fused_c4 = self.c4_prompt_block(fused_c4, aligned_depth[3])
+        fused_feats.append(fused_c4)
 
         return self.decoder(fused_feats, input_size=rgb.shape[-2:])
 
