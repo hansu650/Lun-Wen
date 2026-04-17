@@ -66,6 +66,10 @@ class SwinBackboneEncoder(nn.Module):
         super().__init__()
         model_dir = _require_local_model_dir(model_dir or SWIN_BASE_DIR)
         self.backbone = SwinModel.from_pretrained(str(model_dir))
+        # Hugging Face loads pretrained models in eval mode by default.
+        # We switch back to train mode here so Lightning does not start with
+        # hundreds of encoder submodules marked as eval-only.
+        self.backbone.train()
 
         # The first four reshaped_hidden_states already form a natural FPN pyramid:
         # stage1: (B, 128, H/4,  W/4)
@@ -101,6 +105,9 @@ class Dinov2DepthBackbone(nn.Module):
         super().__init__()
         model_dir = _require_local_model_dir(model_dir or DINOV2_BASE_DIR)
         self.backbone = Dinov2Model.from_pretrained(str(model_dir))
+        # Same reason as the RGB Swin branch above: keep the initial module
+        # state consistent with training mode to avoid misleading warnings.
+        self.backbone.train()
         self.hidden_state_indices = hidden_state_indices
         self.patch_size = int(self.backbone.config.patch_size)
 
