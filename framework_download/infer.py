@@ -59,6 +59,12 @@ def main():
     model.eval()
     model.to(device)
 
+    # Print a short run summary so future visualization folders are easier to trace.
+    print(f"Model: {args.model}")
+    print(f"Checkpoint: {args.checkpoint}")
+    print(f"Save dir: {args.save_dir}")
+    print(f"Device: {device}")
+
     val_transform = AlbumentationsTransform(get_val_transform())
     dataset = NYUDataset(args.data_root, split="test", transform=val_transform)
 

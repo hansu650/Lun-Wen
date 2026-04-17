@@ -89,8 +89,9 @@ def build_callbacks(args, monitor_metric: str):
     os.makedirs(args.checkpoint_dir, exist_ok=True)
     checkpoint_callback = ModelCheckpoint(
         dirpath=args.checkpoint_dir,
-        # 文件名里把 "/" 改成 "_"，避免 Windows 把它当成子目录。
-        filename=f"{args.model}" + "-{epoch:02d}-{" + monitor_metric.replace("/", "_") + ":.4f}",
+        # Use the slash-free metric name directly so the saved filename carries
+        # the real validation score instead of a placeholder 0.0000.
+        filename=args.model + "-{epoch:02d}-{val_mIoU:.4f}",
         monitor=monitor_metric,
         mode="max",
         save_top_k=1,
@@ -117,7 +118,9 @@ def build_trainer(args, callbacks):
 
 def main():
     args = build_parser().parse_args()
-    monitor_metric = "val/mIoU"
+    # Lightning can display val/mIoU for humans, but checkpoint filenames on
+    # Windows are safer when they monitor the slash-free alias.
+    monitor_metric = "val_mIoU"
 
     datamodule = build_datamodule(args)
     model = build_model(args)
@@ -130,7 +133,7 @@ def main():
     best_score = checkpoint_callback.best_model_score
     best_score_text = "N/A" if best_score is None else f"{best_score:.4f}"
     print(f"训练完成！最优模型: {checkpoint_callback.best_model_path}")
-    print(f"最优 {monitor_metric}: {best_score_text}")
+    print(f"最优 val/mIoU: {best_score_text}")
 
 
 if __name__ == "__main__":

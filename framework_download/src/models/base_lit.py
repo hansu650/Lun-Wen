@@ -57,8 +57,12 @@ class BaseLitSeg(L.LightningModule):
         inter = torch.diag(conf).float()
         union = conf.sum(dim=1).float() + conf.sum(dim=0).float() - inter
         miou_global = (inter / union.clamp_min(1.0)).mean()
+        # Keep both names:
+        # - val/mIoU: matches the old progress-bar display
+        # - val_mIoU: easier for checkpoint filenames on Windows
         self.log("val/mIoU_global", miou_global, prog_bar=False, on_step=False, on_epoch=True, sync_dist=False)
         self.log("val/mIoU", miou_global, prog_bar=True, on_step=False, on_epoch=True, sync_dist=False)
+        self.log("val_mIoU", miou_global, prog_bar=False, on_step=False, on_epoch=True, sync_dist=False)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)

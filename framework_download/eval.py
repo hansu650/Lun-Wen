@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 from src.data_module import AlbumentationsTransform, NYUDataset, get_val_transform
 from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitMidFusion
-from src.utils.metrics import compute_miou, compute_pixel_accuracy
+from src.utils.metrics import sanitize_labels
 
 MODEL_REGISTRY = {
     "early": LitEarlyFusion,
@@ -41,28 +41,45 @@ def evaluate(model, dataloader, device="cuda"):
     model.eval()
     model.to(device)
 
-    total_miou = 0.0
-    total_pix_acc = 0.0
-    num_batches = 0
+    num_classes = int(model.hparams.num_classes)
+    confmat = torch.zeros(num_classes, num_classes, dtype=torch.long, device=device)
+    correct = torch.tensor(0.0, device=device)
+    total = torch.tensor(0.0, device=device)
 
     with torch.no_grad():
         for batch in dataloader:
             rgb = batch["rgb"].to(device)
             depth = batch["depth"].to(device)
-            label = batch["label"].to(device)
+            label = sanitize_labels(
+                batch["label"].to(device),
+                num_classes=num_classes,
+                ignore_index=255,
+            )
 
             logits = model(rgb, depth)
             if hasattr(model, "_eval_logits"):
                 logits = model._eval_logits(logits, rgb, depth)
             pred = logits.argmax(dim=1)
 
-            total_miou += compute_miou(pred, label, num_classes=40)
-            total_pix_acc += compute_pixel_accuracy(pred, label)
-            num_batches += 1
+            valid = label != 255
+            if valid.any():
+                pred_valid = pred[valid]
+                gt_valid = label[valid]
+                hist = torch.bincount(
+                    gt_valid * num_classes + pred_valid,
+                    minlength=num_classes * num_classes,
+                ).reshape(num_classes, num_classes)
+                confmat += hist
+                correct += (pred_valid == gt_valid).float().sum()
+                total += gt_valid.numel()
 
+    inter = torch.diag(confmat).float()
+    union = confmat.sum(dim=1).float() + confmat.sum(dim=0).float() - inter
+    miou = (inter / union.clamp_min(1.0)).mean().item()
+    pix_acc = (correct / total.clamp_min(1.0)).item()
     return {
-        "mIoU": total_miou / num_batches,
-        "PixelAcc": total_pix_acc / num_batches,
+        "mIoU": miou,
+        "PixelAcc": pix_acc,
     }
 
 
