@@ -8,10 +8,16 @@ data/
 framework_download/checkpoints/
 framework_download/visualizations/
 framework_download/lightning_logs/
+framework_download/src.zip
 
 *.ckpt
 *.pth
 *.pt
+
+# Local reference downloads kept on this machine only.
+# The repo stores concise notes/results instead of full third-party downloads.
+老师论文/RGBD/RGBD_Semantic_Segmentation_PyTorch-master/
+老师论文/RGBD/RGBD_Semantic_Segmentation_PyTorch-master.pdf
 
 .DS_Store
 Thumbs.db
