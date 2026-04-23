@@ -848,6 +848,10 @@ class GeometryAwarePromptTokenBlock(nn.Module):
 class MidFusionSegmentor(nn.Module):
     def __init__(self, num_classes=40):
         super().__init__()
+        # 当前实验只替换 backbone：
+        # - RGBEncoder 在 encoder.py 里已经改成 DINOv2-S 路线
+        # - DepthEncoder 在 encoder.py 里已经改成 Swin-T 路线
+        # 下面的 fusion 和 decoder 先沿用原来的结构，方便观察 backbone 互换本身的影响。
         self.rgb_encoder = RGBEncoder()
         self.depth_encoder = DepthEncoder()
 

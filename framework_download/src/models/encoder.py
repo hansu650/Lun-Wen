@@ -11,23 +11,30 @@ from torchvision.models import ResNet18_Weights, resnet18
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 PRETRAINED_ROOT = PROJECT_ROOT / "pretrained"
-SWIN_BASE_DIR = PRETRAINED_ROOT / "swin_base"
-DINOV2_BASE_DIR = PRETRAINED_ROOT / "dinov2_base"
+DINOV2_SMALL_DIR = PRETRAINED_ROOT / "dinov2_small"
+SWIN_TINY_DIR = PRETRAINED_ROOT / "swin_tiny"
+
+# 当前改进方向：
+# 1. RGB 分支换成 DINO，用更强的预训练语义特征处理彩色图。
+# 2. depth 分支换成 Swin Transformer，用分层结构处理几何信息。
+# 3. backbone 先走小模型路线：DINOv2-S + Swin-T。
+# 这里固定 Swin-T 的四层通道数，后面的 fusion/decoder 都跟着这组维度走。
+SWIN_T_STAGE_CHANNELS = [96, 192, 384, 768]
 
 
 def _require_local_model_dir(path: Path) -> Path:
     if not path.exists():
         raise FileNotFoundError(
             f"Local pretrained directory not found: {path}. "
-            "Please place the model under the expected pretrained/ folder."
+            "Please place the Hugging Face checkpoint under the expected "
+            "pretrained/ folder before training."
         )
     return path
 
 
 def _compute_pyramid_sizes(height: int, width: int) -> list[tuple[int, int]]:
-    # Swin-B produces stage outputs at roughly 1/4, 1/8, 1/16, 1/32 of input.
-    # We mirror those sizes for the depth branch so the existing gated fusion
-    # and FPN decoder can keep their original assumptions.
+    # DINO 输出的是 token，不是天然的 feature pyramid。
+    # 这里手动指定四个目标尺度，让 DINO 的四层 token 特征对齐到 Swin-T 的 c1-c4。
     return [
         (max(1, height // 4), max(1, width // 4)),
         (max(1, height // 8), max(1, width // 8)),
@@ -37,15 +44,12 @@ def _compute_pyramid_sizes(height: int, width: int) -> list[tuple[int, int]]:
 
 
 class DinoStageNeck(nn.Module):
-    """Project one DINO hidden state into a CNN-style stage feature map.
-
-    Each stage does two jobs:
-    1. 1x1 conv maps DINO's shared 768-dim token space into the target stage width
-    2. bilinear resize aligns the spatial size with the Swin pyramid stage
-    """
+    """Project one DINO hidden state into one Swin-T-sized stage map."""
 
     def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
+        # DINOv2-S 的 token 通道是 384。
+        # c1-c4 需要分别变成 [96, 192, 384, 768]，所以每层用 1x1 conv 做投影。
         self.proj = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
             nn.BatchNorm2d(out_channels),
@@ -59,43 +63,8 @@ class DinoStageNeck(nn.Module):
         return x
 
 
-class SwinBackboneEncoder(nn.Module):
-    """RGB branch backed by the local Swin-B checkpoint."""
-
-    def __init__(self, model_dir: Path | None = None) -> None:
-        super().__init__()
-        model_dir = _require_local_model_dir(model_dir or SWIN_BASE_DIR)
-        self.backbone = SwinModel.from_pretrained(str(model_dir))
-        # Hugging Face loads pretrained models in eval mode by default.
-        # We switch back to train mode here so Lightning does not start with
-        # hundreds of encoder submodules marked as eval-only.
-        self.backbone.train()
-
-        # The first four reshaped_hidden_states already form a natural FPN pyramid:
-        # stage1: (B, 128, H/4,  W/4)
-        # stage2: (B, 256, H/8,  W/8)
-        # stage3: (B, 512, H/16, W/16)
-        # stage4: (B, 1024,H/32, W/32)
-        self.out_channels = [128, 256, 512, 1024]
-
-    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
-        outputs = self.backbone(
-            pixel_values=x,
-            output_hidden_states=True,
-            return_dict=True,
-        )
-        return list(outputs.reshaped_hidden_states[:4])
-
-
-class Dinov2DepthBackbone(nn.Module):
-    """Depth branch backed by the local DINOv2-B checkpoint.
-
-    DINOv2 returns token sequences, not a hierarchical CNN pyramid, so we:
-    1. copy 1-channel depth into 3 channels
-    2. take a few intermediate hidden states
-    3. remove the CLS token and reshape tokens back to (B, C, H, W)
-    4. use a lightweight neck to project and resize them into 4 stage features
-    """
+class RGBEncoder(nn.Module):
+    """RGB branch: DINOv2 token features projected to Swin-T stage widths."""
 
     def __init__(
         self,
@@ -103,17 +72,15 @@ class Dinov2DepthBackbone(nn.Module):
         hidden_state_indices: tuple[int, int, int, int] = (3, 6, 9, 12),
     ) -> None:
         super().__init__()
-        model_dir = _require_local_model_dir(model_dir or DINOV2_BASE_DIR)
+        # RGB 分支默认读取 DINOv2-S 权重。
+        # 权重目录固定为 pretrained/dinov2_small。
+        model_dir = _require_local_model_dir(model_dir or DINOV2_SMALL_DIR)
         self.backbone = Dinov2Model.from_pretrained(str(model_dir))
-        # Same reason as the RGB Swin branch above: keep the initial module
-        # state consistent with training mode to avoid misleading warnings.
         self.backbone.train()
+        # 从 DINO 的不同 transformer 层取特征，构造成四个 stage。
         self.hidden_state_indices = hidden_state_indices
         self.patch_size = int(self.backbone.config.patch_size)
-
-        # We align the final stage widths with Swin so the old gated fusion can
-        # still zip RGB/depth stages together without any train.py changes.
-        self.out_channels = [128, 256, 512, 1024]
+        self.out_channels = SWIN_T_STAGE_CHANNELS
         self.stage_necks = nn.ModuleList(
             [
                 DinoStageNeck(self.backbone.config.hidden_size, out_channels)
@@ -121,26 +88,18 @@ class Dinov2DepthBackbone(nn.Module):
             ]
         )
 
-    def _repeat_depth_to_rgb(self, x: torch.Tensor) -> torch.Tensor:
-        if x.ndim == 3:
-            x = x.unsqueeze(1)
-        if x.shape[1] == 1:
-            return x.repeat(1, 3, 1, 1)
-        if x.shape[1] == 3:
-            return x
-        raise ValueError(f"Depth input must have 1 or 3 channels, got {x.shape[1]}.")
-
     def _tokens_to_map(
         self,
         tokens: torch.Tensor,
         input_height: int,
         input_width: int,
     ) -> torch.Tensor:
+        # DINO 输出格式是 (B, token_count, C)。
+        # 第一个 token 通常是 CLS token，分割任务里先去掉，再 reshape 回二维特征图。
         batch_size, token_count, channels = tokens.shape
         grid_h = max(1, input_height // self.patch_size)
         grid_w = max(1, input_width // self.patch_size)
 
-        # DINO keeps one CLS token in front; for dense prediction we discard it.
         if token_count == grid_h * grid_w + 1:
             tokens = tokens[:, 1:, :]
             token_count = tokens.shape[1]
@@ -153,9 +112,7 @@ class Dinov2DepthBackbone(nn.Module):
         return tokens.transpose(1, 2).reshape(batch_size, channels, grid_h, grid_w)
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
-        x = self._repeat_depth_to_rgb(x)
         input_height, input_width = x.shape[-2:]
-
         outputs = self.backbone(
             pixel_values=x,
             output_hidden_states=True,
@@ -165,6 +122,7 @@ class Dinov2DepthBackbone(nn.Module):
         target_sizes = _compute_pyramid_sizes(input_height, input_width)
         features: list[torch.Tensor] = []
 
+        # hidden_states[3/6/9/12] -> token map -> 1x1 投影 -> resize 到 c1-c4 尺度。
         for neck, hidden_idx, target_size in zip(
             self.stage_necks, self.hidden_state_indices, target_sizes
         ):
@@ -175,18 +133,47 @@ class Dinov2DepthBackbone(nn.Module):
         return features
 
 
-class RGBEncoder(SwinBackboneEncoder):
-    """RGB encoder using the local Swin-B checkpoint."""
+class DepthEncoder(nn.Module):
+    """Depth branch: Swin-T over repeated 1-channel depth input."""
 
-    def __init__(self) -> None:
-        super().__init__(model_dir=SWIN_BASE_DIR)
+    def __init__(self, model_dir: Path | None = None) -> None:
+        super().__init__()
+        # depth 分支默认读取 pretrained/swin_tiny。
+        # 这个目录应放 microsoft/swin-tiny-patch4-window7-224。
+        model_dir = _require_local_model_dir(model_dir or SWIN_TINY_DIR)
+        self.backbone = SwinModel.from_pretrained(str(model_dir))
+        self.backbone.train()
+        self.out_channels = SWIN_T_STAGE_CHANNELS
 
+    def _repeat_depth_to_rgb(self, x: torch.Tensor) -> torch.Tensor:
+        # Hugging Face 的 Swin 预训练权重是 3 通道输入。
+        # NYU depth 是 1 通道，所以这里复制成 3 通道再送入 Swin。
+        if x.ndim == 3:
+            x = x.unsqueeze(1)
+        if x.shape[1] == 1:
+            return x.repeat(1, 3, 1, 1)
+        if x.shape[1] == 3:
+            return x
+        raise ValueError(f"Depth input must have 1 or 3 channels, got {x.shape[1]}.")
 
-class DepthEncoder(Dinov2DepthBackbone):
-    """Depth encoder using the local DINOv2-B checkpoint."""
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        x = self._repeat_depth_to_rgb(x)
+        outputs = self.backbone(
+            pixel_values=x,
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        # Swin-T 天然输出四个分层 feature map，正好作为 depth c1-c4。
+        features = list(outputs.reshaped_hidden_states[:4])
 
-    def __init__(self) -> None:
-        super().__init__(model_dir=DINOV2_BASE_DIR)
+        actual_channels = [feature.shape[1] for feature in features]
+        if actual_channels != self.out_channels:
+            raise ValueError(
+                "The loaded depth Swin checkpoint does not look like Swin-T. "
+                f"Expected stage channels {self.out_channels}, got {actual_channels}."
+            )
+
+        return features
 
 
 class EarlyFusionEncoder(nn.Module):
