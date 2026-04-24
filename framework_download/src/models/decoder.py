@@ -1,12 +1,8 @@
-"""Decoder module."""
-
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class SimpleFPNDecoder(nn.Module):
-    """Simplified FPN decoder kept as the stable baseline head."""
-
     def __init__(self, in_channels, out_channels=128, num_classes=40):
         super().__init__()
         self.lateral4 = nn.Conv2d(in_channels[3], out_channels, 1)

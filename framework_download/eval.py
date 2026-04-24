@@ -1,5 +1,3 @@
-"""评估脚本。"""
-
 import argparse
 import os
 import warnings
@@ -16,25 +14,11 @@ import torch
 from torch.utils.data import DataLoader
 
 from src.data_module import AlbumentationsTransform, NYUDataset, get_val_transform
-from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitMidFusion
 from src.utils.metrics import sanitize_labels
 
-MODEL_REGISTRY = {
-    "early": LitEarlyFusion,
-    "mid_fusion": LitMidFusion,
-}
 
-
-def parse_eval_tta_flag(value: str):
-    value = str(value).strip().lower()
-    if value in {"auto", "default"}:
-        return "auto"
-    if value in {"1", "true", "yes", "y", "on"}:
-        return True
-    if value in {"0", "false", "no", "n", "off"}:
-        return False
-    raise argparse.ArgumentTypeError(f"Invalid eval_tta value: {value}")
+MODEL_REGISTRY = {"mid_fusion": LitMidFusion}
 
 
 def evaluate(model, dataloader, device="cuda"):
@@ -50,15 +34,10 @@ def evaluate(model, dataloader, device="cuda"):
         for batch in dataloader:
             rgb = batch["rgb"].to(device)
             depth = batch["depth"].to(device)
-            label = sanitize_labels(
-                batch["label"].to(device),
-                num_classes=num_classes,
-                ignore_index=255,
-            )
+            label = sanitize_labels(batch["label"].to(device), num_classes=num_classes, ignore_index=255)
 
             logits = model(rgb, depth)
-            if hasattr(model, "_eval_logits"):
-                logits = model._eval_logits(logits, rgb, depth)
+            logits = model._eval_logits(logits, rgb, depth)
             pred = logits.argmax(dim=1)
 
             valid = label != 255
@@ -77,25 +56,19 @@ def evaluate(model, dataloader, device="cuda"):
     union = confmat.sum(dim=1).float() + confmat.sum(dim=0).float() - inter
     miou = (inter / union.clamp_min(1.0)).mean().item()
     pix_acc = (correct / total.clamp_min(1.0)).item()
-    return {
-        "mIoU": miou,
-        "PixelAcc": pix_acc,
-    }
+    return {"mIoU": miou, "PixelAcc": pix_acc}
 
 
 def main():
     parser = argparse.ArgumentParser(description="RGB-D Semantic Segmentation Evaluation")
-    parser.add_argument("--checkpoint", type=str, required=True, help="模型 checkpoint 路径")
+    parser.add_argument("--checkpoint", type=str, required=True)
     parser.add_argument("--model", type=str, default="mid_fusion", choices=list(MODEL_REGISTRY.keys()))
     parser.add_argument("--data_root", type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--num_workers", type=int, default=4)
-    parser.add_argument("--eval_tta", type=parse_eval_tta_flag, default="auto")
     args = parser.parse_args()
 
-    model_class = MODEL_REGISTRY[args.model]
-    model = model_class.load_from_checkpoint(args.checkpoint)
-
+    model = MODEL_REGISTRY[args.model].load_from_checkpoint(args.checkpoint)
     val_transform = AlbumentationsTransform(get_val_transform())
     val_dataset = NYUDataset(args.data_root, split="test", transform=val_transform)
     val_loader = DataLoader(
@@ -107,7 +80,7 @@ def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     metrics = evaluate(model, val_loader, device=device)
-    print(f"评估结果: mIoU={metrics['mIoU']:.4f}, PixelAcc={metrics['PixelAcc']:.4f}")
+    print(f"Evaluation: mIoU={metrics['mIoU']:.4f}, PixelAcc={metrics['PixelAcc']:.4f}")
 
 
 if __name__ == "__main__":
