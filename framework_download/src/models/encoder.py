@@ -30,7 +30,7 @@ class RGBEncoder(nn.Module):
             for out_channels in self.out_channels
         ])
 
-    def forward(self, x):
+    def forward(self, x, return_cls: bool = False):
         b, _, h, w = x.shape
         gh = h // self.patch_size
         gw = w // self.patch_size
@@ -38,12 +38,18 @@ class RGBEncoder(nn.Module):
         outputs = self.backbone(pixel_values=x, output_hidden_states=True, return_dict=True)
 
         feats = []
+        cls_tokens = []
         for projector, hidden_idx, size in zip(self.projectors, HIDDEN_STATE_INDICES, sizes):
-            tokens = outputs.hidden_states[hidden_idx][:, 1:, :]
+            hidden_state = outputs.hidden_states[hidden_idx]
+            # DINOv2 第 0 个 token 是 CLS，用作 RGB 全局语义指导。
+            cls_tokens.append(hidden_state[:, 0, :])
+            tokens = hidden_state[:, 1:, :]
             x = tokens.transpose(1, 2).reshape(b, self.backbone.config.hidden_size, gh, gw)
             x = projector(x)
             x = F.interpolate(x, size=size, mode="bilinear", align_corners=False)
             feats.append(x)
+        if return_cls:
+            return feats, cls_tokens
         return feats
 
 
