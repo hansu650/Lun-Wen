@@ -63,8 +63,8 @@ class CSTCModule(nn.Module):
         )
         self.rgb_gate = nn.Linear(channels, channels)
         self.depth_gate = nn.Linear(channels, channels)
-        # alpha 初始化为 0，训练初期 CSTC 不破坏预训练特征。
-        self.alpha = nn.Parameter(torch.zeros(1))
+        # alpha 给一个小初值，让 CSTC 训练初期就有轻微清洗作用。
+        self.alpha = nn.Parameter(torch.tensor(0.1))
 
     def forward(self, rgb_feat, depth_feat, rgb_cls):
         rgb_base = self.rgb_base(rgb_cls)
