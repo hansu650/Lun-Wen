@@ -1,5 +1,6 @@
-import argparse
+"""统一训练脚本"""
 import os
+import argparse
 import warnings
 
 os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
@@ -11,19 +12,23 @@ warnings.filterwarnings(
 )
 
 import lightning as L
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 from src.data_module import NYUDataModule
+from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitMidFusion
 
 
-MODEL_REGISTRY = {"mid_fusion": LitMidFusion}
+MODEL_REGISTRY = {
+    "early": LitEarlyFusion,
+    "mid_fusion": LitMidFusion,
+}
 
 
 def build_parser():
     parser = argparse.ArgumentParser(description="RGB-D Semantic Segmentation Training")
     parser.add_argument("--model", type=str, default="mid_fusion", choices=list(MODEL_REGISTRY.keys()))
-    parser.add_argument("--data_root", type=str, required=True)
+    parser.add_argument("--data_root", type=str, required=True, help="NYU Depth V2 数据集根目录")
     parser.add_argument("--num_classes", type=int, default=40)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--max_epochs", type=int, default=50)
@@ -54,24 +59,25 @@ def build_datamodule(args):
 
 
 def build_model(args):
-    return MODEL_REGISTRY[args.model](num_classes=args.num_classes, lr=args.lr)
+    model_cls = MODEL_REGISTRY[args.model]
+    return model_cls(num_classes=args.num_classes, lr=args.lr)
 
 
-def build_callbacks(args):
+def build_callbacks(args, monitor_metric: str):
     os.makedirs(args.checkpoint_dir, exist_ok=True)
-    checkpoint = ModelCheckpoint(
+    checkpoint_callback = ModelCheckpoint(
         dirpath=args.checkpoint_dir,
-        filename=args.model + "-{epoch:02d}-{val_mIoU:.4f}",
-        monitor="val_mIoU",
+        filename=f"{args.model}" + "-{epoch:02d}-{" + monitor_metric + ":.4f}",
+        monitor=monitor_metric,
         mode="max",
         save_top_k=1,
     )
-    early_stop = EarlyStopping(
-        monitor="val_mIoU",
+    early_stop_callback = EarlyStopping(
+        monitor=monitor_metric,
         patience=args.early_stop_patience,
         mode="max",
     )
-    return checkpoint, early_stop
+    return checkpoint_callback, early_stop_callback
 
 
 def build_trainer(args, callbacks):
@@ -87,18 +93,17 @@ def build_trainer(args, callbacks):
 
 def main():
     args = build_parser().parse_args()
+    monitor_metric = "val/mIoU"
     datamodule = build_datamodule(args)
     model = build_model(args)
-    checkpoint, early_stop = build_callbacks(args)
-    trainer = build_trainer(args, callbacks=[checkpoint, early_stop])
-
-    print(f"Start training: {args.model}")
+    checkpoint_callback, early_stop_callback = build_callbacks(args, monitor_metric)
+    trainer = build_trainer(args, callbacks=[checkpoint_callback, early_stop_callback])
+    print(f"开始训练模型: {args.model}")
     trainer.fit(model, datamodule=datamodule)
-
-    best_score = checkpoint.best_model_score
+    best_score = checkpoint_callback.best_model_score
     best_score_text = "N/A" if best_score is None else f"{best_score:.4f}"
-    print(f"Best checkpoint: {checkpoint.best_model_path}")
-    print(f"Best val/mIoU: {best_score_text}")
+    print(f"训练完成！最优模型: {checkpoint_callback.best_model_path}")
+    print(f"最优 {monitor_metric}: {best_score_text}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-import lightning as L
 import torch
-import torch.distributed as dist
 import torch.nn as nn
+import torch.distributed as dist
+import lightning as L
 
 from ..utils.metrics import compute_miou, sanitize_labels
 
@@ -11,11 +11,7 @@ class BaseLitSeg(L.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.criterion = nn.CrossEntropyLoss(ignore_index=255)
-        self.register_buffer(
-            "_val_confmat",
-            torch.zeros(num_classes, num_classes, dtype=torch.long),
-            persistent=False,
-        )
+        self.register_buffer("_val_confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), persistent=False)
 
     def forward(self, rgb, depth):
         return self.model(rgb, depth)
@@ -35,19 +31,17 @@ class BaseLitSeg(L.LightningModule):
         rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
         label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
         logits = self(rgb, depth)
-        logits = self._eval_logits(logits, rgb, depth)
+        logits_eval = self._eval_logits(logits, rgb, depth)
         loss = self.criterion(logits, label)
-        pred = logits.argmax(dim=1)
+        pred = logits_eval.argmax(dim=1)
         miou_batch = compute_miou(pred, label, num_classes=self.hparams.num_classes)
-
         valid = label != 255
-        if valid.any():
-            pred_valid = pred[valid]
-            gt_valid = label[valid]
+        pred_valid = pred[valid]
+        gt = label[valid]
+        if gt.numel() > 0:
             n = self.hparams.num_classes
-            hist = torch.bincount(gt_valid * n + pred_valid, minlength=n * n).reshape(n, n)
+            hist = torch.bincount(gt * n + pred_valid, minlength=n * n).reshape(n, n)
             self._val_confmat += hist.to(self._val_confmat.device).long()
-
         self.log("val/loss", loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log("val/mIoU_batch", miou_batch, prog_bar=False, on_step=False, on_epoch=True)
         return {"val_loss": loss, "val_miou_batch": miou_batch}
@@ -59,14 +53,11 @@ class BaseLitSeg(L.LightningModule):
         conf = self._val_confmat.clone()
         if dist.is_available() and dist.is_initialized():
             dist.all_reduce(conf, op=dist.ReduceOp.SUM)
-
         inter = torch.diag(conf).float()
         union = conf.sum(dim=1).float() + conf.sum(dim=0).float() - inter
-        miou = (inter / union.clamp_min(1.0)).mean()
-
-        self.log("val/mIoU_global", miou, prog_bar=False, on_step=False, on_epoch=True, sync_dist=False)
-        self.log("val/mIoU", miou, prog_bar=True, on_step=False, on_epoch=True, sync_dist=False)
-        self.log("val_mIoU", miou, prog_bar=False, on_step=False, on_epoch=True, sync_dist=False)
+        miou_global = (inter / union.clamp_min(1.0)).mean()
+        self.log("val/mIoU_global", miou_global, prog_bar=False, on_step=False, on_epoch=True, sync_dist=False)
+        self.log("val/mIoU", miou_global, prog_bar=True, on_step=False, on_epoch=True, sync_dist=False)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)

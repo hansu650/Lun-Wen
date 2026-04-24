@@ -1,5 +1,6 @@
-import argparse
+"""评估脚本"""
 import os
+import argparse
 import warnings
 
 os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
@@ -13,74 +14,65 @@ warnings.filterwarnings(
 import torch
 from torch.utils.data import DataLoader
 
-from src.data_module import AlbumentationsTransform, NYUDataset, get_val_transform
+from src.data_module import NYUDataModule, NYUDataset, AlbumentationsTransform, get_val_transform
+from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitMidFusion
-from src.utils.metrics import sanitize_labels
+from src.utils.metrics import compute_miou, compute_pixel_accuracy
 
 
-MODEL_REGISTRY = {"mid_fusion": LitMidFusion}
+MODEL_REGISTRY = {
+    "early": LitEarlyFusion,
+    "mid_fusion": LitMidFusion,
+}
 
 
 def evaluate(model, dataloader, device="cuda"):
     model.eval()
     model.to(device)
-
-    num_classes = int(model.hparams.num_classes)
-    confmat = torch.zeros(num_classes, num_classes, dtype=torch.long, device=device)
-    correct = torch.tensor(0.0, device=device)
-    total = torch.tensor(0.0, device=device)
-
+    
+    total_miou = 0.0
+    total_pix_acc = 0.0
+    num_batches = 0
+    
     with torch.no_grad():
         for batch in dataloader:
             rgb = batch["rgb"].to(device)
             depth = batch["depth"].to(device)
-            label = sanitize_labels(batch["label"].to(device), num_classes=num_classes, ignore_index=255)
-
+            label = batch["label"].to(device)
+            
             logits = model(rgb, depth)
-            logits = model._eval_logits(logits, rgb, depth)
             pred = logits.argmax(dim=1)
-
-            valid = label != 255
-            if valid.any():
-                pred_valid = pred[valid]
-                gt_valid = label[valid]
-                hist = torch.bincount(
-                    gt_valid * num_classes + pred_valid,
-                    minlength=num_classes * num_classes,
-                ).reshape(num_classes, num_classes)
-                confmat += hist
-                correct += (pred_valid == gt_valid).float().sum()
-                total += gt_valid.numel()
-
-    inter = torch.diag(confmat).float()
-    union = confmat.sum(dim=1).float() + confmat.sum(dim=0).float() - inter
-    miou = (inter / union.clamp_min(1.0)).mean().item()
-    pix_acc = (correct / total.clamp_min(1.0)).item()
-    return {"mIoU": miou, "PixelAcc": pix_acc}
+            
+            total_miou += compute_miou(pred, label, num_classes=40)
+            total_pix_acc += compute_pixel_accuracy(pred, label)
+            num_batches += 1
+    
+    return {
+        "mIoU": total_miou / num_batches,
+        "PixelAcc": total_pix_acc / num_batches,
+    }
 
 
 def main():
     parser = argparse.ArgumentParser(description="RGB-D Semantic Segmentation Evaluation")
-    parser.add_argument("--checkpoint", type=str, required=True)
+    parser.add_argument("--checkpoint", type=str, required=True, help="模型检查点路径")
     parser.add_argument("--model", type=str, default="mid_fusion", choices=list(MODEL_REGISTRY.keys()))
     parser.add_argument("--data_root", type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--num_workers", type=int, default=4)
     args = parser.parse_args()
-
-    model = MODEL_REGISTRY[args.model].load_from_checkpoint(args.checkpoint)
+    
+    ModelClass = MODEL_REGISTRY[args.model]
+    model = ModelClass.load_from_checkpoint(args.checkpoint)
+    
     val_transform = AlbumentationsTransform(get_val_transform())
     val_dataset = NYUDataset(args.data_root, split="test", transform=val_transform)
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.num_workers,
-    )
-
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+    
     device = "cuda" if torch.cuda.is_available() else "cpu"
     metrics = evaluate(model, val_loader, device=device)
-    print(f"Evaluation: mIoU={metrics['mIoU']:.4f}, PixelAcc={metrics['PixelAcc']:.4f}")
+    
+    print(f"评估结果: mIoU={metrics['mIoU']:.4f}, PixelAcc={metrics['PixelAcc']:.4f}")
 
 
 if __name__ == "__main__":

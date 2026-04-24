@@ -10,7 +10,7 @@ try:
 except Exception:
     pass
 
-# 对应类别对应的颜色
+
 NYU_COLORMAP = np.array([
     [0, 0, 0], [174, 199, 232], [152, 223, 138], [31, 119, 180], [255, 152, 150],
     [148, 103, 189], [197, 176, 213], [140, 86, 75], [196, 156, 148], [227, 119, 194],
@@ -23,7 +23,7 @@ NYU_COLORMAP = np.array([
     [240, 128, 128]
 ], dtype=np.uint8)
 
-# 把模型输入格式的 RGB，变回普通彩图显示格式 因为模型输出的rgb被标准化了不是原来的那种像素了
+
 def denormalize_rgb(tensor, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
     """反归一化 RGB 张量"""
     mean = torch.tensor(mean).view(3, 1, 1)
@@ -43,29 +43,29 @@ def visualize_prediction(rgb, pred, gt=None, mean=(0.485, 0.456, 0.406), std=(0.
     """可视化预测结果"""
     if not HAS_MATPLOTLIB:
         raise ImportError("matplotlib is not available.")
-
+    
     if torch.is_tensor(rgb):
         rgb = denormalize_rgb(rgb, mean, std)
     if torch.is_tensor(pred):
         pred = pred.numpy()
     if gt is not None and torch.is_tensor(gt):
         gt = gt.numpy()
-
+    
     n_cols = 3 if gt is not None else 2
     fig, axes = plt.subplots(1, n_cols, figsize=(n_cols * 4, 4))
-
+    
     axes[0].imshow(rgb)
     axes[0].set_title("RGB")
     axes[0].axis("off")
-
+    
     axes[1].imshow(label_to_color(pred))
     axes[1].set_title("Prediction")
     axes[1].axis("off")
-
+    
     if gt is not None:
         axes[2].imshow(label_to_color(gt))
         axes[2].set_title("Ground Truth")
         axes[2].axis("off")
-
+    
     plt.tight_layout()
-    return fig # 便于infer继续处理
+    return fig
