@@ -7,6 +7,9 @@ logs are not tracked because they are generated artifacts.
 
 - [`v0.0-1.0/`](./v0.0-1.0/): experiments from the earliest encoder/fusion
   attempts through the confirmed v1.0 stable baseline.
+- [`checkpoint_cleanup_summary.md`](./checkpoint_cleanup_summary.md): record of
+  the removed local checkpoint archive and the result files kept as the source
+  of truth.
 
 ## Current Main Baseline
 
