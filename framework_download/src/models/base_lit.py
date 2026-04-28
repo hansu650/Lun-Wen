@@ -60,12 +60,21 @@ class BaseLitSeg(L.LightningModule):
         self.log("val/mIoU", miou_global, prog_bar=True, on_step=False, on_epoch=True, sync_dist=False)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.05)
-        total_steps = int(self.trainer.estimated_stepping_batches)
+        optimizer = torch.optim.AdamW(
+            self.parameters(),
+            lr=self.hparams.lr,
+            weight_decay=0.05,
+        )
+        total_steps = max(int(self.trainer.estimated_stepping_batches), 1)
         power = 0.9
+
+        def poly_lambda(current_step):
+            current_step = min(current_step, total_steps)
+            return (1.0 - current_step / total_steps) ** power
+
         scheduler = torch.optim.lr_scheduler.LambdaLR(
             optimizer,
-            lr_lambda=lambda current_step: (1 - current_step / total_steps) ** power,
+            lr_lambda=poly_lambda,
         )
         return {
             "optimizer": optimizer,
