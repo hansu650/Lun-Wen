@@ -4,14 +4,11 @@ import torch
 
 def sanitize_labels(target, num_classes=40, ignore_index=255):
     target = target.long()
-    if target.numel() > 0:
-        tmin = int(target.min().item())
-        tmax = int(target.max().item())
-        if tmin >= 1 and tmax <= num_classes:
-            target = target - 1
     invalid = (target < 0) | (target >= num_classes)
+    invalid = invalid & (target != ignore_index)
     if invalid.any():
-        target = target.masked_fill(invalid, ignore_index)
+        values = torch.unique(target[invalid]).detach().cpu().tolist()
+        raise ValueError(f"Illegal label values after NYU40 mapping: {values}")
     return target
 
 

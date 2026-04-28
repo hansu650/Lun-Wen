@@ -8,7 +8,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import lightning as L
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
 
 
 class NYUDataset(Dataset):
@@ -59,8 +58,31 @@ class NYUDataset(Dataset):
         
         rgb = cv2.imread(rgb_path, cv2.IMREAD_COLOR)
         rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
-        depth = cv2.imread(depth_path, cv2.IMREAD_GRAYSCALE)
-        label = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
+        depth = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED)
+        if depth.ndim != 2:
+            raise ValueError(f"Depth expects 16-bit single-channel image, got shape {depth.shape}: {depth_path}")
+        if depth.dtype != np.uint16:
+            raise ValueError(f"Depth expects uint16 metric depth PNG, got dtype {depth.dtype}: {depth_path}")
+        depth = depth.astype(np.float32) / 10000.0
+        label = cv2.imread(gt_path, cv2.IMREAD_UNCHANGED)
+        if label.ndim == 3:
+            if label.shape[2] != 3:
+                raise ValueError(f"Label expects 3 channels or grayscale, got shape {label.shape}: {gt_path}")
+            if not (np.array_equal(label[:, :, 0], label[:, :, 1]) and np.array_equal(label[:, :, 0], label[:, :, 2])):
+                raise ValueError(f"Label channels are not identical: {gt_path}")
+            label = label[:, :, 0]
+        elif label.ndim != 2:
+            raise ValueError(f"Label expects 3 channels or grayscale, got shape {label.shape}: {gt_path}")
+
+        invalid = (label < 0) | (label > 40)
+        if invalid.any():
+            values = np.unique(label[invalid])
+            raise ValueError(f"Illegal NYU label values in {gt_path}: {values.tolist()}")
+
+        mapped_label = np.full(label.shape, 255, dtype=np.uint8)
+        class_mask = (label >= 1) & (label <= 40)
+        mapped_label[class_mask] = label[class_mask] - 1
+        label = mapped_label
         
         if self.transform is not None:
             rgb, depth, label = self.transform(rgb, depth, label)
@@ -74,17 +96,12 @@ def get_train_transform(image_size=(480, 640)):
     return A.Compose([
         A.RandomCrop(height=h, width=w, p=1.0) if h < 480 or w < 640 else A.NoOp(),
         A.HorizontalFlip(p=0.5),
-        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ToTensorV2(),
     ], additional_targets={"depth": "image", "label": "mask"})
 
 
 def get_val_transform():
     """验证集数据增强"""
-    return A.Compose([
-        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ToTensorV2(),
-    ], additional_targets={"depth": "image", "label": "mask"})
+    return A.Compose([], additional_targets={"depth": "image", "label": "mask"})
 
 
 class AlbumentationsTransform:
@@ -93,10 +110,13 @@ class AlbumentationsTransform:
     """
     def __init__(self, transform: A.Compose):
         self.transform = transform
+        self.rgb_mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(3, 1, 1)
+        self.rgb_std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(3, 1, 1)
     
     def __call__(self, rgb, depth, label):
         result = self.transform(image=rgb, depth=depth, label=label)
-        rgb_tensor = result["image"]
+        rgb_tensor = torch.from_numpy(result["image"]).permute(2, 0, 1).float() / 255.0
+        rgb_tensor = (rgb_tensor - self.rgb_mean) / self.rgb_std
         depth_tensor = result["depth"]
         label_tensor = result["label"]
         
@@ -104,14 +124,14 @@ class AlbumentationsTransform:
         if not torch.is_tensor(depth_tensor):
             depth_tensor = torch.from_numpy(depth_tensor).float()
         if depth_tensor.dim() == 2:
-            depth_tensor = depth_tensor.unsqueeze(0) / 255.0
-        elif depth_tensor.dim() == 3 and depth_tensor.shape[0] == 3:
-            depth_tensor = depth_tensor[0:1, :, :] / 255.0
+            depth_tensor = depth_tensor.unsqueeze(0)
+        else:
+            raise ValueError(f"Depth tensor expects [H,W], got shape {tuple(depth_tensor.shape)}")
             
         if not torch.is_tensor(label_tensor):
             label_tensor = torch.from_numpy(label_tensor)
-        if label_tensor.dim() == 3 and label_tensor.shape[0] == 1:
-            label_tensor = label_tensor.squeeze(0)
+        if label_tensor.dim() != 2:
+            raise ValueError(f"Label tensor expects [H,W], got shape {tuple(label_tensor.shape)}")
         label_tensor = label_tensor.long()
         
         return rgb_tensor, depth_tensor, label_tensor
