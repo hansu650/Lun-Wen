@@ -36,8 +36,8 @@ class PPMBlock(nn.Module):
 class RCMLiteBlock(nn.Module):
     def __init__(self, channels=256):
         super().__init__()
-        self.block = nn.Sequential(
-            conv_bn_relu(channels * 4, channels),
+        self.reduce = conv_bn_relu(channels * 4, channels)
+        self.enhance = nn.Sequential(
             nn.Conv2d(channels, channels, 3, padding=1, groups=channels, bias=False),
             nn.BatchNorm2d(channels),
             nn.GELU(),
@@ -51,9 +51,12 @@ class RCMLiteBlock(nn.Module):
             nn.BatchNorm2d(channels),
             nn.ReLU(inplace=True),
         )
+        self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
-        return self.block(x)
+        base = self.reduce(x)
+        enhance = self.enhance(base)
+        return base + self.gamma * enhance
 
 
 class SimpleFPNDecoder(nn.Module):
