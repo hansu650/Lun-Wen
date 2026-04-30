@@ -1,23 +1,55 @@
-# Paper Notes
+# 论文笔记
 
-This file records paper-facing facts and writing constraints for the RGB-D
-semantic segmentation project.
+本文档记录论文写作相关的事实和边界，避免把无效实验、旧 README 信息或未经确认的数字写进论文。
 
-## Current Paper Direction
+## 当前论文动机
 
-- Task: RGB-D semantic segmentation
-- Dataset: NYUDepthV2
-- RGB branch: DINOv2-small
-- Depth branch: Swin-Tiny
-- Fusion direction: multi-level RGB-D mid-fusion
-- Current modules under improvement: Context-FPN, ResGamma, Depth Adapter, and
-  fusion modules
-- Current confirmed best result: Context-FPN ResGamma 7 runs, best mIoU about
-  `0.3933`
+RGB-D semantic segmentation 需要同时利用 RGB 的语义纹理信息和 depth 的空间结构信息。当前项目的核心问题是：在轻量化、当前环境可运行的前提下，如何让 depth branch 的信息真正参与多层融合，而不是只增加参数或堆模块。
 
-## Result Citation Rule
+当前论文叙事应围绕三个点展开：
 
-Do not cite old README results as paper results unless they have current
-configuration, log, and checkpoint support. The old Swin-B RGB + DINOv2-B Depth
-record is deprecated and must not be used as the paper main line, a valid
-baseline, or the current best result.
+- DINOv2-small 提供较强 RGB 语义特征，但单独依赖 RGB 不足以利用 NYUDepthV2 的空间结构。
+- Swin-Tiny 作为 depth branch 更符合当前环境限制，重点不是换更大的 backbone，而是提升 depth 特征进入 fusion 前后的有效性。
+- Multi-level RGB-D mid-fusion、Context-FPN、ResGamma、Depth Adapter 应服务于“更有效的跨模态融合”这个主线。
+
+## 当前方法主线
+
+- 任务：RGB-D semantic segmentation
+- 数据集：NYUDepthV2
+- RGB branch：DINOv2-small
+- Depth branch：Swin-Tiny
+- Fusion：multi-level RGB-D mid-fusion
+- 当前重点模块：Context-FPN、ResGamma、Depth Adapter、融合模块
+- 当前可确认最好结果：Context-FPN ResGamma，best mIoU about `0.3933`
+
+## 可写成创新点的模块
+
+| 模块 | 可写角度 | 需要证明的问题 |
+|---|---|---|
+| Depth Adapter | 在融合前校准或增强 depth features，让 depth 信息更适合与 RGB 语义特征交互。 | 是否比直接融合 depth features 更好；是否提升 mIoU 和难分类别表现。 |
+| Context-FPN | 在多尺度 decoder/fusion 路径中增强上下文表达。 | 是否提升整体 mIoU；是否对小物体、边界或场景结构有帮助。 |
+| ResGamma | 用可控残差强度稳定融合模块贡献。 | 是否提升重复实验稳定性；是否减少无效 depth 分支对 RGB 主干的干扰。 |
+| 融合模块改进 | 围绕明确优点设计跨模态交互，而不是简单拼接模块。 | 是否有清晰机制、消融收益和可解释失败结论。 |
+
+## 消融实验设计
+
+| 消融项 | 对照设置 | 观察指标 | 结论记录方式 |
+|---|---|---|---|
+| Depth Adapter | 无 adapter vs 加入 adapter | best mIoU、mean mIoU、重复实验方差、关键类别 IoU | 写清楚 adapter 是否让 depth branch 更有效；失败时记录是无提升、过拟合还是训练不稳定。 |
+| Context-FPN | 原 decoder/fusion 路径 vs Context-FPN | best mIoU、边界/小目标表现、训练稳定性 | 记录是否带来稳定收益，不能只看单次最高点。 |
+| ResGamma | 无 gamma 控制 vs 加 ResGamma | best mIoU、重复实验稳定性、收敛曲线 | 记录 gamma 是否帮助稳定融合贡献。 |
+| 融合模块 | 当前 fusion baseline vs 新 fusion 设计 | best mIoU、参数量、速度、重复实验稳定性 | 只有明确机制和收益时才进入论文主线。 |
+
+## 不能写进论文结果的内容
+
+- Swin-B RGB + DINOv2-B Depth 是 deprecated/invalid 记录。
+- 旧 README 中的 `0.48-0.49` mIoU 是 deprecated/invalid 记录。
+- 上述方案依赖的预训练模型太大，当前环境无法正常使用，不属于当前可复现实验结果。
+- 它不得作为论文结果、有效 baseline、当前最好结果或主线方案引用。
+- 任何新结果必须有配置、日志、checkpoint，或用户明确确认，才能进入 `docs/experiment_log.md` 的有效实验表。
+
+## 写作边界
+
+- 论文中的最好结果目前只能写 Context-FPN ResGamma，best mIoU about `0.3933`。
+- 新模块如果没有明确实验支撑，只能写成待验证想法，不能写成已证明贡献。
+- 失败尝试可以用于解释设计取舍，但必须标注为失败或弃用。
