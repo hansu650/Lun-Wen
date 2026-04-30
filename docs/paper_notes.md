@@ -59,6 +59,7 @@ RGB-D semantic segmentation 需要同时利用 RGB 的语义纹理信息和 dept
 ## 写作边界
 
 - 论文中的最好结果目前只能写 Context-FPN ResGamma，best mIoU about `0.3933`。
+- 官方 DFormerv2-Small NYUDepthV2 eval 已在独立 `dformer` 环境复现，结果是 mIoU `50.55`；它只能作为外部官方 baseline，对应证据在 `docs/experiment_log.md`，不能替换当前自研模型最好结果。
 - 新模块如果没有明确实验支撑，只能写成待验证想法。
 - 未经验证的模块不能写成已证明贡献。
 - 失败尝试可以用于解释设计取舍，但必须标注为失败或弃用。

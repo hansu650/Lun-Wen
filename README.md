@@ -125,6 +125,7 @@ reference notes rather than large generated artifacts.
 
 Reference papers and external code snapshots are organized by topic:
 
+- `dformer_work/notes/dformer_eval_repro.md`
 - `fusion论文/`
 - `decoder论文/`
 - `head 论文/`

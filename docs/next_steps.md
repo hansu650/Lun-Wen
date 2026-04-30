@@ -5,6 +5,25 @@
 每个方向都要围绕“为什么做、改哪里、怎么验证、怎么记录结论”推进，
 避免为了堆模块而堆模块。
 
+## 第零优先级：干净环境复现官方 DFormer baseline
+
+### 目的
+
+在独立 `dformer` conda 环境中复现官方 DFormerv2-Small 在 NYUDepthV2 上的 eval 结果。
+
+### 当前状态
+
+- 官方 DFormer 代码位于 `dformer_work/DFormer/`。
+- 权重和数据已通过本地链接接到官方相对路径。
+- 干净 `dformer` 环境已跑通，得到 mIoU `50.55`。
+- `qintian-rgbd` 中临时安装的 DFormer 依赖已卸载，不再作为复现环境使用。
+
+### 下一步
+
+- 保留 `dformer_work/checkpoints/NYUDepthv2_DFormerv2_S_20260430-214400/log_2026_04_30_21_44_00.log` 作为官方 baseline 复现证据。
+- 如果后续论文需要对比表，使用该官方 baseline 记录作为外部对照。
+- 官方 baseline 只作为外部对照，不替换当前 `framework_download/` 自研模型最好结果。
+
 ## 第一优先级：Depth Adapter
 
 ### 目的

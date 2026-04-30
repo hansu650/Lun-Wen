@@ -9,6 +9,7 @@ framework_download/checkpoints/
 framework_download/visualizations/
 framework_download/lightning_logs/
 framework_download/src.zip
+dformer_work/checkpoints/*/
 
 *.ckpt
 *.pth
