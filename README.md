@@ -1,33 +1,33 @@
 # RGB-D Semantic Segmentation Experiments
 
-This repository records an RGB-D semantic segmentation project on NYUDepthv2.
-The current main line is a stable mid-fusion baseline built around pretrained
-RGB and depth encoders, several fusion ablations, and reproducible experiment
-summaries.
+This repository records an RGB-D semantic segmentation project on NYUDepthV2.
+The current usable main line is a lightweight dual-branch model with multi-level
+RGB-D mid-fusion.
 
-## Current Stable Version
+## Current Main Line
 
-The confirmed stable baseline is `v1.0`.
+- Task: RGB-D semantic segmentation
+- Dataset: NYUDepthV2
+- Active project: `framework_download/`
+- RGB branch: DINOv2-small
+- Depth branch: Swin-Tiny
+- Fusion: multi-level RGB-D mid-fusion
+- Current improvement focus: Context-FPN, ResGamma, Depth Adapter, and fusion
+  modules
 
-Code snapshot:
+## Current Confirmed Best Result
 
-- `versions/version_001_stable_baseline_mid_fusion/`
+The current confirmed best result is:
 
-Active project:
+- Experiment: Context-FPN ResGamma 7 runs
+- Best validation mIoU: about `0.3933`
 
-- `framework_download/`
+Only results that were actually run in the current environment with clear
+configuration, logs, and checkpoints should be treated as valid experiment
+results. Deprecated or invalid records are tracked in `docs/model_changes.md`
+and `docs/experiment_log.md`.
 
-Main model structure:
-
-- RGB encoder: Swin-B, loaded from local `pretrained/swin_base`
-- Depth encoder: DINOv2-B, loaded from local `pretrained/dinov2_base`
-- c1: `GatedFusion`
-- c2: `GatedFusion`
-- c3: `DepthAwareLocalRefineFusion`
-- c4: `GatedFusion + DepthPromptTokenBlock`
-- decoder: `SimpleFPNDecoder`
-
-The important code files are:
+## Important Code Files
 
 - `framework_download/src/models/encoder.py`
 - `framework_download/src/models/mid_fusion.py`
@@ -35,30 +35,6 @@ The important code files are:
 - `framework_download/train.py`
 - `framework_download/eval.py`
 - `framework_download/infer.py`
-
-## Result Summary
-
-The most reliable result is the 10-run v1.0 baseline:
-
-- mean validation mIoU: `0.4828`
-- best validation mIoU: `0.4900`
-- standard deviation: `0.0044`
-
-Main result documents:
-
-- `framework_download/results/swin_dino_mid_stable_baseline_10runs.md`
-- `framework_download/results/swin_dino_mid_1.md`
-- `framework_download/results/swin_dino_mid_c4_dformer_3runs_6results.md`
-- `framework_download/results/swin_dino_mid_b2_mcads_decoder_summary.md`
-
-Interpretation:
-
-- Early old baseline reached about `0.3249`.
-- Old mid-fusion baseline reached about `0.3744`.
-- Swin-B + DINOv2-B stage-feature mid fusion raised performance to about `0.4663`.
-- The stable v1.0 fusion design is reproducible around `0.48-0.49`.
-- Later SA-Gate, DFormer-style c4, and decoder/head variants did not show a
-  stable improvement over v1.0, so v1.0 remains the main reference baseline.
 
 ## How To Train
 
@@ -68,10 +44,12 @@ Run from `framework_download/`:
 python train.py --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --max_epochs 50 --batch_size 2 --lr 1e-4 --num_workers 0 --devices 1 --accelerator gpu --checkpoint_dir ".\checkpoints\example_run"
 ```
 
-Run five repeated experiments:
+Run seven repeated experiments by changing the last segment of
+`--checkpoint_dir`:
 
 ```powershell
-cd C:\Users\qintian\Desktop\qintian\framework_download; 1..5 | ForEach-Object { $run = '{0:D2}' -f $_; python train.py --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --max_epochs 50 --batch_size 2 --lr 1e-4 --num_workers 0 --devices 1 --accelerator gpu --checkpoint_dir ".\checkpoints\swin_dino_mid_v10_repeat_$run" }
+cd C:\Users\qintian\Desktop\qintian\framework_download
+1..7 | ForEach-Object { $run = '{0:D2}' -f $_; python train.py --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --max_epochs 50 --batch_size 2 --lr 1e-4 --num_workers 0 --devices 1 --accelerator gpu --checkpoint_dir ".\checkpoints\context_fpn_resgamma_repeat_$run" }
 ```
 
 ## How To Evaluate And Visualize
@@ -88,11 +66,19 @@ Generate prediction visualizations:
 python infer.py --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --num_vis 10 --save_dir ".\visualizations\RUN_NAME"
 ```
 
+## Experiment Documentation
+
+- `docs/experiment_log.md`: experiment configuration, mIoU, conclusions,
+  failed attempts, and next steps
+- `docs/model_changes.md`: architecture changes, module decisions, and
+  deprecated attempts
+- `docs/paper_notes.md`: paper motivation, related work, and writing notes
+
 ## What Is Not Tracked
 
 The following files are intentionally not pushed:
 
-- NYUDepthv2 data under `data/`
+- NYUDepthV2 data under `data/`
 - pretrained weights under `pretrained/`
 - training checkpoints under `framework_download/checkpoints/`
 - visualization outputs under `framework_download/visualizations/`
@@ -106,9 +92,9 @@ reference notes rather than large generated artifacts.
 
 Reference papers and external code snapshots are organized by topic:
 
-- `encoder_论文/`
-- `fusion_论文/`
-- `decoder_论文/`
+- `fusion论文/`
+- `decoder论文/`
+- `head 论文/`
 - `老师论文/RGBD/README.md`
 - `306整理/`
 
