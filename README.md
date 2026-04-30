@@ -41,7 +41,16 @@ and `docs/experiment_log.md`.
 Run from `framework_download/`:
 
 ```powershell
-python train.py --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --max_epochs 50 --batch_size 2 --lr 1e-4 --num_workers 0 --devices 1 --accelerator gpu --checkpoint_dir ".\checkpoints\example_run"
+python train.py `
+  --model mid_fusion `
+  --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" `
+  --max_epochs 50 `
+  --batch_size 2 `
+  --lr 1e-4 `
+  --num_workers 0 `
+  --devices 1 `
+  --accelerator gpu `
+  --checkpoint_dir ".\checkpoints\example_run"
 ```
 
 Run seven repeated experiments by changing the last segment of
@@ -49,7 +58,19 @@ Run seven repeated experiments by changing the last segment of
 
 ```powershell
 cd C:\Users\qintian\Desktop\qintian\framework_download
-1..7 | ForEach-Object { $run = '{0:D2}' -f $_; python train.py --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --max_epochs 50 --batch_size 2 --lr 1e-4 --num_workers 0 --devices 1 --accelerator gpu --checkpoint_dir ".\checkpoints\context_fpn_resgamma_repeat_$run" }
+1..7 | ForEach-Object {
+  $run = '{0:D2}' -f $_
+  python train.py `
+    --model mid_fusion `
+    --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" `
+    --max_epochs 50 `
+    --batch_size 2 `
+    --lr 1e-4 `
+    --num_workers 0 `
+    --devices 1 `
+    --accelerator gpu `
+    --checkpoint_dir ".\checkpoints\context_fpn_resgamma_repeat_$run"
+}
 ```
 
 ## How To Evaluate And Visualize
@@ -57,13 +78,23 @@ cd C:\Users\qintian\Desktop\qintian\framework_download
 Evaluate a checkpoint:
 
 ```powershell
-python eval.py --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --batch_size 2 --num_workers 0
+python eval.py `
+  --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" `
+  --model mid_fusion `
+  --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" `
+  --batch_size 2 `
+  --num_workers 0
 ```
 
 Generate prediction visualizations:
 
 ```powershell
-python infer.py --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" --model mid_fusion --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" --num_vis 10 --save_dir ".\visualizations\RUN_NAME"
+python infer.py `
+  --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" `
+  --model mid_fusion `
+  --data_root "C:\Users\qintian\Desktop\qintian\data\NYUDepthv2" `
+  --num_vis 10 `
+  --save_dir ".\visualizations\RUN_NAME"
 ```
 
 ## Experiment Documentation

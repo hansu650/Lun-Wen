@@ -1,6 +1,10 @@
 # 模型结构变更记录
 
-本文档记录当前 RGB-D semantic segmentation 项目的结构主线、模块改动和弃用方案。它的目标不是写论文正文，而是让下一次实验能快速知道“现在模型长什么样、为什么这样改、哪些旧方案不能再用”。
+本文档记录当前 RGB-D semantic segmentation 项目的结构主线、
+模块改动和弃用方案。
+
+它的目标不是写论文正文，而是让下一次实验能快速知道：
+现在模型长什么样、为什么这样改、哪些旧方案不能再用。
 
 ## 当前主线
 
@@ -17,18 +21,25 @@
 
 | 模块方向 | 当前状态 | 作用 | 记录重点 |
 |---|---|---|---|
-| RGB branch | 当前主线 | 使用 DINOv2-small 提取 RGB 语义特征。 | 记录是否冻结、输出层级、和 fusion 输入维度是否一致。 |
-| Depth branch | 当前主线 | 使用 Swin-Tiny 提取 depth 结构特征。 | 记录 depth 特征是否经过 adapter，是否真正改善 mIoU。 |
-| Multi-level mid-fusion | 当前主线 | 在多个尺度融合 RGB 与 depth 特征。 | 记录每个层级的融合方式、参数量变化和稳定性。 |
-| Context-FPN | 正在改进 | 增强多尺度上下文和 decoder 侧表达。 | 记录是否提升 best mIoU，以及是否带来训练不稳定。 |
+| RGB branch | 当前主线 | 使用 DINOv2-small 提取 RGB 语义特征。 | 记录是否冻结、输出层级、fusion 输入维度。 |
+| Depth branch | 当前主线 | 使用 Swin-Tiny 提取 depth 结构特征。 | 记录是否经过 adapter，是否改善 mIoU。 |
+| Multi-level mid-fusion | 当前主线 | 在多个尺度融合 RGB 与 depth 特征。 | 记录层级、融合方式、参数量和稳定性。 |
+| Context-FPN | 正在改进 | 增强多尺度上下文和 decoder 侧表达。 | 记录是否提升 best mIoU，是否带来训练不稳定。 |
 | ResGamma | 正在改进 | 调整残差分支贡献，控制融合强度。 | 记录 gamma 初始化、收敛变化和重复实验方差。 |
-| Depth Adapter | 第一优先级 | 在融合前提升 depth branch 的可用性。 | 记录 adapter 结构、插入位置、对 mIoU 和类别表现的影响。 |
+| Depth Adapter | 第一优先级 | 在融合前提升 depth branch 的可用性。 | 记录 adapter 结构、插入位置、mIoU 和类别表现。 |
 
 ## 弃用 / 不成立方案
 
 | 方案 | 旧记录结果 | 状态 | 原因 | 使用限制 |
 |---|---|---|---|---|
-| Swin-B RGB + DINOv2-B Depth | about `0.48-0.49` mIoU | invalid / deprecated | 该方案曾出现在旧 README 中，但依赖的预训练模型太大，当前实验环境无法正常使用；也不是当前代码主线下稳定可复现的结果。 | 不作为有效版本，不作为论文主线，不作为 baseline，不作为当前最好结果。 |
+| Swin-B RGB + DINOv2-B Depth | about `0.48-0.49` mIoU | invalid / deprecated | 预训练模型太大，当前环境无法正常使用。 | 不作为有效版本、论文主线、baseline 或当前最好结果。 |
+
+补充说明：
+
+- 该方案曾出现在旧 README 中。
+- 该方案不是当前代码主线下稳定可复现的结果。
+- 旧记录 `0.48-0.49` 只能作为 deprecated/invalid 记录保留。
+- 后续论文和实验表不得引用它作为有效结果。
 
 ## 结构改动记录规则
 
