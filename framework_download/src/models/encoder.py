@@ -61,7 +61,7 @@ class DepthEncoder(nn.Module):
         self.out_channels = STAGE_CHANNELS
 
     def forward(self, x):
-        # NYU depth is 1 channel; Swin pretrained weights expect 3 channels.
+        # 单通道 metric depth repeat 成 3 通道后送入 Swin-T。
         x = x.repeat(1, 3, 1, 1)
         outputs = self.backbone(pixel_values=x, output_hidden_states=True, return_dict=True)
         feats = list(outputs.reshaped_hidden_states[:4])
