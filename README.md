@@ -72,6 +72,8 @@ python infer.py --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" --model mi
   failed attempts, and next steps
 - `docs/model_changes.md`: architecture changes, module decisions, and
   deprecated attempts
+- `docs/next_steps.md`: current experiment priorities, validation metrics, and
+  recording rules for next actions
 - `docs/paper_notes.md`: paper motivation, related work, and writing notes
 
 ## What Is Not Tracked
