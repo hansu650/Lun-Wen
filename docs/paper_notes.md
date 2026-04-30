@@ -53,3 +53,13 @@ RGB-D semantic segmentation 需要同时利用 RGB 的语义纹理信息和 dept
 - 论文中的最好结果目前只能写 Context-FPN ResGamma，best mIoU about `0.3933`。
 - 新模块如果没有明确实验支撑，只能写成待验证想法，不能写成已证明贡献。
 - 失败尝试可以用于解释设计取舍，但必须标注为失败或弃用。
+
+## 下一步写作需要补充的证据
+
+| 证据 | 为什么需要 | 对应文档 |
+|---|---|---|
+| Context-FPN ResGamma 7 runs 的 checkpoint 路径和日志路径 | 支撑当前 best mIoU about `0.3933`，避免只有口头记录。 | `docs/experiment_log.md` |
+| Depth Adapter 的明确结构和插入位置 | 如果要写成创新点，需要说明它如何增强 depth features。 | `docs/model_changes.md` |
+| Depth Adapter 的消融结果 | 验证第一优先级方向是否真的提升 mIoU 和稳定性。 | `docs/experiment_log.md` |
+| Context-FPN、ResGamma、融合模块的独立消融 | 区分各模块贡献，避免论文只写组合结果。 | `docs/experiment_log.md`、`docs/paper_notes.md` |
+| 失败实验和 deprecated 方案说明 | 解释为什么不采用大模型旧记录，保护论文结果边界。 | `docs/model_changes.md`、`docs/experiment_log.md` |

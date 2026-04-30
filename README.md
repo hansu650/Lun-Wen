@@ -68,13 +68,13 @@ python infer.py --checkpoint ".\checkpoints\RUN_NAME\CHECKPOINT.ckpt" --model mi
 
 ## Experiment Documentation
 
-- `docs/experiment_log.md`: experiment configuration, mIoU, conclusions,
-  failed attempts, and next steps
-- `docs/model_changes.md`: architecture changes, module decisions, and
-  deprecated attempts
-- `docs/next_steps.md`: current experiment priorities, validation metrics, and
-  recording rules for next actions
-- `docs/paper_notes.md`: paper motivation, related work, and writing notes
+当前文档以当前环境可复现实验为准；旧 README 中已确认无效的记录只保留在
+deprecated/invalid 区域，不能当作当前最好结果或论文结果引用。
+
+- `docs/experiment_log.md`：记录实验配置、mIoU、结论、失败尝试和下一步计划。
+- `docs/model_changes.md`：记录模型结构变化、模块决策和 deprecated/invalid 方案。
+- `docs/next_steps.md`：记录当前实验优先级、验证指标和下一步执行规则。
+- `docs/paper_notes.md`：记录论文动机、方法主线、消融设计和写作边界。
 
 ## What Is Not Tracked
 
