@@ -32,6 +32,19 @@ checkpoint，或用户明确确认。
 - 该记录不能作为论文 baseline。
 - 该记录不能作为当前最好结果引用。
 
+## 官方 DFormer 复现记录
+
+| 日期 | 实验名称 | 配置 | 结果 | 状态 | 证据 |
+|---|---|---|---|---|---|
+| 2026-04-30 | Official DFormerv2-Small NYUDepthV2 eval clean environment | 官方 `DFormer/local_configs/NYUDepthv2/DFormerv2_S.py`；checkpoint `dformer_work/checkpoints/trained/DFormerv2_Small_NYU.pth`；dataset `dformer_work/datasets/NYUDepthv2`；独立 `dformer` conda 环境；torch `2.7.1+cu126`；单卡 RTX 4090；direct `python utils/eval.py` | mIoU `50.55`，mAcc `65.32`，mF1 `64.95` | 官方外部 baseline 已在干净环境复现 | `dformer_work/checkpoints/NYUDepthv2_DFormerv2_S_20260430-214400/log_2026_04_30_21_44_00.log` |
+
+说明：
+
+- 该记录是官方 DFormer 外部基线复现，不属于 `framework_download/` 当前自研模型主线。
+- 该记录不能替换当前有效最好结果 `Context-FPN ResGamma 7 runs`。
+- `qintian-rgbd` 临时补齐 DFormer 依赖后的验证结果为 mIoU `50.52`；随后已卸载临时依赖，保持 `qintian-rgbd` 干净。
+- 最终官方复现证据以独立 `dformer` 环境日志为准。
+
 ## 每次实验必须补充的信息
 
 - 日期：使用绝对日期，例如 `2026-04-30`。
