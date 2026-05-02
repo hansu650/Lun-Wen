@@ -1,0 +1,62 @@
+# teacher_dinov2_rgb_clean_run01 mIoU List
+
+- Date recorded: `2026-05-02`.
+- Code path: `teacher's daima/`.
+- Event log: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\teacher_dinov2_rgb_clean_run01\lightning_logs\version_0`.
+- Checkpoint: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\teacher_dinov2_rgb_clean_run01\mid_fusion-epoch=46-val\mIoU=0.3187.ckpt`.
+- Best epoch: `46`.
+- Best val/mIoU: `0.318669`.
+- Epoch count: `50`.
+
+## val/mIoU by epoch
+
+- epoch 00: `0.112713`  # step 396
+- epoch 01: `0.135095`  # step 793
+- epoch 02: `0.143648`  # step 1190
+- epoch 03: `0.161817`  # step 1587
+- epoch 04: `0.195291`  # step 1984
+- epoch 05: `0.179797`  # step 2381
+- epoch 06: `0.202287`  # step 2778
+- epoch 07: `0.234042`  # step 3175
+- epoch 08: `0.251992`  # step 3572
+- epoch 09: `0.254229`  # step 3969
+- epoch 10: `0.258939`  # step 4366
+- epoch 11: `0.276961`  # step 4763
+- epoch 12: `0.281239`  # step 5160
+- epoch 13: `0.277692`  # step 5557
+- epoch 14: `0.273730`  # step 5954
+- epoch 15: `0.289766`  # step 6351
+- epoch 16: `0.289844`  # step 6748
+- epoch 17: `0.297528`  # step 7145
+- epoch 18: `0.311150`  # step 7542
+- epoch 19: `0.297958`  # step 7939
+- epoch 20: `0.298312`  # step 8336
+- epoch 21: `0.304731`  # step 8733
+- epoch 22: `0.306730`  # step 9130
+- epoch 23: `0.299425`  # step 9527
+- epoch 24: `0.302806`  # step 9924
+- epoch 25: `0.310635`  # step 10321
+- epoch 26: `0.307383`  # step 10718
+- epoch 27: `0.304311`  # step 11115
+- epoch 28: `0.313079`  # step 11512
+- epoch 29: `0.309422`  # step 11909
+- epoch 30: `0.304250`  # step 12306
+- epoch 31: `0.307042`  # step 12703
+- epoch 32: `0.310901`  # step 13100
+- epoch 33: `0.314562`  # step 13497
+- epoch 34: `0.313891`  # step 13894
+- epoch 35: `0.304572`  # step 14291
+- epoch 36: `0.308465`  # step 14688
+- epoch 37: `0.294590`  # step 15085
+- epoch 38: `0.314981`  # step 15482
+- epoch 39: `0.307405`  # step 15879
+- epoch 40: `0.315602`  # step 16276
+- epoch 41: `0.302493`  # step 16673
+- epoch 42: `0.312697`  # step 17070
+- epoch 43: `0.308318`  # step 17467
+- epoch 44: `0.312112`  # step 17864
+- epoch 45: `0.308660`  # step 18261
+- epoch 46: `0.318669`  # step 18658
+- epoch 47: `0.316927`  # step 19055
+- epoch 48: `0.301332`  # step 19452
+- epoch 49: `0.317626`  # step 19849
