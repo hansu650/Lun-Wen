@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 
 from .encoder import RGBEncoder, DepthEncoder
+from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .decoder import SimpleFPNDecoder
 from .base_lit import BaseLitSeg
 
@@ -60,3 +61,40 @@ class LitMidFusion(BaseLitSeg):
     def __init__(self, num_classes=40, lr=1e-4):
         super().__init__(num_classes=num_classes, lr=lr)
         self.model = MidFusionSegmentor(num_classes=num_classes)
+
+
+class DFormerV2MidFusionSegmentor(nn.Module):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__()
+        self.rgb_encoder = DFormerv2_S()
+        if dformerv2_pretrained:
+            self.pretrained_load_stats = load_dformerv2_pretrained(self.rgb_encoder, dformerv2_pretrained)
+        else:
+            self.pretrained_load_stats = None
+        self.depth_encoder = DepthEncoder()
+        self.fusions = nn.ModuleList([
+            GatedFusion(rgb_ch, depth_ch)
+            for rgb_ch, depth_ch in zip(self.rgb_encoder.out_channels, self.depth_encoder.out_channels)
+        ])
+        self.decoder = SimpleFPNDecoder(self.rgb_encoder.out_channels, num_classes=num_classes)
+
+    def forward(self, rgb, depth):
+        depth_for_dformer = depth
+        if depth.shape[1] == 1:
+            depth_for_dformer = depth.repeat(1, 3, 1, 1)
+        dformer_feats = self.rgb_encoder(rgb, depth_for_dformer)
+        depth_feats = self.depth_encoder(depth)
+        fused_feats = [fusion(r, d) for fusion, r, d in zip(self.fusions, dformer_feats, depth_feats)]
+        return self.decoder(fused_feats, input_size=rgb.shape[-2:])
+
+
+class LitDFormerV2MidFusion(BaseLitSeg):
+    def __init__(self, num_classes=40, lr=1e-4, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, lr=lr)
+        self.model = DFormerV2MidFusionSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
