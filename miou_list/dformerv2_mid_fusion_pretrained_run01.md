@@ -1,0 +1,68 @@
+# dformerv2_mid_fusion_pretrained_run01 mIoU List
+
+- Date recorded: `2026-05-03`.
+- Code path: `teacher's daima/`.
+- Event log: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_mid_fusion_pretrained_run01\lightning_logs\version_0\events.out.tfevents.1777735793.Administrator.33924.0`.
+- Hparams: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_mid_fusion_pretrained_run01\lightning_logs\version_0\hparams.yaml`.
+- Checkpoint: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_mid_fusion_pretrained_run01\dformerv2_mid_fusion-epoch=41-val\mIoU=0.5080.ckpt`.
+- Model: `dformerv2_mid_fusion`.
+- Configuration: DFormerv2_S RGB-D encoder features + ResNet18 DepthEncoder + original GatedFusion + SimpleFPNDecoder.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Best epoch: `41`.
+- Best val/mIoU: `0.507965`.
+- Best val/loss epoch: `11`.
+- Best val/loss: `1.029786`.
+- Epoch count: `50`.
+
+## val/mIoU by epoch
+
+- epoch 00: `0.178647`  # step 396
+- epoch 01: `0.236332`  # step 793
+- epoch 02: `0.279145`  # step 1190
+- epoch 03: `0.312454`  # step 1587
+- epoch 04: `0.363688`  # step 1984
+- epoch 05: `0.402265`  # step 2381
+- epoch 06: `0.429101`  # step 2778
+- epoch 07: `0.454100`  # step 3175
+- epoch 08: `0.457814`  # step 3572
+- epoch 09: `0.458837`  # step 3969
+- epoch 10: `0.475545`  # step 4366
+- epoch 11: `0.482066`  # step 4763
+- epoch 12: `0.470941`  # step 5160
+- epoch 13: `0.483036`  # step 5557
+- epoch 14: `0.485263`  # step 5954
+- epoch 15: `0.458549`  # step 6351
+- epoch 16: `0.490232`  # step 6748
+- epoch 17: `0.476936`  # step 7145
+- epoch 18: `0.484176`  # step 7542
+- epoch 19: `0.491497`  # step 7939
+- epoch 20: `0.489952`  # step 8336
+- epoch 21: `0.498323`  # step 8733
+- epoch 22: `0.483391`  # step 9130
+- epoch 23: `0.468698`  # step 9527
+- epoch 24: `0.467036`  # step 9924
+- epoch 25: `0.489600`  # step 10321
+- epoch 26: `0.483108`  # step 10718
+- epoch 27: `0.488093`  # step 11115
+- epoch 28: `0.495231`  # step 11512
+- epoch 29: `0.502551`  # step 11909
+- epoch 30: `0.499594`  # step 12306
+- epoch 31: `0.480589`  # step 12703
+- epoch 32: `0.496725`  # step 13100
+- epoch 33: `0.507117`  # step 13497
+- epoch 34: `0.493475`  # step 13894
+- epoch 35: `0.499069`  # step 14291
+- epoch 36: `0.478238`  # step 14688
+- epoch 37: `0.491944`  # step 15085
+- epoch 38: `0.497959`  # step 15482
+- epoch 39: `0.503570`  # step 15879
+- epoch 40: `0.504160`  # step 16276
+- epoch 41: `0.507965`  # step 16673
+- epoch 42: `0.490671`  # step 17070
+- epoch 43: `0.474351`  # step 17467
+- epoch 44: `0.481194`  # step 17864
+- epoch 45: `0.466163`  # step 18261
+- epoch 46: `0.468248`  # step 18658
+- epoch 47: `0.499529`  # step 19055
+- epoch 48: `0.502680`  # step 19452
+- epoch 49: `0.505174`  # step 19849
