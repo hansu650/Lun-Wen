@@ -19,5 +19,6 @@
 15. 每次论文叙事变化后必须更新 `docs/paper_notes.md`，同步动机、方法主线、消融设计和不能引用的结果边界。
 16. 不要把 deprecated/invalid 记录重新写成有效 baseline，也不要在论文结果中引用。
 17. 不要自动引入大型预训练模型，除非用户明确确认当前环境可用。
+18. 当用户要求“总结这次实验结果”或类似实验总结时，必须从真实日志/TensorBoard event 中提取每个 epoch 的 `val/mIoU`，在 `miou_list/` 下为该实验生成单独的 Markdown 文件，并在 `docs/experiment_log.md` 中引用该 mIoU 明细文件。
 
 如果某个子目录里还有更具体的 `AGENTS.md`，则优先遵守那个子目录的规则。

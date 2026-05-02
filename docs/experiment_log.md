@@ -118,3 +118,19 @@ checkpoint，或用户明确确认。
 - Comparison: in the paired teacher-code runs, ResNet original best `0.368008` is higher than DINOv2 RGB clean best `0.318669` by `+0.049339` mIoU; ResNet is higher at every recorded epoch.
 - Conclusion: valid completed run; teacher original ResNet baseline is clearly stronger than the clean DINOv2-only RGB replacement in this setup.
 - Next step: keep the ResNet teacher baseline as the stronger clean reference; DINOv2 token backbone needs more protocol/backbone adaptation before it is a fair improvement candidate.
+
+## 2026-05-03 DFormerv2 Mid Fusion Pretrained Run01
+
+- Date: `2026-05-03`.
+- Experiment name: `dformerv2_mid_fusion_pretrained_run01`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` RGB-D encoder features, teacher original ResNet-18 `DepthEncoder`, teacher original `GatedFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=0`, GPU 1 device.
+- Result: best `val/mIoU=0.507965` at epoch `41`.
+- Evidence: checkpoint `teacher's daima/checkpoints/dformerv2_mid_fusion_pretrained_run01/dformerv2_mid_fusion-epoch=41-val/mIoU=0.5080.ckpt`; event log `teacher's daima/checkpoints/dformerv2_mid_fusion_pretrained_run01/lightning_logs/version_0/events.out.tfevents.1777735793.Administrator.33924.0`.
+- Per-epoch record: `miou_list/dformerv2_mid_fusion_pretrained_run01.md`.
+- Curve observation: validation mIoU reached `0.454100` by epoch `7`, `0.482066` by epoch `11`, `0.502551` by epoch `29`, and peaked at epoch `41`; later epochs stayed near `0.50` with fluctuation.
+- Comparison: this run is much higher than teacher ResNet original best `0.368008` and DINOv2 RGB clean best `0.318669`; it also exceeds the previous documented `0.3933` confirmed best.
+- Conclusion: valid completed run with clear checkpoint and TensorBoard evidence; `DFormerv2_S + ResNet18 depth + GatedFusion + SimpleFPNDecoder` is currently the strongest recorded result in this workspace.
+- Next step: repeat this configuration for stability, then try the NYU-trained DFormerv2 checkpoint finetune command if confirming robustness.
