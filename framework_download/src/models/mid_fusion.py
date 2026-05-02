@@ -9,7 +9,7 @@ from .base_lit import BaseLitSeg
 
 
 class GatedFusion(nn.Module):
-    """门控融合模块"""
+    """Gated fusion anchor."""
     def __init__(self, rgb_channels, depth_channels):
         super().__init__()
         self.depth_proj = nn.Conv2d(depth_channels, rgb_channels, 1)

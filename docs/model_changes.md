@@ -47,3 +47,49 @@
 - 新模块必须写清楚目的和预期优点，不能只写“加入某模块”。
 - 如果模块失败，要记录失败现象、可能原因、是否继续保留。
 - 如果模块被弃用，要放入“弃用 / 不成立方案”，不能从文档里直接消失。
+
+## 2026-05-02 Teacher Code RGB Encoder Change
+
+- Scope: `老师原版代码/src/models/encoder.py`.
+- Change: replaced the teacher RGB ResNet-18 encoder with local DINOv2-small loaded from `C:\Users\qintian\Desktop\qintian\pretrained\dinov2_small`.
+- Output contract: kept four feature maps and the original `[64, 128, 256, 512]` channel contract through 1x1 projection, so `MidFusionSegmentor`, `GatedFusion`, and `SimpleFPNDecoder` stay unchanged.
+- Unchanged: `DepthEncoder` and `EarlyFusionEncoder` remain ResNet-18 based.
+- Status: structure change only; no training or evaluation result is recorded here.
+
+## 2026-05-02 Teacher Code RGB Encoder Source Change
+
+- Scope: `老师原版代码/src/models/encoder.py`.
+- Change: switched the RGB encoder from HuggingFace `Dinov2Model.from_pretrained(...)` to the local GitHub DINOv2 source tree at `C:\Users\qintian\Desktop\qintian\pretrained\dinov2-main`.
+- Backbone: `dinov2_vits14(pretrained=False)`, so no downloaded pretrained weights are loaded from `pretrained/dinov2_small`.
+- Output contract: still returns four projected feature maps with `[64, 128, 256, 512]` channels for the existing mid-fusion and FPN decoder.
+- Shape handling: RGB input is padded to a multiple of DINOv2 patch size 14 before the local backbone, then projected feature maps are resized back to the original FPN scales.
+- Status: structure/source change only; no training or evaluation result is recorded here.
+
+## 2026-05-02 Teacher Code RGB Encoder Pretrained Restore
+
+- Scope: `老师原版代码/src/models/encoder.py`.
+- Change: restored RGB encoder loading from the local HuggingFace-format DINOv2-small directory `C:\Users\qintian\Desktop\qintian\pretrained\dinov2_small`.
+- Backbone: `Dinov2Model.from_pretrained(..., local_files_only=True)`, using the downloaded pretrained `pytorch_model.bin` in that directory.
+- Reason: the GitHub source-tree variant used `dinov2_vits14(pretrained=False)`, which trained from random initialization and produced lower validation mIoU (`0.2515` best in `dinov2_git_random_rgb_run01`).
+- Status: structure/source restore only; no new training result is recorded here.
+
+## 2026-05-02 Teacher Original Code RGB Encoder Restart
+
+- Scope: `teacher's daima/src/models/encoder.py`.
+- Change: starting from the teacher original code directory, replaced only `RGBEncoder` from ResNet-18 to local Hugging Face `Dinov2Model`.
+- Local pretrained path: `C:\Users\qintian\Desktop\qintian\pretrained\dinov2_small`.
+- Backbone details: DINOv2-small, hidden size `384`, patch size `14`, hidden state indices `(3, 6, 9, 12)`.
+- Output contract: preserved four feature maps with the teacher original `[64, 128, 256, 512]` channel contract and original ResNet-style spatial scales.
+- Unchanged: `DepthEncoder`, `EarlyFusionEncoder`, `GatedFusion`, `SimpleFPNDecoder`, `train.py`, `data_module.py`, loss, optimizer, and scheduler.
+- Verification: `py_compile` passed for `src/models/encoder.py`; dummy forward with `rgb=(1,3,480,640)` and `depth=(1,1,480,640)` produced logits `(1,40,480,640)`.
+- Status: structure replacement and dummy check only; no training or mIoU result is recorded here.
+
+## 2026-05-02 Teacher Original Code RGB Encoder Restore
+
+- Scope: `teacher's daima/src/models/encoder.py`.
+- Change: restored `RGBEncoder` from local DINOv2-small back to the teacher original ResNet-18 implementation.
+- Removed: `transformers.Dinov2Model`, `torch.nn.functional`, hidden-state reshaping, CLS handling, and 1x1 DINOv2 projection layers.
+- Output contract: ResNet-18 four feature maps with `[64, 128, 256, 512]` channels and spatial shapes `(120,160)`, `(60,80)`, `(30,40)`, `(15,20)` for `480x640` input.
+- Unchanged: `DepthEncoder`, `EarlyFusionEncoder`, `GatedFusion`, `SimpleFPNDecoder`, `train.py`, `data_module.py`, loss, optimizer, and scheduler.
+- Verification: `py_compile` passed for `src/models/encoder.py`; dummy forward with `rgb=(1,3,480,640)` and `depth=(1,1,480,640)` produced logits `(1,40,480,640)`.
+- Status: restore and dummy check only; no training result is recorded here.

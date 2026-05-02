@@ -94,7 +94,21 @@ def get_train_transform(image_size=(480, 640)):
     """训练集数据增强"""
     h, w = image_size
     return A.Compose([
-        A.RandomCrop(height=h, width=w, p=1.0) if h < 480 or w < 640 else A.NoOp(),
+        A.RandomScale(
+            scale_limit=(-0.5, 0.75),
+            interpolation=cv2.INTER_LINEAR,
+            mask_interpolation=cv2.INTER_NEAREST,
+            p=1.0,
+        ),
+        A.PadIfNeeded(
+            min_height=h,
+            min_width=w,
+            border_mode=cv2.BORDER_CONSTANT,
+            fill=0,
+            fill_mask=255,
+            p=1.0,
+        ),
+        A.RandomCrop(height=h, width=w, p=1.0),
         A.HorizontalFlip(p=0.5),
     ], additional_targets={"depth": "image", "label": "mask"})
 
