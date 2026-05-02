@@ -79,12 +79,16 @@ class DFormerV2MidFusionSegmentor(nn.Module):
         self.decoder = SimpleFPNDecoder(self.rgb_encoder.out_channels, num_classes=num_classes)
 
     def forward(self, rgb, depth):
-        depth_for_dformer = depth
-        if depth.shape[1] == 1:
-            depth_for_dformer = depth.repeat(1, 3, 1, 1)
-        dformer_feats = self.rgb_encoder(rgb, depth_for_dformer)
+        dformer_feats = self.rgb_encoder(rgb, depth)
         depth_feats = self.depth_encoder(depth)
-        fused_feats = [fusion(r, d) for fusion, r, d in zip(self.fusions, dformer_feats, depth_feats)]
+
+        aligned_depth = []
+        for rf, df in zip(dformer_feats, depth_feats):
+            if rf.shape[-2:] != df.shape[-2:]:
+                df = F.interpolate(df, size=rf.shape[-2:], mode="bilinear", align_corners=False)
+            aligned_depth.append(df)
+
+        fused_feats = [fusion(r, d) for fusion, r, d in zip(self.fusions, dformer_feats, aligned_depth)]
         return self.decoder(fused_feats, input_size=rgb.shape[-2:])
 
 
