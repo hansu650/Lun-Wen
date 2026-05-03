@@ -12,6 +12,7 @@ warnings.filterwarnings(
 )
 
 import lightning as L
+import torch
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 from src.data_module import NYUDataModule
@@ -101,6 +102,7 @@ def build_trainer(args, callbacks):
 
 def main():
     args = build_parser().parse_args()
+    torch.set_float32_matmul_precision("high")
     monitor_metric = "val/mIoU"
     datamodule = build_datamodule(args)
     model = build_model(args)

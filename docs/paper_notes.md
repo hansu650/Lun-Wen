@@ -73,3 +73,19 @@ RGB-D semantic segmentation 需要同时利用 RGB 的语义纹理信息和 dept
 | Depth Adapter 的消融结果 | 验证第一优先级方向是否提升 mIoU 和稳定性。 | `docs/experiment_log.md` |
 | Context-FPN、ResGamma、融合模块的独立消融 | 区分各模块贡献，避免论文只写组合结果。 | `docs/experiment_log.md`、`docs/paper_notes.md` |
 | 失败实验和 deprecated 方案说明 | 解释为什么不采用大模型旧记录，保护论文结果边界。 | `docs/model_changes.md`、`docs/experiment_log.md` |
+
+## 2026-05-03 Fusion Narrative Reset
+
+- Current baseline for this branch: `dformerv2_mid_fusion`, with repeated best mIoU mean about `0.513406`.
+- Attention fusion is not the main paper direction now because its mean gain over baseline is about `+0.001030`, inside run-to-run variance.
+- Heavy clean-depth refinement is not the main direction now because it increased parameters and did not show a clear stable gain from the first run.
+- New fusion ablation principle: use one coherent reference module first, not a mixture of many papers.
+- First-stage replacement: pure CMX-style fusion, replacing only the original `GatedFusion` block while keeping DFormerv2, DepthEncoder, decoder, training strategy, and label protocol unchanged.
+- Paper claim boundary: `dformerv2_cmx_fusion` is only a candidate until repeated training logs and `miou_list` records exist.
+
+## 2026-05-03 PrimKD Primary-Guided Fusion Candidate
+
+- CMX-style symmetric fusion is deprecated for this branch after `dformerv2_cmx_fusion_run01` underperformed the repeated DFormerv2 mid-fusion baseline.
+- New candidate direction: PrimKD-style primary modality guided fusion, using DFormerv2 feature as the primary feature and depth feature as selected auxiliary support.
+- This is not a full PrimKD KD reproduction: no RGB teacher, KL distillation, MSE feature distillation, or training loss changes are included in the first implementation.
+- Paper boundary: `dformerv2_primkd_fusion` is only a candidate structure until repeated training logs and `miou_list` records prove a stable gain.

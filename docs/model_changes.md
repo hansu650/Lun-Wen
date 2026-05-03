@@ -147,3 +147,33 @@
 - Preserved: TensorBoard records, mIoU markdown files, and experiment notes for the removed experimental branches.
 - Verification: `py_compile` passed for `src/models/encoder.py`, `src/models/mid_fusion.py`, and `train.py`.
 - Status: code is back to the stable `dformerv2_mid_fusion` baseline for continued experiments.
+
+## 2026-05-03 DFormerv2 CMX Fusion
+
+- Scope: `teacher's daima/src/models/fusion_blocks.py`, `teacher's daima/src/models/mid_fusion.py`, `teacher's daima/train.py`.
+- Change: added pure CMX-style fusion as `--model dformerv2_cmx_fusion`.
+- Main logic: replaces only the original fusion block with CMX-style feature rectification and feature fusion; keeps `DFormerv2_S`, original ResNet-18 `DepthEncoder`, and `SimpleFPNDecoder` unchanged.
+- CMX source: adapted `FeatureRectifyModule` and `FeatureFusionModule` from `RGBX_Semantic_Segmentation-main/models/net_utils.py`.
+- Preserved old entries: `dformerv2_mid_fusion`, `dformerv2_reliability_fusion`, `dformerv2_attention_fusion`, and `dformerv2_clean_depth_fusion` are registered.
+- Verification: `py_compile` passed for `src/models/fusion_blocks.py`, `src/models/mid_fusion.py`, `train.py`, and `src/models/encoder.py`.
+- Status: structure change only; no training result is recorded here.
+
+## 2026-05-03 Deprecate DFormerv2 CMX Fusion
+
+- Scope: `teacher's daima/src/models/fusion_blocks.py`, `teacher's daima/src/models/mid_fusion.py`, `teacher's daima/train.py`.
+- Change: removed the pure CMX fusion branch from active code after `dformerv2_cmx_fusion_run01` underperformed.
+- Removed: CMX-related classes in `fusion_blocks.py`, `DFormerV2CMXFusionSegmentor`, `LitDFormerV2CMXFusion`, and the `dformerv2_cmx_fusion` registry entry.
+- Preserved: `dformerv2_mid_fusion`, `dformerv2_reliability_fusion`, `dformerv2_attention_fusion`, and `dformerv2_clean_depth_fusion`.
+- Evidence: `dformerv2_cmx_fusion_run01` best `val/mIoU=0.503343`, lower than repeated `dformerv2_mid_fusion` mean best `0.513406`.
+- Status: deprecated / negative result; do not continue this exact full CMX-style symmetric fusion branch.
+
+## 2026-05-03 DFormerv2 PrimKD Primary-Guided Fusion
+
+- Scope: `teacher's daima/src/models/fusion_blocks.py`, `teacher's daima/src/models/mid_fusion.py`, `teacher's daima/train.py`.
+- Change: added PrimKD-inspired asymmetric primary-guided fusion as `--model dformerv2_primkd_fusion`.
+- Main logic: keeps DFormerv2 features as the primary modality and uses ResNet-18 depth features only to generate selected auxiliary residual support.
+- PrimKD source: adapted the 1x1 feature alignment idea from `PrimKD/models/decoders/MLPDecoder.py::DecoderHead_hint`, the two-layer 3x3 reconstruction block and `lambda_mask=0.75` masked generation idea from `PrimKD/models/decoders/MLPDecoder.py::DecoderHead_mask`, and the selective feature supervision idea from `PrimKD/train.py`.
+- Adaptation boundary: no PrimKD teacher-student training loop, KL loss, MSE distillation loss, or random mask training branch was added.
+- Preserved: `dformerv2_mid_fusion`, `dformerv2_reliability_fusion`, `dformerv2_attention_fusion`, and `dformerv2_clean_depth_fusion`.
+- Verification: `py_compile` passed for `src/models/fusion_blocks.py`, `src/models/mid_fusion.py`, and `train.py`.
+- Status: structure change only; no training result is recorded here.

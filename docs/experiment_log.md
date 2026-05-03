@@ -186,3 +186,48 @@ checkpoint，或用户明确确认。
 - Comparison: this single run is close to the repeated `dformerv2_mid_fusion` baseline mean best `0.513406` and below/near the best baseline repeat `0.515470`; it is also near the `dformerv2_attention_fusion` mean best `0.514435`.
 - Conclusion: valid completed run, but one run is not enough to claim improvement because the gain is inside the known run-to-run fluctuation range.
 - Next step: run two more repeats with the same configuration before deciding whether this clean-depth branch is better than the original `DepthEncoder`.
+
+## 2026-05-03 DFormerv2 CMX Fusion Run01
+
+- Date: `2026-05-03`.
+- Experiment name: `dformerv2_cmx_fusion_run01`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, original ResNet-18 `DepthEncoder`, CMX-style `DFormerCMXFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=0`, `early_stop_patience=30`, GPU 1 device.
+- Result: best `val/mIoU=0.503343` at epoch `47`; last epoch `val/mIoU=0.499639`.
+- Status: deprecated / negative result; this branch is not continued.
+- Best validation loss: `val/loss=1.023529` at epoch `7`.
+- Evidence: event log `teacher's daima/checkpoints/dformerv2_cmx_fusion_run01/lightning_logs/version_0/events.out.tfevents.1777805961.Administrator.25256.0`.
+- Per-epoch record: `miou_list/dformerv2_cmx_fusion_run01.md`.
+- Comparison: repeated `dformerv2_mid_fusion` baseline mean best is `0.513406`, so CMX run01 is lower by about `0.010063`; it is also below the weakest repeated baseline run `0.509708`.
+- Curve observation: CMX reaches `0.498322` at epoch `20`, then mostly oscillates around `0.49-0.50`; late improvement is small and never enters the baseline repeat range.
+- Conclusion: valid completed run; full CMX-style symmetric cross-modal fusion underperforms the repeated DFormerv2 mid-fusion baseline, so this branch is deprecated and will not be continued.
+- Next step: do not spend more repeats on this exact CMX block unless the CMX implementation is changed in a targeted way; return to `dformerv2_mid_fusion` as stable baseline.
+
+## 2026-05-03 DFormerv2 PrimKD Fusion Soft Run01
+
+- Date: `2026-05-03`.
+- Experiment name: `dformerv2_primkd_fusion_soft_run01`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, original ResNet-18 `DepthEncoder`, PrimKD-inspired soft primary-guided `PrimaryGuidedFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, GPU 1 device.
+- Result: best `val/mIoU=0.515757` at epoch `47`; last epoch `val/mIoU=0.505458`.
+- Best validation loss: `val/loss=1.048144` at epoch `10`.
+- Evidence: event log `teacher's daima/checkpoints/dformerv2_primkd_fusion_soft_run01/lightning_logs/version_0/events.out.tfevents.1777812820.Administrator.36692.0`; checkpoint `teacher's daima\checkpoints\dformerv2_primkd_fusion_soft_run01\dformerv2_primkd_fusion-epoch=47-val\mIoU=0.5158.ckpt`.
+- Per-epoch record: `miou_list/dformerv2_primkd_fusion_soft_run01.md`.
+- Comparison: repeated `dformerv2_mid_fusion` baseline mean best is `0.513406`; this single PrimKD-soft run is higher by `+0.002351`. The best repeated baseline run is `0.515470`; this run is higher by `+0.000287`.
+- Comparison: `dformerv2_attention_fusion` 5-run mean best is `0.514435`; this run is higher by `+0.001322`, but lower than the best attention single run `0.518196` by `-0.002439`.
+- Conclusion: valid completed run. The soft PrimKD-style primary-guided fusion is competitive and slightly above the repeated GatedFusion baseline mean in this single run, but the gain is still inside the previously observed run-to-run fluctuation, so it needs repeats before claiming stable improvement.
+- Next step: run at least two more repeats with fresh checkpoint directories before deciding whether this branch replaces `dformerv2_mid_fusion` as the main fusion line.
+
+## 2026-05-03 Restore Main Branch To DFormerv2 Mid Fusion
+
+- Deprecated experimental branches in active code:
+- `dformerv2_attention_fusion`: mean improvement was marginal compared with repeated `dformerv2_mid_fusion`.
+- `dformerv2_clean_depth_fusion`: increased parameters but did not show a clear stable gain.
+- `dformerv2_cmx_fusion`: underperformed the repeated baseline and was already marked as a negative result.
+- `dformerv2_primkd_fusion`: single-run result was slightly above baseline mean, but not enough to justify extra active-code complexity without repeats.
+- Main branch restored to: `dformerv2_mid_fusion`.
+- Code boundary: experiment records and `miou_list` markdown files are retained; only inactive experimental model branches were removed from the main training path.
