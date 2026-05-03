@@ -134,3 +134,55 @@ checkpoint，或用户明确确认。
 - Comparison: this run is much higher than teacher ResNet original best `0.368008` and DINOv2 RGB clean best `0.318669`; it also exceeds the previous documented `0.3933` confirmed best.
 - Conclusion: valid completed run with clear checkpoint and TensorBoard evidence; `DFormerv2_S + ResNet18 depth + GatedFusion + SimpleFPNDecoder` is currently the strongest recorded result in this workspace.
 - Next step: repeat this configuration for stability, then try the NYU-trained DFormerv2 checkpoint finetune command if confirming robustness.
+
+## 2026-05-03 DFormerv2 Attention Fusion 5 Runs
+
+- Date: `2026-05-03`.
+- Experiment group: `dformerv2_attention_fusion_run01` to `dformerv2_attention_fusion_run05`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, teacher original ResNet-18 `DepthEncoder`, `CrossModalReliabilityAttentionFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=0`, GPU 1 device.
+- Run01: best `val/mIoU=0.516979` at epoch `45`; per-epoch record `miou_list/dformerv2_attention_fusion_run01.md`.
+- Run02: best `val/mIoU=0.507672` at epoch `46`; per-epoch record `miou_list/dformerv2_attention_fusion_run02.md`.
+- Run03: best `val/mIoU=0.513333` at epoch `42`; per-epoch record `miou_list/dformerv2_attention_fusion_run03.md`.
+- Run04: best `val/mIoU=0.518196` at epoch `49`; per-epoch record `miou_list/dformerv2_attention_fusion_run04.md`.
+- Run05: best `val/mIoU=0.515997` at epoch `49`; per-epoch record `miou_list/dformerv2_attention_fusion_run05.md`.
+- Summary: mean best `val/mIoU=0.514435`, std `0.004184`, min `0.507672`, max `0.518196`.
+- Comparison: this improves over `dformerv2_mid_fusion_pretrained_run01` best `0.507965` by about `+0.006470` mean best and `+0.010231` max best.
+- Conclusion: valid 5-run result; `dformerv2_attention_fusion` is currently the strongest recorded model variant in this workspace.
+- Next step: keep this as the current best fusion direction; run one more controlled comparison with the same seed protocol if needed for paper stability claims.
+
+## 2026-05-03 DFormerv2 Mid Fusion Repeat 4 Runs
+
+- Date: `2026-05-03`.
+- Experiment group: `dformerv2_mid_fusion_repeat_run01` to `dformerv2_mid_fusion_repeat_run04`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, teacher original ResNet-18 `DepthEncoder`, original `GatedFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=0`, `early_stop_patience=30`, GPU 1 device.
+- Run01: best `val/mIoU=0.513287` at epoch `49`; per-epoch record `miou_list/dformerv2_mid_fusion_repeat_run01.md`.
+- Run02: best `val/mIoU=0.509708` at epoch `38`; per-epoch record `miou_list/dformerv2_mid_fusion_repeat_run02.md`.
+- Run03: best `val/mIoU=0.515470` at epoch `44`; per-epoch record `miou_list/dformerv2_mid_fusion_repeat_run03.md`.
+- Run04: best `val/mIoU=0.515157` at epoch `46`; per-epoch record `miou_list/dformerv2_mid_fusion_repeat_run04.md`.
+- Summary: mean best `val/mIoU=0.513406`, std `0.002647`, min `0.509708`, max `0.515470`.
+- Comparison: `dformerv2_attention_fusion` 5-run mean best is `0.514435`, so attention fusion is higher by only `+0.001030` mean best; this difference is smaller than the run-to-run standard deviations.
+- Summary document: `docs/dformerv2_mid_vs_attention_summary.md`.
+- Conclusion: valid 4-run baseline; current attention fusion does not show a clearly stable improvement over the repeated GatedFusion baseline, although it has the highest single run `0.518196`.
+- Next step: treat attention fusion as a small/uncertain gain unless more repeats or paired-seed comparisons show a larger margin.
+
+## 2026-05-03 DFormerv2 Clean Depth Fusion Shape-SA-Gate Run01
+
+- Date: `2026-05-03`.
+- Experiment name: `dformerv2_clean_depth_fusion_shape_sagate_run01`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, ShapeConv/SA-Gate-inspired `CleanShapeDepthEncoder`, original `GatedFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=0`, `early_stop_patience=30`, GPU 1 device.
+- Result: best `val/mIoU=0.515150` at epoch `43`; last epoch `val/mIoU=0.470769`.
+- Best validation loss: `val/loss=1.032949` at epoch `6`.
+- Evidence: event log `teacher's daima/checkpoints/dformerv2_clean_depth_fusion_shape_sagate_run01/lightning_logs/version_0/events.out.tfevents.1777798791.Administrator.41684.0`.
+- Per-epoch record: `miou_list/dformerv2_clean_depth_fusion_shape_sagate_run01.md`.
+- Comparison: this single run is close to the repeated `dformerv2_mid_fusion` baseline mean best `0.513406` and below/near the best baseline repeat `0.515470`; it is also near the `dformerv2_attention_fusion` mean best `0.514435`.
+- Conclusion: valid completed run, but one run is not enough to claim improvement because the gain is inside the known run-to-run fluctuation range.
+- Next step: run two more repeats with the same configuration before deciding whether this clean-depth branch is better than the original `DepthEncoder`.
