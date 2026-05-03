@@ -1,0 +1,120 @@
+# dformerv2_primkd_fusion_soft_run01
+
+- Model: `dformerv2_primkd_fusion`
+- Checkpoint dir: `teacher's daima/checkpoints/dformerv2_primkd_fusion_soft_run01`
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`
+- Data root: `C:\Users\qintian\Desktop\qintian\data\NYUDepthv2`
+- Training: `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, GPU 1 device
+- Best epoch: `47`
+- Best val/mIoU: `0.515757`
+- Last epoch val/mIoU: `0.505458`
+- Best val/loss epoch: `10`
+- Best val/loss: `1.048144`
+- Event log: `teacher's daima\checkpoints\dformerv2_primkd_fusion_soft_run01\lightning_logs\version_0\events.out.tfevents.1777812820.Administrator.36692.0`
+- Best checkpoint: `teacher's daima\checkpoints\dformerv2_primkd_fusion_soft_run01\dformerv2_primkd_fusion-epoch=47-val\mIoU=0.5158.ckpt`
+
+## val/mIoU by epoch
+
+- Epoch 00: `0.151070`
+- Epoch 01: `0.203152`
+- Epoch 02: `0.233251`
+- Epoch 03: `0.281609`
+- Epoch 04: `0.350112`
+- Epoch 05: `0.383086`
+- Epoch 06: `0.402034`
+- Epoch 07: `0.435729`
+- Epoch 08: `0.450374`
+- Epoch 09: `0.446514`
+- Epoch 10: `0.468601`
+- Epoch 11: `0.449406`
+- Epoch 12: `0.463874`
+- Epoch 13: `0.467386`
+- Epoch 14: `0.471147`
+- Epoch 15: `0.478116`
+- Epoch 16: `0.482905`
+- Epoch 17: `0.478546`
+- Epoch 18: `0.443926`
+- Epoch 19: `0.481450`
+- Epoch 20: `0.481492`
+- Epoch 21: `0.472497`
+- Epoch 22: `0.485646`
+- Epoch 23: `0.485659`
+- Epoch 24: `0.472970`
+- Epoch 25: `0.469740`
+- Epoch 26: `0.489316`
+- Epoch 27: `0.472793`
+- Epoch 28: `0.480351`
+- Epoch 29: `0.487395`
+- Epoch 30: `0.494815`
+- Epoch 31: `0.496092`
+- Epoch 32: `0.490258`
+- Epoch 33: `0.487956`
+- Epoch 34: `0.492683`
+- Epoch 35: `0.487152`
+- Epoch 36: `0.499722`
+- Epoch 37: `0.424286`
+- Epoch 38: `0.485876`
+- Epoch 39: `0.482567`
+- Epoch 40: `0.489555`
+- Epoch 41: `0.499238`
+- Epoch 42: `0.493781`
+- Epoch 43: `0.492278`
+- Epoch 44: `0.509615`
+- Epoch 45: `0.511616`
+- Epoch 46: `0.509717`
+- Epoch 47: `0.515757`
+- Epoch 48: `0.508401`
+- Epoch 49: `0.505458`
+
+## val/loss by epoch
+
+- Epoch 00: `1.711779`
+- Epoch 01: `1.431112`
+- Epoch 02: `1.316384`
+- Epoch 03: `1.217748`
+- Epoch 04: `1.131127`
+- Epoch 05: `1.071682`
+- Epoch 06: `1.068656`
+- Epoch 07: `1.049278`
+- Epoch 08: `1.050819`
+- Epoch 09: `1.102342`
+- Epoch 10: `1.048144`
+- Epoch 11: `1.072698`
+- Epoch 12: `1.115599`
+- Epoch 13: `1.104370`
+- Epoch 14: `1.108444`
+- Epoch 15: `1.095023`
+- Epoch 16: `1.108762`
+- Epoch 17: `1.139091`
+- Epoch 18: `1.285024`
+- Epoch 19: `1.160405`
+- Epoch 20: `1.165558`
+- Epoch 21: `1.235648`
+- Epoch 22: `1.206727`
+- Epoch 23: `1.146181`
+- Epoch 24: `1.211291`
+- Epoch 25: `1.265605`
+- Epoch 26: `1.203696`
+- Epoch 27: `1.261191`
+- Epoch 28: `1.292910`
+- Epoch 29: `1.209018`
+- Epoch 30: `1.229801`
+- Epoch 31: `1.212603`
+- Epoch 32: `1.246453`
+- Epoch 33: `1.263502`
+- Epoch 34: `1.260064`
+- Epoch 35: `1.278299`
+- Epoch 36: `1.265410`
+- Epoch 37: `1.462981`
+- Epoch 38: `1.244388`
+- Epoch 39: `1.300694`
+- Epoch 40: `1.252738`
+- Epoch 41: `1.246139`
+- Epoch 42: `1.242095`
+- Epoch 43: `1.219875`
+- Epoch 44: `1.217931`
+- Epoch 45: `1.247681`
+- Epoch 46: `1.250796`
+- Epoch 47: `1.263773`
+- Epoch 48: `1.264332`
+- Epoch 49: `1.327854`

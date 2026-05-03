@@ -1,0 +1,68 @@
+# dformerv2_attention_fusion_run01 mIoU List
+
+- Date recorded: `2026-05-03`.
+- Code path: `teacher's daima/`.
+- Event log: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_attention_fusion_run01\lightning_logs\version_0\events.out.tfevents.1777742281.Administrator.7328.0`.
+- Hparams: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_attention_fusion_run01\lightning_logs\version_0\hparams.yaml`.
+- Checkpoint: `C:\Users\qintian\Desktop\qintian\teacher's daima\checkpoints\dformerv2_attention_fusion_run01\dformerv2_attention_fusion-epoch=45-val\mIoU=0.5170.ckpt`.
+- Model: `dformerv2_attention_fusion`.
+- Configuration: DFormerv2_S + ResNet18 DepthEncoder + CrossModalReliabilityAttentionFusion + SimpleFPNDecoder.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Best epoch: `45`.
+- Best val/mIoU: `0.516979`.
+- Best val/loss epoch: `6`.
+- Best val/loss: `1.020119`.
+- Epoch count: `50`.
+
+## val/mIoU by epoch
+
+- epoch 00: `0.138282`  # step 396
+- epoch 01: `0.190667`  # step 793
+- epoch 02: `0.251579`  # step 1190
+- epoch 03: `0.304961`  # step 1587
+- epoch 04: `0.342396`  # step 1984
+- epoch 05: `0.377932`  # step 2381
+- epoch 06: `0.424444`  # step 2778
+- epoch 07: `0.429372`  # step 3175
+- epoch 08: `0.436145`  # step 3572
+- epoch 09: `0.471141`  # step 3969
+- epoch 10: `0.456140`  # step 4366
+- epoch 11: `0.479738`  # step 4763
+- epoch 12: `0.489652`  # step 5160
+- epoch 13: `0.484356`  # step 5557
+- epoch 14: `0.477808`  # step 5954
+- epoch 15: `0.487456`  # step 6351
+- epoch 16: `0.470589`  # step 6748
+- epoch 17: `0.476443`  # step 7145
+- epoch 18: `0.491668`  # step 7542
+- epoch 19: `0.492331`  # step 7939
+- epoch 20: `0.498943`  # step 8336
+- epoch 21: `0.511063`  # step 8733
+- epoch 22: `0.499618`  # step 9130
+- epoch 23: `0.494156`  # step 9527
+- epoch 24: `0.458459`  # step 9924
+- epoch 25: `0.470102`  # step 10321
+- epoch 26: `0.473727`  # step 10718
+- epoch 27: `0.485851`  # step 11115
+- epoch 28: `0.500144`  # step 11512
+- epoch 29: `0.495692`  # step 11909
+- epoch 30: `0.507922`  # step 12306
+- epoch 31: `0.512180`  # step 12703
+- epoch 32: `0.506556`  # step 13100
+- epoch 33: `0.473308`  # step 13497
+- epoch 34: `0.475384`  # step 13894
+- epoch 35: `0.496637`  # step 14291
+- epoch 36: `0.512349`  # step 14688
+- epoch 37: `0.510980`  # step 15085
+- epoch 38: `0.509884`  # step 15482
+- epoch 39: `0.516194`  # step 15879
+- epoch 40: `0.486165`  # step 16276
+- epoch 41: `0.495991`  # step 16673
+- epoch 42: `0.498404`  # step 17070
+- epoch 43: `0.507050`  # step 17467
+- epoch 44: `0.512911`  # step 17864
+- epoch 45: `0.516979`  # step 18261
+- epoch 46: `0.509615`  # step 18658
+- epoch 47: `0.474294`  # step 19055
+- epoch 48: `0.492651`  # step 19452
+- epoch 49: `0.508818`  # step 19849
