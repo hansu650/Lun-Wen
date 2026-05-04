@@ -89,3 +89,10 @@ RGB-D semantic segmentation 需要同时利用 RGB 的语义纹理信息和 dept
 - New candidate direction: PrimKD-style primary modality guided fusion, using DFormerv2 feature as the primary feature and depth feature as selected auxiliary support.
 - This is not a full PrimKD KD reproduction: no RGB teacher, KL distillation, MSE feature distillation, or training loss changes are included in the first implementation.
 - Paper boundary: `dformerv2_primkd_fusion` is only a candidate structure until repeated training logs and `miou_list` records prove a stable gain.
+
+## 2026-05-03 CMNeXt Hub-Guided Fusion Candidate
+
+- New candidate direction: DELIVER / CMNeXt-style Hub2Fuse, using DFormerv2 feature as the primary hub and depth feature as auxiliary support.
+- Implementation boundary: only PPX, SQ-Hub-style selection, and ChannelEmbed-style reconstruction are adapted into the current BCHW fusion block.
+- Excluded from this first test: HHA preprocessing, full CMNeXt backbone, symmetric FFM cross-attention, and any training protocol changes.
+- Paper boundary: `dformerv2_cmnext_fusion` is only a candidate structure until completed logs and `miou_list` records prove a stable gain over `dformerv2_mid_fusion`.

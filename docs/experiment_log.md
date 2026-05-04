@@ -231,3 +231,29 @@ checkpoint，或用户明确确认。
 - `dformerv2_primkd_fusion`: single-run result was slightly above baseline mean, but not enough to justify extra active-code complexity without repeats.
 - Main branch restored to: `dformerv2_mid_fusion`.
 - Code boundary: experiment records and `miou_list` markdown files are retained; only inactive experimental model branches were removed from the main training path.
+
+## 2026-05-04 DFormerv2 CMNeXt Fusion Run01
+
+- Date: `2026-05-04`.
+- Experiment name: `dformerv2_cmnext_fusion_run01`.
+- Code path: `teacher's daima/`.
+- Configuration: `DFormerv2_S` backbone, original ResNet-18 `DepthEncoder`, DELIVER / CMNeXt-inspired hub-guided `DFormerHubFusion`, teacher original `SimpleFPNDecoder`.
+- Pretrained: `C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth`.
+- Training configuration: NYUDepthV2 folder data, `max_epochs=50`, `batch_size=2`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, GPU 1 device.
+- Result: best `val/mIoU=0.508904` at epoch `37`; last epoch `val/mIoU=0.504782`.
+- Best validation loss: `val/loss=1.034672` at epoch `11`.
+- Evidence: event log `teacher's daima/checkpoints/dformerv2_cmnext_fusion_run01/lightning_logs/version_0/events.out.tfevents.1777819430.Administrator.12636.0`; checkpoint `teacher's daima\checkpoints\dformerv2_cmnext_fusion_run01\dformerv2_cmnext_fusion-epoch=37-val\mIoU=0.5089.ckpt`.
+- Per-epoch record: `miou_list/dformerv2_cmnext_fusion_run01.md`.
+- Comparison: repeated `dformerv2_mid_fusion` baseline mean best is `0.513406`; this run is lower by `-0.004502`. The best repeated baseline run is `0.515470`; this run is lower by `-0.006566`.
+- Comparison: `dformerv2_attention_fusion` mean best is `0.514435`; this run is lower by `-0.005531`. `dformerv2_primkd_fusion_soft_run01` best is `0.515757`; this run is lower by `-0.006853`.
+- Comparison: this run is higher than the deprecated pure CMX run best `0.503343` by `+0.005561`, but still below the stable baseline range.
+- Conclusion: valid completed run. The current DELIVER / CMNeXt-style hub fusion implementation does not improve over the stable `dformerv2_mid_fusion` baseline and should not replace the baseline in its current form.
+- Next step: do not spend repeat budget on this exact block unless simplifying or changing the hub fusion design; return to `dformerv2_mid_fusion` as the stable reference.
+
+## 2026-05-04 Deprecate DFormerv2 CMNeXt Fusion
+
+- Experiment: `dformerv2_cmnext_fusion_run01`.
+- Result: best `val/mIoU=0.508904`; last epoch `val/mIoU=0.504782`.
+- Conclusion: DELIVER / CMNeXt-inspired hub-guided fusion underperformed the repeated DFormerv2 mid-fusion baseline, so this branch is deprecated.
+- Code boundary: experiment records, checkpoints, and `miou_list/dformerv2_cmnext_fusion_run01.md` are retained; only the active model code path was restored to the clean baseline.
+- Main branch restored to: `dformerv2_mid_fusion`.

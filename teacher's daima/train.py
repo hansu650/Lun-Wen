@@ -10,6 +10,18 @@ warnings.filterwarnings(
     message=r"`isinstance\(treespec, LeafSpec\)` is deprecated.*",
     module=r"lightning\.pytorch\.utilities\._pytree",
 )
+warnings.filterwarnings(
+    "ignore",
+    message=r"Importing from timm\.models\.layers is deprecated.*",
+    category=FutureWarning,
+    module=r"timm\.models\.layers",
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"torch\.meshgrid: in an upcoming release.*",
+    category=UserWarning,
+    module=r"torch\.functional",
+)
 
 import lightning as L
 import torch

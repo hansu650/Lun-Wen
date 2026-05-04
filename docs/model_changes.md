@@ -177,3 +177,14 @@
 - Preserved: `dformerv2_mid_fusion`, `dformerv2_reliability_fusion`, `dformerv2_attention_fusion`, and `dformerv2_clean_depth_fusion`.
 - Verification: `py_compile` passed for `src/models/fusion_blocks.py`, `src/models/mid_fusion.py`, and `train.py`.
 - Status: structure change only; no training result is recorded here.
+
+## 2026-05-03 DFormerv2 CMNeXt Hub Fusion
+
+- Scope: `teacher's daima/src/models/fusion_blocks.py`, `teacher's daima/src/models/mid_fusion.py`, `teacher's daima/train.py`.
+- Change: added DELIVER / CMNeXt-inspired hub-guided fusion as `--model dformerv2_cmnext_fusion`.
+- Main logic: keeps `DFormerv2_S` features as the primary / hub representation, uses original ResNet-18 `DepthEncoder` features as auxiliary support, and injects only a residual `primary_feat + gamma * auxiliary_residual`.
+- DELIVER source: adapted PPX from `DELIVER/semseg/models/modules/mspa.py`, SQ-Hub scoring from `DELIVER/semseg/models/backbones/cmnext.py::PredictorConv/tokenselect`, and ChannelEmbed-style reconstruction from `DELIVER/semseg/models/modules/ffm.py`.
+- Adaptation boundary: did not add HHA preprocessing, DELIVER full backbone, symmetric FFM cross-attention, mmcv/mmseg, DataModule changes, loss changes, optimizer changes, or decoder changes.
+- Preserved active entries: `early`, `mid_fusion`, `dformerv2_mid_fusion`.
+- Verification: `py_compile` passed for `src/models/fusion_blocks.py`, `src/models/mid_fusion.py`, and `train.py`.
+- Status: structure change only; no training result is recorded here.
