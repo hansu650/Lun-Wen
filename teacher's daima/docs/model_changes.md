@@ -1,5 +1,28 @@
 # Model Changes
 
+## 2026-05-06 Archive Deprecated Fusion Modules Outside Main Path
+
+- Created `feiqi/` as the archive folder for deprecated fusion experiment modules.
+- Moved `src/models/feiqi_fusion_blocks.py` to `feiqi/feiqi_fusion_blocks.py` and changed its relative imports to absolute `src.models.*` imports for archive readability and compilation.
+- Moved the guided-depth Full++ and Part 1-only simple ablation classes out of `src/models/mid_fusion.py` into `feiqi/feiqi_guided_depth_blocks.py`.
+- Added `feiqi/README.md` to mark the folder as archived reference code only.
+- Restored `src/models/mid_fusion.py` to the baseline main path classes only: `GatedFusion`, `MidFusionSegmentor`, `LitMidFusion`, `DFormerV2MidFusionSegmentor`, and `LitDFormerV2MidFusion`.
+- Restored active `train.py` model entries to `early`, `mid_fusion`, and `dformerv2_mid_fusion` only.
+- Did not delete experiment records, `miou_list`, docs, or checkpoints.
+
+## 2026-05-06 DFormerv2 Guided Depth Adapter Simple Fusion
+
+- Added active model entry `dformerv2_guided_depth_adapter_simple`.
+- Added `DFormerGuidedDepthAdapterSimpleFusion`, `DFormerV2GuidedDepthAdapterSimpleSegmentor`, and `LitDFormerV2GuidedDepthAdapterSimple` in `src/models/mid_fusion.py`.
+- Reused the existing `DFormerGuidedDepthAdapter` and `GuidedDepthEncoder` from the Full++ branch.
+- Design: keep only Part 1 guided depth adaptation, then use a minimal primary-preserving residual fusion: `primary_feat + gamma * SimpleAdapter([guided_depth_feat, abs(primary_feat - guided_depth_feat)])`.
+- Removed Full++ components from this ablation path: asymmetric complementary rectification, channel attention, spatial attention, support/conflict logic, relation selection, CSG, GRM, and ARD.
+- Did not use `GatedFusion`, `g * primary + (1 - g) * depth`, full `QK^T` attention, token flattening, `HW x HW` attention, `grid_sample`, flow warp, deformable attention, or archived experimental modules.
+- Did not modify DFormerv2 encoder, the original `DepthEncoder`, `SimpleFPNDecoder`, loss, optimizer, or scheduler.
+- Active model entries after this change: `early`, `mid_fusion`, `dformerv2_mid_fusion`, `dformerv2_guided_depth_comp_fusion`, `dformerv2_guided_depth_adapter_simple`.
+- Parameter size: original `dformerv2_mid_fusion` fusion blocks `4,182,720`; Full++ total model `38,565,130`; simple guided depth adapters `709,504`; simple fusion blocks `136,640`; simple total model `37,709,506`.
+- Verification: `py_compile` passed for `src/models/mid_fusion.py` and `train.py`; CPU smoke test output shape was `(1, 40, 64, 64)`.
+
 ## 2026-05-06 DFormerv2 Guided Depth Rectification and Complementary Fusion
 
 - Added active model entry `dformerv2_guided_depth_comp_fusion`.

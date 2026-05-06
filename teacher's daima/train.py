@@ -25,11 +25,14 @@ warnings.filterwarnings(
 
 import lightning as L
 import torch
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
+from lightning.pytorch.callbacks import Callback, EarlyStopping
 
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
-from src.models.mid_fusion import LitMidFusion, LitDFormerV2MidFusion
+from src.models.mid_fusion import (
+    LitMidFusion,
+    LitDFormerV2MidFusion,
+)
 
 
 MODEL_REGISTRY = {
@@ -37,6 +40,41 @@ MODEL_REGISTRY = {
     "mid_fusion": LitMidFusion,
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
 }
+
+
+class DirectStateDictCheckpoint(Callback):
+    def __init__(self, dirpath, filename_prefix, monitor, mode="max"):
+        super().__init__()
+        self.dirpath = dirpath
+        self.filename_prefix = filename_prefix
+        self.monitor = monitor
+        self.mode = mode
+        self.best_model_score = None
+        self.best_model_path = ""
+
+    def _is_better(self, current):
+        if self.best_model_score is None:
+            return True
+        if self.mode == "max":
+            return current > self.best_model_score
+        return current < self.best_model_score
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        metrics = trainer.callback_metrics
+        if self.monitor not in metrics:
+            return
+        current = float(metrics[self.monitor].detach().cpu())
+        if not self._is_better(current):
+            return
+        self.best_model_score = current
+        epoch = trainer.current_epoch
+        monitor_name = self.monitor.replace("/", "_")
+        filename = f"{self.filename_prefix}-epoch={epoch:02d}-{monitor_name}={current:.4f}.pt"
+        filepath = os.path.join(self.dirpath, filename)
+        torch.save(pl_module.state_dict(), filepath)
+        if self.best_model_path and self.best_model_path != filepath and os.path.exists(self.best_model_path):
+            os.remove(self.best_model_path)
+        self.best_model_path = filepath
 
 
 def build_parser():
@@ -75,7 +113,9 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_mid_fusion":
+    if args.model in {
+        "dformerv2_mid_fusion",
+    }:
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,
@@ -86,12 +126,11 @@ def build_model(args):
 
 def build_callbacks(args, monitor_metric: str):
     os.makedirs(args.checkpoint_dir, exist_ok=True)
-    checkpoint_callback = ModelCheckpoint(
+    checkpoint_callback = DirectStateDictCheckpoint(
         dirpath=args.checkpoint_dir,
-        filename=f"{args.model}" + "-{epoch:02d}-{" + monitor_metric + ":.4f}",
+        filename_prefix=args.model,
         monitor=monitor_metric,
         mode="max",
-        save_top_k=1,
     )
     early_stop_callback = EarlyStopping(
         monitor=monitor_metric,

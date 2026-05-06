@@ -1,5 +1,77 @@
 # Experiment Log
 
+## 2026-05-06 dformerv2_guided_depth_adapter_simple run01-run06 summary
+
+- model: `dformerv2_guided_depth_adapter_simple`
+- change: Part 1-only DFormer-guided depth adapter simple fusion. It reuses stage-wise guided depth adaptation and removes Full++ rectification and attention aggregation.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- completed runs: `6`
+- dformerv2_guided_depth_adapter_simple_run01: best val/mIoU `0.511741` at recorded epoch `37`, last `0.490230`, best val/loss `1.017727` at recorded epoch `9`
+- dformerv2_guided_depth_adapter_simple_run02: best val/mIoU `0.518872` at recorded epoch `48`, last `0.481400`, best val/loss `1.035822` at recorded epoch `10`
+- dformerv2_guided_depth_adapter_simple_run03: best val/mIoU `0.513250` at recorded epoch `45`, last `0.502194`, best val/loss `1.024035` at recorded epoch `8`
+- dformerv2_guided_depth_adapter_simple_run04: best val/mIoU `0.512987` at recorded epoch `50`, last `0.512987`, best val/loss `1.028134` at recorded epoch `9`
+- dformerv2_guided_depth_adapter_simple_run05: best val/mIoU `0.510183` at recorded epoch `47`, last `0.484418`, best val/loss `1.029133` at recorded epoch `9`
+- dformerv2_guided_depth_adapter_simple_run06: best val/mIoU `0.506865` at recorded epoch `46`, last `0.453570`, best val/loss `1.036385` at recorded epoch `12`
+- mean best val/mIoU: `0.512316`
+- population std best val/mIoU: `0.003626`
+- mean last val/mIoU: `0.487466`
+- comparison baseline mean best: `0.513406`
+- mean delta vs baseline mean: `-0.001090`
+- comparison Full++ mean best: `0.511379`
+- mean delta vs Full++ mean best: `+0.000937`
+- comparison DGC-AF++ mean best: `0.511418`
+- mean delta vs DGC-AF++ mean best: `+0.000898`
+- evidence: `miou_list/dformerv2_guided_depth_adapter_simple_run01.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run02.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run03.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run04.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run05.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run06.md`, and `miou_list/dformerv2_guided_depth_adapter_simple_summary_run01_06.md`
+- conclusion: near-baseline but negative repeated-run result. The Part 1-only branch is healthier than Full++ and DGC-AF++ on mean best val/mIoU, but six runs do not beat the repeated DFormerv2 mid-fusion baseline mean.
+- next step: do not claim this branch as a stable paper improvement. Keep it as evidence that early DFormer-guided depth adaptation is less harmful than the full chain, but the current adapter/residual design still needs either stronger stability control or a more conservative ablation before promotion.
+
+## 2026-05-06 dformerv2_guided_depth_adapter_simple run01-run03 summary
+
+- model: `dformerv2_guided_depth_adapter_simple`
+- change: Part 1-only DFormer-guided depth adapter simple fusion. It reuses stage-wise guided depth adaptation and removes Full++ rectification and attention aggregation.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- completed runs: `3`
+- dformerv2_guided_depth_adapter_simple_run01: best val/mIoU `0.511741` at recorded epoch `37`, last `0.490230`, best val/loss `1.017727` at recorded epoch `9`
+- dformerv2_guided_depth_adapter_simple_run02: best val/mIoU `0.518872` at recorded epoch `48`, last `0.481400`, best val/loss `1.035822` at recorded epoch `10`
+- dformerv2_guided_depth_adapter_simple_run03: best val/mIoU `0.513250` at recorded epoch `45`, last `0.502194`, best val/loss `1.024035` at recorded epoch `8`
+- mean best val/mIoU: `0.514621`
+- population std best val/mIoU: `0.003069`
+- mean last val/mIoU: `0.491274`
+- comparison baseline mean best: `0.513406`
+- mean delta vs baseline mean: `+0.001215`
+- comparison Full++ mean best: `0.511379`
+- mean delta vs Full++ mean best: `+0.003242`
+- comparison DGC-AF++ mean best: `0.511418`
+- mean delta vs DGC-AF++ mean best: `+0.003203`
+- evidence: `miou_list/dformerv2_guided_depth_adapter_simple_run01.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run02.md`, `miou_list/dformerv2_guided_depth_adapter_simple_run03.md`, and `miou_list/dformerv2_guided_depth_adapter_simple_summary_run01_03.md`
+- conclusion: promising three-run result. The Part 1-only simple branch is above the repeated DFormerv2 mid-fusion baseline mean and clearly above Full++ / DGC-AF++ means, suggesting the guided depth adapter is the useful part while later rectification/attention aggregation likely adds instability.
+- next step: do not finalize the paper claim from only three runs. Extend to five repeated runs before promoting this as the main candidate; if the five-run mean remains above `0.513406`, keep Part 1-only as the primary new branch and treat Full++ as a negative complexity ablation.
+
+## 2026-05-06 dformerv2_guided_depth_comp_fusion run01-run05 summary
+
+- model: `dformerv2_guided_depth_comp_fusion`
+- change: DFormer-guided depth rectification and complementary fusion with stage-wise guided depth adaptation, asymmetric complementary rectification, and attention complementary aggregation.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- completed runs: `5`
+- dformerv2_guided_depth_comp_fusion_run01: best val/mIoU `0.508875` at recorded epoch `46`, last `0.481020`, best val/loss `1.052861` at recorded epoch `8`
+- dformerv2_guided_depth_comp_fusion_run02: best val/mIoU `0.512506` at recorded epoch `39`, last `0.507708`, best val/loss `1.024278` at recorded epoch `9`
+- dformerv2_guided_depth_comp_fusion_run03: best val/mIoU `0.508686` at recorded epoch `49`, last `0.483381`, best val/loss `1.040731` at recorded epoch `7`
+- dformerv2_guided_depth_comp_fusion_run04: best val/mIoU `0.510958` at recorded epoch `45`, last `0.505383`, best val/loss `1.007499` at recorded epoch `10`
+- dformerv2_guided_depth_comp_fusion_run05: best val/mIoU `0.515870` at recorded epoch `45`, last `0.507223`, best val/loss `1.059600` at recorded epoch `7`
+- mean best val/mIoU: `0.511379`
+- population std best val/mIoU: `0.002651`
+- mean last val/mIoU: `0.496943`
+- comparison baseline mean best: `0.513406`
+- mean delta vs baseline mean: `-0.002027`
+- comparison DGC-AF++ mean best: `0.511418`
+- mean delta vs DGC-AF++ mean best: `-0.000039`
+- evidence: `miou_list/dformerv2_guided_depth_comp_fusion_run01.md`, `miou_list/dformerv2_guided_depth_comp_fusion_run02.md`, `miou_list/dformerv2_guided_depth_comp_fusion_run03.md`, `miou_list/dformerv2_guided_depth_comp_fusion_run04.md`, `miou_list/dformerv2_guided_depth_comp_fusion_run05.md`, and `miou_list/dformerv2_guided_depth_comp_fusion_summary_run01_05.md`
+- conclusion: negative repeated-run result. The new three-stage guided depth fusion has one strong run, but the five-run mean remains below the repeated DFormerv2 mid-fusion baseline and is essentially tied with DGC-AF++.
+- next step: do not claim this branch as a paper improvement. Keep it as a meaningful negative ablation showing that stage-wise guided depth adaptation alone does not solve the instability; next direction should reduce complexity and isolate Part 1 / Part 2 / Part 3 separately.
+
 ## 2026-05-05 dformerv2_dgc_af_plus run01-run04 summary
 
 - model: `dformerv2_dgc_af_plus`

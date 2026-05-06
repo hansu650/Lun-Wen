@@ -1,5 +1,16 @@
 # Paper Notes
 
+## 2026-05-06 DFormer-guided Depth Adapter Simple Candidate
+
+- New candidate branch is `dformerv2_guided_depth_adapter_simple`.
+- Motivation: Full++ `dformerv2_guided_depth_comp_fusion` had a strong single run but a negative five-run mean, so this branch isolates Part 1 and removes rectification and attention aggregation complexity.
+- Design: reuse DFormerv2-guided stage-wise depth adaptation, then add the adapted depth through a minimal primary-preserving residual adapter.
+- Final feature remains `f_i = p_i + gamma * delta_i`, where `delta_i` is generated only from guided depth and `abs(p_i - d_i')`.
+- This branch avoids Full++ Part 2 and Part 3, DGC-AF++, CSG, GRM-ARD, `GatedFusion`, token attention, support/conflict logic, relation selection, and geometry warping.
+- Run01-run03 result: mean best val/mIoU `0.514621`, above repeated baseline mean `0.513406` by `0.001215`.
+- Run01-run06 result: mean best val/mIoU `0.512316`, below repeated baseline mean `0.513406` by `0.001090`, but above Full++ mean `0.511379` by `0.000937` and above DGC-AF++ mean `0.511418` by `0.000898`.
+- Conclusion: near-baseline but negative repeated-run result. This branch is healthier than Full++ and DGC-AF++, but it should not be claimed as a stable paper improvement over the repeated DFormerv2 mid-fusion baseline.
+
 ## 2026-05-06 DFormer-guided Depth Rectification and Complementary Fusion Candidate
 
 - New candidate branch is `dformerv2_guided_depth_comp_fusion`.
@@ -8,7 +19,8 @@
 - Source-code motivation: PGDENet stage-wise depth enhancement, CMX feature rectification before fusion, ACNet attentive additive fusion, SGACNet/ESANet SE-style encoder-stage fusion, and DFormerV2 depth-as-geometry guidance.
 - The final output remains primary-preserving: `f_i = p_i + small complementary residual`.
 - The branch avoids DGC-AF++, CSG, GRM-ARD, `GatedFusion`, full token attention, geometry warping, and symmetric `g * primary + (1 - g) * depth` fusion.
-- No mIoU result exists yet for this branch. It must not be reported as an improved result until real logs and checkpoints support it.
+- Run01-run05 repeated result: mean best val/mIoU `0.511379`, below repeated baseline mean `0.513406` by `0.002027`; essentially tied with DGC-AF++ mean `0.511418` but still slightly lower by `0.000039`.
+- Conclusion: negative repeated-run result. This branch should be kept as a meaningful ablation, not as a paper improvement.
 
 ## 2026-05-04 DGC-AF Plus CSG Candidate
 
