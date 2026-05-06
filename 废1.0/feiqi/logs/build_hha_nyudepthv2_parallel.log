@@ -1,0 +1,40 @@
+Depth2HHA root: C:\Users\qintian\Desktop\qintian\老师论文\RGBD\Depth2HHA-python-master
+Data root: C:\Users\qintian\Desktop\qintian\data\NYUDepthv2
+Depth dir: C:\Users\qintian\Desktop\qintian\data\NYUDepthv2\Depth
+HHA dir: C:\Users\qintian\Desktop\qintian\data\NYUDepthv2\HHA
+Camera: color
+Depth scale: 10000.0
+Images: 1449
+Workers: 8
+[WARN] Depth values look very small after scaling. Example: 0.png, max=0.025500 meters, depth_scale=10000.0. If your depth PNG is 8-bit visualization data, HHA will not be true metric HHA. Use true metric depth maps if available, or adjust --depth_scale only for a rough test.
+[1/1449] written=0, skipped=1
+[50/1449] written=0, skipped=50
+[100/1449] written=0, skipped=100
+[150/1449] written=0, skipped=150
+[200/1449] written=0, skipped=200
+[250/1449] written=0, skipped=250
+[300/1449] written=0, skipped=300
+[350/1449] written=12, skipped=338
+[400/1449] written=62, skipped=338
+[450/1449] written=112, skipped=338
+[500/1449] written=162, skipped=338
+[550/1449] written=212, skipped=338
+[600/1449] written=262, skipped=338
+[650/1449] written=312, skipped=338
+[700/1449] written=362, skipped=338
+[750/1449] written=412, skipped=338
+[800/1449] written=462, skipped=338
+[850/1449] written=512, skipped=338
+[900/1449] written=562, skipped=338
+[950/1449] written=612, skipped=338
+[1000/1449] written=662, skipped=338
+[1050/1449] written=712, skipped=338
+[1100/1449] written=762, skipped=338
+[1150/1449] written=812, skipped=338
+[1200/1449] written=862, skipped=338
+[1250/1449] written=912, skipped=338
+[1300/1449] written=962, skipped=338
+[1350/1449] written=1012, skipped=338
+[1400/1449] written=1062, skipped=338
+[1449/1449] written=1111, skipped=338
+Done.
