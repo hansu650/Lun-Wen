@@ -1,5 +1,35 @@
 # Experiment Log
 
+## 2026-05-07 dformerv2_mid_fusion_gate_baseline run01-run10 summary
+
+- model: `dformerv2_mid_fusion`
+- change: baseline DFormerv2 mid-fusion with the original `GatedFusion`; no architecture change.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- complete runs: `9`
+- partial runs: `1`
+- dformerv2_mid_fusion_gate_baseline_run01: best val/mIoU `0.517621` at recorded epoch `49`, last `0.516805`, best val/loss `1.018484` at recorded epoch `13`
+- dformerv2_mid_fusion_gate_baseline_run02: best val/mIoU `0.518642` at recorded epoch `49`, last `0.512856`, best val/loss `1.028006` at recorded epoch `11`
+- dformerv2_mid_fusion_gate_baseline_run03: best val/mIoU `0.514432` at recorded epoch `40`, last `0.506427`, best val/loss `1.017887` at recorded epoch `10`
+- dformerv2_mid_fusion_gate_baseline_run04: best val/mIoU `0.518596` at recorded epoch `38`, last `0.492355`, best val/loss `1.017909` at recorded epoch `9`
+- dformerv2_mid_fusion_gate_baseline_run05: best val/mIoU `0.524425` at recorded epoch `50`, last `0.524425`, best val/loss `1.017244` at recorded epoch `9`
+- dformerv2_mid_fusion_gate_baseline_run06: best val/mIoU `0.519506` at recorded epoch `31`, last `0.507040`, best val/loss `1.009728` at recorded epoch `9`
+- dformerv2_mid_fusion_gate_baseline_run07: best val/mIoU `0.505699` at recorded epoch `45`, last `0.502685`, best val/loss `1.022507` at recorded epoch `10`
+- dformerv2_mid_fusion_gate_baseline_run08: best val/mIoU `0.517555` at recorded epoch `49`, last `0.516317`, best val/loss `1.006927` at recorded epoch `11`
+- dformerv2_mid_fusion_gate_baseline_run09: best val/mIoU `0.514622` at recorded epoch `49`, last `0.469588`, best val/loss `1.006296` at recorded epoch `9`
+- dformerv2_mid_fusion_gate_baseline_run10: partial only, recorded `43` validation epochs; best recorded val/mIoU `0.514412` at recorded epoch `38`, last recorded `0.503475`, best val/loss `1.029115` at recorded epoch `10`
+- complete-run mean best val/mIoU: `0.516789`
+- complete-run population std best val/mIoU: `0.004795`
+- complete-run mean last val/mIoU: `0.505389`
+- partial-inclusive mean best val/mIoU: `0.516551`
+- partial-inclusive population std best val/mIoU: `0.004604`
+- partial-inclusive mean last val/mIoU: `0.505197`
+- comparison previous baseline mean best: `0.513406`
+- complete-run delta vs previous baseline mean: `+0.003383`
+- evidence: `miou_list/dformerv2_mid_fusion_gate_baseline_run01.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run02.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run03.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run04.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run05.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run06.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run07.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run08.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run09.md`, `miou_list/dformerv2_mid_fusion_gate_baseline_run10.md`, and `miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_10.md`
+- conclusion: the current GatedFusion baseline is stronger than the earlier baseline estimate. Use the nine complete runs as the valid repeated baseline; keep run10 as partial evidence only and do not count it as a completed repeated run.
+- next step: if a clean ten-run statistic is needed, rerun only `dformerv2_mid_fusion_gate_baseline_run10` in a fresh directory or overwrite it intentionally after backing up the partial log.
+
 ## 2026-05-06 dformerv2_guided_depth_adapter_simple run01-run06 summary
 
 - model: `dformerv2_guided_depth_adapter_simple`

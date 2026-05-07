@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-07 GatedFusion Baseline Boundary
+
+- New repeated baseline evidence is `dformerv2_mid_fusion_gate_baseline`.
+- Run01-run09 completed all 50 validation epochs and give mean best val/mIoU `0.516789`.
+- Run10 is partial with 43 recorded validation epochs, best recorded val/mIoU `0.514412`; it is kept as partial evidence only and is not counted in the complete-run mean.
+- This raises the practical comparison bar above the earlier baseline mean `0.513406`.
+- Candidate fusion or guided-depth modules should now be compared against the nine-complete-run GatedFusion baseline unless a later clean ten-run baseline is completed.
+
 ## 2026-05-06 DFormer-guided Depth Adapter Simple Candidate
 
 - New candidate branch is `dformerv2_guided_depth_adapter_simple`.
