@@ -11,6 +11,7 @@ framework_download/lightning_logs/
 framework_download/src.zip
 dformer_work/checkpoints/*/
 teacher's daima/checkpoints/
+final daima/checkpoints/
 
 *.ckpt
 *.pth
