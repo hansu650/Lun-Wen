@@ -1,5 +1,28 @@
 # Paper Notes
 
+## 2026-05-08 Depth FFT Frequency Selection Run01 Boundary
+
+- `dformerv2_depth_fft_select_c030_run01` completed 50 validation epochs.
+- Setting: `cutoff_ratio=0.30`, internal depth FFT low/high frequency selection after c2/c3/c4, c1 skipped, segmentation loss only.
+- Best val/mIoU is `0.513871` at recorded epoch `43`; last val/mIoU is `0.482797`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
+- Delta vs the clean ten-run baseline mean is `-0.003526`; delta vs the clean baseline best single run is `-0.010554`.
+- Checkpoint diagnostics show the selection modules stayed near identity: c2 low/high `0.997994/1.007397`, c3 low/high `0.993755/1.011458`, c4 low/high `0.993354/1.007414` using `sigmoid(bias) * 2`.
+- Interpretation: negative result. The depth encoder internal FFT selection branch did not learn a meaningful selection away from identity, and the segmentation result is below the repeated baseline mean.
+- Paper boundary: do not use this as a main improvement. It can be documented as a negative ablation showing that internal FFT selection on abstract DepthEncoder features is weaker than post-encoder/pre-fusion frequency enhancement.
+
+## 2026-05-08 Depth FFT Frequency Selection Candidate Boundary
+
+- New candidate entry is `dformerv2_depth_fft_select`.
+- Motivation: previous `dformerv2_fft_freq_enhance` applied FFT high-frequency enhancement after encoder outputs and showed a positive single-run signal, but it was gamma-sensitive. This branch moves frequency selection inside the depth encoder and removes gamma.
+- The DFormerV2 primary branch, GatedFusion, SimpleFPNDecoder, BaseLitSeg, loss, dataset, and dataloader remain unchanged.
+- The depth branch keeps the original ResNet-18 structure but inserts FFT low/high selection after c2, c3, and c4; c1 is skipped to avoid shallow depth noise.
+- The module uses true spatial FFT decomposition, not AvgPool high-pass or channel-only attention.
+- Selection is initialized as exact identity through zero-initialized depthwise convolutions and `sigmoid(0) * 2 = 1`.
+- Formula: `D_out = D + (w_low - 1) * D_low + (w_high - 1) * D_high`.
+- First planned run: `cutoff_ratio=0.30`, segmentation loss only.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
 ## 2026-05-08 FFT Frequency Enhancement Run01 Boundary
 
 - `dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run01` completed 50 validation epochs.

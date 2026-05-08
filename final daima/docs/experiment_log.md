@@ -1,5 +1,44 @@
 # Experiment Log
 
+## 2026-05-08 dformerv2_depth_fft_select_c030_run01
+
+- model: `dformerv2_depth_fft_select`
+- change: FADC-style internal depth FFT low/high frequency selection after DepthEncoder c2/c3/c4; c1 skipped.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.513871` at recorded epoch `43`
+- last val/mIoU: `0.482797`
+- best val/loss: `1.025829` at recorded epoch `11`
+- train/loss_epoch: first `2.230345`, last `0.180115`
+- mean val/mIoU over last 10 epochs: `0.494112`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.003526`
+- comparison clean 10-run baseline std: `0.004901`
+- delta in baseline std units: `-0.719`
+- comparison clean 10-run baseline best single run: `0.524425`
+- delta vs clean baseline best single run: `-0.010554`
+- checkpoint diagnostics: bias-implied selection weights stayed near identity: c2 low/high `0.997994/1.007397`, c3 low/high `0.993755/1.011458`, c4 low/high `0.993354/1.007414`.
+- checkpoint weight norms for `DepthFrequencySelect` remained small: c2 low/high `0.258338/0.393132`, c3 low/high `0.522824/0.737450`, c4 low/high `0.691974/0.940259`.
+- evidence: `miou_list/dformerv2_depth_fft_select_c030_run01.md`
+- conclusion: negative single-run result. The internal depth FFT selection branch remained close to identity and did not beat the clean repeated GatedFusion baseline. This suggests that encoder-internal FFT selection at abstract ResNet feature stages is not currently a promising main path.
+- next step: do not continue deepening this encoder-internal selection branch. If pursuing frequency modeling, the stronger evidence remains the post-encoder/pre-fusion `dformerv2_fft_freq_enhance` setting with `cutoff_ratio=0.25`, `gamma_init=0.1`, which should be repeated before new complexity is added.
+
+## 2026-05-08 dformerv2_depth_fft_select implementation
+
+- model: `dformerv2_depth_fft_select`
+- status: code implemented; waiting for formal training.
+- purpose: test FADC-style internal depth frequency selection by inserting FFT low/high selection into the DepthEncoder stage flow before GatedFusion.
+- position: `DepthEncoder layer2/layer3/layer4 -> DepthFrequencySelect -> next stage and returned depth feature`; c1 is skipped.
+- frequency decomposition: spatial `torch.fft.fft2` over H/W, `torch.fft.fftshift`, hard circular low-frequency mask in the Fourier plane, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
+- formula: `D_low = IFFT2(M_low * FFT2(D)).real`, `D_high = D - D_low`, `D_out = D + (w_low - 1) * D_low + (w_high - 1) * D_high`.
+- selection weights: `w_low = sigmoid(DWConv(D)) * 2`, `w_high = sigmoid(DWConv(D)) * 2`.
+- initialization: both low/high depthwise convolutions are zero-initialized, so the initial module is identity.
+- first configuration: `cutoff_ratio=0.30`.
+- training loss: segmentation loss only; no auxiliary loss is added.
+- code evidence: `src/models/depth_fft_select.py`, `src/models/mid_fusion.py`, and `train.py`.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
 ## 2026-05-08 dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run01
 
 - model: `dformerv2_fft_freq_enhance`

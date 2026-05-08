@@ -32,6 +32,7 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
     LitMidFusion,
     LitDFormerV2MidFusion,
+    LitDFormerV2DepthFFTSelect,
     LitDFormerV2FFTFreqEnhance,
     LitDFormerV2MSFreqCov,
     LitDFormerV2FeatMaskRecC34,
@@ -42,6 +43,7 @@ MODEL_REGISTRY = {
     "early": LitEarlyFusion,
     "mid_fusion": LitMidFusion,
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_ms_freqcov": LitDFormerV2MSFreqCov,
     "dformerv2_feat_maskrec_c34": LitDFormerV2FeatMaskRecC34,
@@ -166,6 +168,13 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             cutoff_ratio=args.cutoff_ratio,
             gamma_init=args.gamma_init,
+        )
+    if args.model == "dformerv2_depth_fft_select":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            cutoff_ratio=args.cutoff_ratio,
         )
     if args.model in {
         "dformerv2_mid_fusion",

@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-08 DFormerv2 Depth FFT Frequency Selection
+
+- Added experiment entry `dformerv2_depth_fft_select`.
+- Added `src/models/depth_fft_select.py` with `DepthFrequencySelect` and `DepthEncoderFFTSelect`.
+- Added `DFormerV2DepthFFTSelectSegmentor` and `LitDFormerV2DepthFFTSelect` in `src/models/mid_fusion.py`.
+- The new depth encoder keeps the original ResNet-18 depth branch structure and inserts internal FFT low/high frequency selection after c2, c3, and c4. c1 is skipped.
+- The enhanced depth feature is appended as the stage output and also passed into the next ResNet stage, making this an internal DepthEncoder enhancement rather than an encoder-output adapter.
+- `DepthFrequencySelect` performs spatial FFT decomposition with `torch.fft.fft2`, `torch.fft.fftshift`, a hard circular low-frequency mask, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
+- The selection formula is `D_out = D + (w_low - 1) * D_low + (w_high - 1) * D_high`, where `w_low = sigmoid(DWConv(D)) * 2` and `w_high = sigmoid(DWConv(D)) * 2`.
+- The low/high depthwise selection convolutions are zero-initialized, so the initial output is exactly identity: `w_low = w_high = 1` and `D_out = D`.
+- First planned configuration: `cutoff_ratio=0.30`, c2/c3/c4 enabled, segmentation loss only.
+- Did not modify DFormerV2, `GatedFusion`, `SimpleFPNDecoder`, `BaseLitSeg`, loss, training step, validation step, dataset, or dataloader.
+- Kept `dformerv2_mid_fusion`, `dformerv2_fft_freq_enhance`, `dformerv2_ms_freqcov`, and `dformerv2_feat_maskrec_c34` unchanged.
+- Status: code implemented; waiting for formal training.
+
 ## 2026-05-08 DFormerv2 FFT-Based Frequency Enhancement
 
 - Added experiment entry `dformerv2_fft_freq_enhance`.

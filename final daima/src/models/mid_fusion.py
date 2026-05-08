@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
+from .depth_fft_select import DepthEncoderFFTSelect
 from .decoder import SimpleFPNDecoder
 from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .encoder import DepthEncoder, RGBEncoder
@@ -105,6 +106,52 @@ class LitDFormerV2MidFusion(BaseLitSeg):
         self.model = DFormerV2MidFusionSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class DFormerV2DepthFFTSelectSegmentor(nn.Module):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None, cutoff_ratio=0.30):
+        super().__init__()
+        self.rgb_encoder = DFormerv2_S()
+        if dformerv2_pretrained:
+            self.pretrained_load_stats = load_dformerv2_pretrained(self.rgb_encoder, dformerv2_pretrained)
+        else:
+            self.pretrained_load_stats = None
+        self.depth_encoder = DepthEncoderFFTSelect(cutoff_ratio=cutoff_ratio)
+        self.fusions = nn.ModuleList([
+            GatedFusion(rgb_ch, depth_ch)
+            for rgb_ch, depth_ch in zip(self.rgb_encoder.out_channels, self.depth_encoder.out_channels)
+        ])
+        self.decoder = SimpleFPNDecoder(self.rgb_encoder.out_channels, num_classes=num_classes)
+
+    def extract_features(self, rgb, depth):
+        dformer_feats = self.rgb_encoder(rgb, depth)
+        depth_feats = self.depth_encoder(depth)
+
+        aligned_depth = []
+        for rf, df in zip(dformer_feats, depth_feats):
+            if rf.shape[-2:] != df.shape[-2:]:
+                df = F.interpolate(df, size=rf.shape[-2:], mode="bilinear", align_corners=False)
+            aligned_depth.append(df)
+
+        fused_feats = [fusion(r, d) for fusion, r, d in zip(self.fusions, dformer_feats, aligned_depth)]
+        return dformer_feats, aligned_depth, fused_feats
+
+    def forward(self, rgb, depth):
+        _, _, fused_feats = self.extract_features(rgb, depth)
+        return self.decoder(fused_feats, input_size=rgb.shape[-2:])
+
+
+class LitDFormerV2DepthFFTSelect(BaseLitSeg):
+    def __init__(self, num_classes=40, lr=1e-4, dformerv2_pretrained=None, cutoff_ratio=0.30):
+        super().__init__(num_classes=num_classes, lr=lr)
+        self.model = DFormerV2DepthFFTSelectSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+            cutoff_ratio=cutoff_ratio,
         )
 
     def configure_optimizers(self):

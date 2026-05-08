@@ -137,3 +137,9 @@ MODEL_REGISTRY = {
 23. 新模块尽量注册成单独 model name 或参数开关，不要硬改 baseline 代码。
 24. 每次修改后说明：改了哪些文件、如何运行、如何验证。
 25. 如果只是分析/理解/总结项目，请只读，不要改代码。
+
+<!-- ARIS:BEGIN -->
+## ARIS Skill Scope
+For ARIS workflows in this project, use only the project-local ARIS skills under `.agents/skills/aris`.
+Do not use global skills or non-ARIS project skills unless the user explicitly asks to mix them.
+<!-- ARIS:END -->
