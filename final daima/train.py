@@ -32,6 +32,7 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
     LitMidFusion,
     LitDFormerV2MidFusion,
+    LitDFormerV2FFTFreqEnhance,
     LitDFormerV2MSFreqCov,
     LitDFormerV2FeatMaskRecC34,
 )
@@ -41,6 +42,7 @@ MODEL_REGISTRY = {
     "early": LitEarlyFusion,
     "mid_fusion": LitMidFusion,
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_ms_freqcov": LitDFormerV2MSFreqCov,
     "dformerv2_feat_maskrec_c34": LitDFormerV2FeatMaskRecC34,
 }
@@ -100,6 +102,8 @@ def build_parser():
     parser.add_argument("--freq_proj_dim", type=int, default=64)
     parser.add_argument("--freq_kernel_size", type=int, default=3)
     parser.add_argument("--freq_stage_weights", type=str, default="1,1,1,1")
+    parser.add_argument("--cutoff_ratio", type=float, default=0.25)
+    parser.add_argument("--gamma_init", type=float, default=0.05)
     parser.add_argument("--lambda_mask", type=float, default=0.01)
     parser.add_argument("--mask_ratio_depth", type=float, default=0.30)
     parser.add_argument("--mask_ratio_primary", type=float, default=0.15)
@@ -154,6 +158,14 @@ def build_model(args):
             maskrec_alpha=args.maskrec_alpha,
             maskrec_loss_type=args.maskrec_loss_type,
             maskrec_stage_weights=maskrec_stage_weights,
+        )
+    if args.model == "dformerv2_fft_freq_enhance":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            cutoff_ratio=args.cutoff_ratio,
+            gamma_init=args.gamma_init,
         )
     if args.model in {
         "dformerv2_mid_fusion",
