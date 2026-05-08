@@ -1,5 +1,38 @@
 # Paper Notes
 
+## 2026-05-08 FFT Frequency Enhancement Run01 Boundary
+
+- `dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run01` completed 50 validation epochs.
+- Setting: `cutoff_ratio=0.25`, `gamma_init=0.1`, four-stage FFT enhancement on both primary/DFormerV2 and aligned depth features before GatedFusion.
+- Best val/mIoU is `0.522688` at recorded epoch `41`; last val/mIoU is `0.514651`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
+- Delta vs the clean ten-run baseline mean is `+0.005291`; delta vs the clean baseline best single run is `-0.001737`.
+- Interpretation: positive single-run signal and more promising than prior auxiliary-loss attempts, but not yet a stable paper improvement because repeated-run evidence is missing and the strongest baseline single run is still higher.
+- Paper boundary: can be cited as a promising candidate ablation only after repeat runs; currently it should not be reported as the final main result.
+
+## 2026-05-08 FFT Frequency Enhancement Run02 (gamma=0.2) Boundary
+
+- `dformerv2_fft_freq_enhance_hh_w1111_c025_g02_run01` completed 50 validation epochs.
+- Setting: `cutoff_ratio=0.25`, `gamma_init=0.20`, four-stage FFT enhancement on both primary/DFormerV2 and aligned depth features before GatedFusion.
+- Best val/mIoU is `0.515696` at recorded epoch `47`; last val/mIoU is `0.476463`.
+- g01 best (gamma=0.1) is `0.522688`; delta vs g01 is `-0.006992`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`; delta vs baseline mean is `-0.001701`.
+- The run peaks exceptionally late (epoch 47) and collapses sharply in the last 3 epochs (0.5157 -> 0.5110 -> 0.4964 -> 0.4765).
+- Interpretation: negative result. g01 extracted gamma values (all learned to 0.30-0.47 from init 0.10) already indicated that the model wants higher gamma, but giving it at initialization does not help — the gradual growth path from 0.10 is more stable. The late peak + sharp collapse pattern suggests gamma=0.2 causes over-enhancement that the model cannot recover from.
+- Paper boundary: gamma=0.2 is worse than gamma=0.1. Future sweeps should focus on gamma <= 0.1 or adjust cutoff_ratio instead. Do not cite gamma=0.2 as an improvement.
+
+## 2026-05-08 FFT Frequency Enhancement Candidate Boundary
+
+- New candidate entry is `dformerv2_fft_freq_enhance`.
+- Motivation: prior frequency covariance and mask reconstruction losses did not provide stable gains, so this branch tests a direct inference-path frequency enhancement before GatedFusion.
+- The module is true spatial FFT frequency enhancement, not channel-only attention or AvgPool high-pass approximation.
+- The inference path is changed only by inserting `FFTFrequencyEnhance` before GatedFusion for both primary/DFormerV2 features and aligned depth features.
+- Frequency decomposition uses `torch.fft.fft2` over H/W, a hard circular low-pass mask in the shifted Fourier plane, and `torch.fft.ifft2(...).real`.
+- Formula: `F_high = F - IFFT2(M_low * FFT2(F)).real`; output is `F + gamma * gate * Clean(F_high)`.
+- First planned run: `cutoff_ratio=0.25`, `gamma_init=0.05`, four stages enabled, segmentation loss only.
+- This is not an auxiliary loss, FreqFusion module import, FADC AdaptiveDilatedConv, CARAFE, new decoder, or new backbone.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
 ## 2026-05-08 Feature Mask Reconstruction Run01 Boundary
 
 - `dformerv2_feat_maskrec_c34_w0011_lam01_run01` completed 50 validation epochs.

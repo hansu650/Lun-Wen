@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-08 DFormerv2 FFT-Based Frequency Enhancement
+
+- Added experiment entry `dformerv2_fft_freq_enhance`.
+- Added `src/models/freq_enhance.py` with `FrequencyClean` and `FFTFrequencyEnhance`.
+- Added `DFormerV2FFTFreqEnhanceSegmentor` and `LitDFormerV2FFTFreqEnhance` in `src/models/mid_fusion.py`.
+- The module performs true spatial Fourier decomposition with `torch.fft.fft2`, `torch.fft.fftshift`, a hard circular low-frequency mask in the Fourier plane, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
+- Formula: `X = FFT2(F)`, `F_low = IFFT2(M_low * X).real`, `F_high = F - F_low`, `F_out = F + gamma * sigmoid(Conv([F, F_high])) * Clean(F_high)`.
+- `FrequencyClean` is a single near-zero-initialized `Conv2d(channels, channels, 1, bias=False)` and only acts on the FFT-derived high-frequency component.
+- The enhancement is inserted before `GatedFusion` for both primary/DFormerV2 features and aligned depth features.
+- The segmentation path is `DFormerV2_S + DepthEncoder -> FFTFrequencyEnhance per modality and stage -> GatedFusion -> SimpleFPNDecoder`.
+- The first configuration is `cutoff_ratio=0.25`, `gamma_init=0.05`, four stages enabled through four `ModuleList` modules, and segmentation loss only.
+- This is not an auxiliary loss, channel-only attention, SE block, AvgPool high-pass approximation, FreqFusion module import, FADC AdaptiveDilatedConv, CARAFE, new decoder, or new backbone.
+- Kept `dformerv2_mid_fusion`, `dformerv2_ms_freqcov`, and `dformerv2_feat_maskrec_c34` unchanged.
+- Actual parameter count: baseline `dformerv2_mid_fusion` `41,046,082`; `dformerv2_fft_freq_enhance` `43,136,970`; added parameters `2,090,888`.
+- Verification passed: `compileall`, `train.py --help`, standalone FFT module backward test, and `224x224` model smoke test.
+
 ## 2026-05-08 DFormerv2 Feature-Level Mask Reconstruction Auxiliary Loss
 
 - Added experiment entry `dformerv2_feat_maskrec_c34`.

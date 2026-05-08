@@ -1,5 +1,59 @@
 # Experiment Log
 
+## 2026-05-08 dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run01
+
+- model: `dformerv2_fft_freq_enhance`
+- change: FFT-based modality-wise frequency enhancement before GatedFusion on both primary/DFormerV2 features and aligned depth features.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.25`, `gamma_init=0.1`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.522688` at recorded epoch `41`
+- last val/mIoU: `0.514651`
+- best val/loss: `1.015986` at recorded epoch `13`
+- train/loss_epoch: first `2.242228`, last `0.139953`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `+0.005291`
+- comparison clean 10-run baseline std: `0.004901`
+- comparison clean 10-run baseline best single run: `0.524425`
+- delta vs clean 10-run baseline best single run: `-0.001737`
+- evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run01.md`
+- conclusion: positive single-run signal. The run beats the clean 10-run GatedFusion baseline mean by slightly more than one baseline standard deviation, but it does not beat the strongest clean baseline single run. Do not claim stable improvement until repeated runs confirm the mean.
+- next step: repeat the same setting for at least 5 runs. If the repeated mean stays above `0.517397`, then test a small sweep around `gamma_init=0.05/0.1` and `cutoff_ratio=0.20/0.25/0.30`.
+
+## 2026-05-08 dformerv2_fft_freq_enhance_hh_w1111_c025_g02_run01
+
+- model: `dformerv2_fft_freq_enhance`
+- change: same FFT enhancement as g01 but with higher `gamma_init=0.20` to test whether a stronger initial frequency enhancement push helps.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.25`, `gamma_init=0.2`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.515696` at recorded epoch `47`
+- last val/mIoU: `0.476463`
+- best val/loss: `1.032634` at recorded epoch `6`
+- comparison g01 best (gamma=0.1): `0.522688`
+- delta vs g01: `-0.006992`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.001701`
+- evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g02_run01.md`
+- conclusion: negative result. gamma=0.2 performs worse than gamma=0.1 and falls below the clean baseline mean. The run peaks very late (epoch 47) and then collapses sharply (epoch 50: 0.476463), indicating that stronger initial gamma destabilizes late training. gamma=0.1 remains the better setting. Do not further increase gamma_init.
+
+## 2026-05-08 dformerv2_fft_freq_enhance implementation
+
+- model: `dformerv2_fft_freq_enhance`
+- status: code implemented; waiting for formal training.
+- purpose: add FFT-based modality-wise frequency enhancement before GatedFusion while keeping the DFormerv2 + DepthEncoder + GatedFusion + SimpleFPNDecoder segmentation structure.
+- position: `dformer_feats, aligned_depth -> FFTFrequencyEnhance -> GatedFusion -> SimpleFPNDecoder`.
+- objects: both primary/DFormerV2 features and aligned depth features are enhanced at all four stages.
+- frequency decomposition: spatial `torch.fft.fft2` over H/W, `torch.fft.fftshift`, hard circular low-frequency mask in the Fourier plane, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
+- formula: `X = FFT2(F)`, `F_low = IFFT2(M_low * X).real`, `F_high = F - F_low`, `F_out = F + gamma * sigmoid(Conv([F, F_high])) * Clean(F_high)`.
+- first configuration: `cutoff_ratio=0.25`, `gamma_init=0.05`.
+- training loss: segmentation loss only; no auxiliary loss is added.
+- code evidence: `src/models/freq_enhance.py`, `src/models/mid_fusion.py`, and `train.py`.
+- reference-code motivation: FADC `FrequencySelection` frequency branch and FreqFusion high/low-frequency fusion motivation; no mmcv/MMSegmentation modules were imported.
+- verification: `compileall`, `train.py --help`, standalone FFT module backward test, and `224x224` model smoke test all passed.
+- parameter count: baseline `dformerv2_mid_fusion` `41,046,082`; `dformerv2_fft_freq_enhance` `43,136,970`; added parameters `2,090,888`.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
 ## 2026-05-08 dformerv2_feat_maskrec_c34_w0011_lam01_run01
 
 - model: `dformerv2_feat_maskrec_c34`
