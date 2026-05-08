@@ -1,5 +1,102 @@
 # Experiment Log
 
+## 2026-05-08 dformerv2_feat_maskrec_c34_w0011_lam01_run01
+
+- model: `dformerv2_feat_maskrec_c34`
+- change: training-only c3+c4 feature-level cross-modal mask reconstruction auxiliary loss on top of the unchanged DFormerv2 mid-fusion inference path.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `lambda_mask=0.1`, `mask_ratio_depth=0.30`, `mask_ratio_primary=0.15`, `maskrec_alpha=0.5`, `maskrec_loss_type=smooth_l1`, `maskrec_stage_weights=0,0,1,1`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.515327` at recorded epoch `33`
+- last val/mIoU: `0.501496`
+- best val/loss: `1.016409` at recorded epoch `15`
+- train/maskrec_loss_epoch: first `0.440276`, last `0.339426`
+- lambda-weighted maskrec contribution: first `0.044028`, last `0.033943`
+- maskrec/stage1 and maskrec/stage2 stayed `0`, confirming `maskrec_stage_weights=0,0,1,1` used c3+c4 only.
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.002070`
+- comparison clean 10-run baseline std: `0.004901`
+- comparison clean 10-run baseline best single run: `0.524425`
+- evidence: `miou_list/dformerv2_feat_maskrec_c34_w0011_lam01_run01.md`
+- conclusion: negative single-run result. The c3+c4 mask reconstruction auxiliary loss optimizes normally, but the supervised reconstruction target does not improve validation mIoU in this run and ends below the clean repeated GatedFusion baseline mean.
+- next step: do not claim this as an improvement. If continuing mask reconstruction, test whether a lower `lambda_mask=0.01` is less disruptive or whether c4-only `maskrec_stage_weights=0,0,0,1` is safer; otherwise pivot away from reconstruction losses.
+
+## 2026-05-08 dformerv2_feat_maskrec_c34 implementation
+
+- model: `dformerv2_feat_maskrec_c34`
+- status: code implemented; waiting for formal training.
+- purpose: add feature-level cross-modal mask reconstruction auxiliary loss while keeping the DFormerv2 + DepthEncoder + GatedFusion + SimpleFPNDecoder inference structure unchanged.
+- training loss: `L_total = L_seg + lambda_mask * maskrec_loss`.
+- maskrec loss: `maskrec_loss = sum_i w_i * (depth_rec_i + maskrec_alpha * primary_rec_i) / sum_i w_i`.
+- stage control: `--maskrec_stage_weights` explicitly controls c1-c4 participation; `0,0,1,1` means c3+c4 only.
+- default settings: `lambda_mask=0.01`, `mask_ratio_depth=0.30`, `mask_ratio_primary=0.15`, `maskrec_alpha=0.5`, `maskrec_loss_type=smooth_l1`; formal experiment commands must explicitly pass `--maskrec_stage_weights`.
+- primary-to-depth: mask depth feature locations, reconstruct depth from `[primary_feat, masked_depth_feat]`, and supervise only masked depth locations.
+- depth-to-primary: mask primary/DFormerv2 feature locations, reconstruct primary from `[depth_feat, masked_primary_feat]`, and supervise only masked primary locations.
+- target features are detached; source features and masked target inputs are not detached.
+- validation and inference remain ordinary segmentation forward passes.
+- code evidence: `src/models/mask_reconstruction_loss.py`, `src/models/mid_fusion.py`, and `train.py`.
+- reference-code motivation: MultiMAE masked multi-modal reconstruction and output-adapter organization; M3AE masked/missing modality reconstruction training organization.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
+## 2026-05-08 dformerv2_ms_freqcov aggressive sweep summary
+
+- model: `dformerv2_ms_freqcov`
+- change: training-only c1-c4 multi-scale frequency covariance auxiliary loss on top of the unchanged DFormerv2 mid-fusion inference path.
+- baseline for comparison: clean 10-run `dformerv2_mid_fusion` GatedFusion baseline mean best val/mIoU `0.517397`, population std `0.004901`, best single run `0.524425`.
+- completed runs: `7` / `7`; every listed run has `50` recorded validation epochs.
+- `dformerv2_ms_freqcov_run01`: `lambda_freq=0.01`, `freq_stage_weights=1,1,1,1`, best val/mIoU `0.520539` at epoch `50`, last `0.520539`, delta vs baseline mean `+0.003142`.
+- `dformerv2_ms_freqcov_lam01_run01`: `lambda_freq=0.1`, `freq_stage_weights=1,1,1,1`, best val/mIoU `0.516227` at epoch `40`, last `0.499021`, delta vs baseline mean `-0.001170`.
+- `dformerv2_ms_freqcov_lam1_run01`: `lambda_freq=1.0`, `freq_stage_weights=1,1,1,1`, best val/mIoU `0.518769` at epoch `45`, last `0.512625`, delta vs baseline mean `+0.001372`.
+- `dformerv2_ms_freqcov_stage3412_run01`: `lambda_freq=0.1`, `freq_stage_weights=0.5,1,1,2`, best val/mIoU `0.515543` at epoch `44`, last `0.496894`, delta vs baseline mean `-0.001854`.
+- `dformerv2_ms_freqcov_stage3412_lam1_run01`: `lambda_freq=1.0`, `freq_stage_weights=0.5,1,1,2`, best val/mIoU `0.514508` at epoch `50`, last `0.514508`, delta vs baseline mean `-0.002889`.
+- `dformerv2_ms_freqcov_stage234_lam1_run01`: `lambda_freq=1.0`, `freq_stage_weights=0,0.5,1,2`, best val/mIoU `0.520060` at epoch `40`, last `0.505907`, delta vs baseline mean `+0.002663`.
+- `dformerv2_ms_freqcov_stage3412_lam2_run01`: `lambda_freq=2.0`, `freq_stage_weights=0.5,1,1,2`, best val/mIoU `0.504229` at epoch `44`, last `0.502087`, delta vs baseline mean `-0.013168`.
+- sweep mean best val/mIoU: `0.515697`.
+- sweep population std best val/mIoU: `0.005143`.
+- evidence: `miou_list/dformerv2_ms_freqcov_run01.md`, `miou_list/dformerv2_ms_freqcov_lam01_run01.md`, `miou_list/dformerv2_ms_freqcov_lam1_run01.md`, `miou_list/dformerv2_ms_freqcov_stage3412_run01.md`, `miou_list/dformerv2_ms_freqcov_stage3412_lam1_run01.md`, `miou_list/dformerv2_ms_freqcov_stage234_lam1_run01.md`, `miou_list/dformerv2_ms_freqcov_stage3412_lam2_run01.md`, and `miou_list/dformerv2_ms_freqcov_aggressive_sweep_summary.md`.
+- conclusion: all planned freqcov jobs finished. The default weak run and stage234-lam1 run show positive single-run signals, but the aggressive sweep mean is below the clean baseline mean and the best freqcov run does not beat the clean baseline best single run. `lambda_freq=2.0` is clearly negative. Do not claim freqcov as a stable improvement yet.
+- next step: if continuing freqcov, only test focused repeats of the two non-negative settings (`lambda=0.01 uniform` and `lambda=1.0 weights=0,0.5,1,2`). Otherwise pivot to a different training-only auxiliary target, such as conservative mask reconstruction, because simply increasing covariance weight did not produce a stable gain.
+
+## 2026-05-07 dformerv2_ms_freqcov_run01
+
+- model: `dformerv2_ms_freqcov`
+- change: DFormerv2 mid-fusion baseline plus training-only c1-c4 multi-scale frequency covariance auxiliary loss.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `lambda_freq=0.01`, `freq_eta=1.0`, `freq_proj_dim=64`, `freq_kernel_size=3`, `freq_stage_weights=1,1,1,1`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.520539` at recorded epoch `50`
+- last val/mIoU: `0.520539`
+- best val/loss: `1.005932` at recorded epoch `10`
+- train/freqcov_loss_epoch: first `0.001377`, last `0.000002`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `+0.003142`
+- comparison clean 10-run baseline std: `0.004901`
+- evidence: `miou_list/dformerv2_ms_freqcov_run01.md`
+- conclusion: promising single-run result. The run beats the clean 10-run GatedFusion baseline mean, but the margin is smaller than one baseline standard deviation, so it cannot yet be claimed as a stable improvement.
+- next step: run repeated seeds for `dformerv2_ms_freqcov`; at minimum run01-run05 before promoting it as a main candidate.
+
+## 2026-05-07 dformerv2_mid_fusion_gate_baseline clean ten-run summary
+
+- model: `dformerv2_mid_fusion`
+- change: baseline DFormerv2 mid-fusion with original `GatedFusion`; no architecture change.
+- included complete runs: `dformerv2_mid_fusion_gate_baseline_run01` through `run09`, plus `dformerv2_mid_fusion_gate_baseline_run10_retry`
+- excluded run: `dformerv2_mid_fusion_gate_baseline_run10`, because it recorded only `43` validation epochs.
+- mean best val/mIoU: `0.517397`
+- population std best val/mIoU: `0.004901`
+- mean last val/mIoU: `0.507137`
+- evidence: `miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
+- conclusion: this clean ten-run statistic supersedes the earlier nine-complete-run plus partial-run baseline summary for future comparisons.
+
+## 2026-05-07 dformerv2_ms_freqcov implementation
+
+- model: `dformerv2_ms_freqcov`
+- status: code implemented; waiting for formal training.
+- purpose: add c1-c4 multi-scale feature-level frequency covariance auxiliary loss while keeping the DFormerv2 + DepthEncoder + GatedFusion + SimpleFPNDecoder inference structure unchanged.
+- training loss: `L_total = L_seg + lambda_freq * L_freqcov`.
+- default settings: `lambda_freq=0.01`, `freq_eta=1.0`, `freq_proj_dim=64`, `freq_kernel_size=3`, `freq_stage_weights=1,1,1,1`.
+- code evidence: `src/models/freq_cov_loss.py`, `src/models/mid_fusion.py`, and `train.py`.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
 ## 2026-05-07 dformerv2_mid_fusion_gate_baseline run01-run10 summary
 
 - model: `dformerv2_mid_fusion`

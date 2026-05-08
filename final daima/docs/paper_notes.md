@@ -1,5 +1,54 @@
 # Paper Notes
 
+## 2026-05-08 Feature Mask Reconstruction Run01 Boundary
+
+- `dformerv2_feat_maskrec_c34_w0011_lam01_run01` completed 50 validation epochs.
+- Setting: `lambda_mask=0.1`, `maskrec_stage_weights=0,0,1,1`, `mask_ratio_depth=0.30`, `mask_ratio_primary=0.15`, `maskrec_alpha=0.5`.
+- Best val/mIoU is `0.515327` at recorded epoch `33`; last val/mIoU is `0.501496`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901`.
+- Delta vs the clean ten-run baseline mean is `-0.002070`.
+- Interpretation: negative single-run result. The auxiliary reconstruction loss decreases and is active, but it has not improved the segmentation objective.
+- Paper boundary: this run can only be cited as a negative/neutral auxiliary-loss ablation, not as an improvement.
+
+## 2026-05-08 Feature Mask Reconstruction Candidate Boundary
+
+- New candidate entry is `dformerv2_feat_maskrec_c34`.
+- Motivation: after freqcov showed only limited single-run gains, test a more direct training-only cross-modal auxiliary signal without changing the segmentation inference architecture.
+- The inference architecture is unchanged: DFormerV2_S primary encoder, DepthEncoder, GatedFusion, and SimpleFPNDecoder.
+- The auxiliary loss is feature-level, not image-level reconstruction: it supports c1-c4 primary/DFormerv2 and aligned depth features.
+- Stage participation is explicit through `--maskrec_stage_weights`; the first planned run uses `0,0,1,1` for c3+c4.
+- Primary-to-depth reconstructs masked depth features from primary features plus visible depth context, with default depth mask ratio `0.30`.
+- Depth-to-primary reconstructs masked primary/DFormerv2 features from depth features plus visible primary context, with default primary mask ratio `0.15`.
+- Targets are detached for stable supervision; source features and masked target inputs remain attached for gradient flow.
+- This is not a new fusion block, not KD, not MultiMAE pretraining, not M3AE missing-modality inference, and not a replacement for the baseline.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
+## 2026-05-08 MS-FreqCov Sweep Boundary
+
+- Active baseline for comparisons remains clean 10-run `dformerv2_mid_fusion` GatedFusion: mean best val/mIoU `0.517397`, population std `0.004901`, best single run `0.524425`.
+- `dformerv2_ms_freqcov` keeps the inference architecture unchanged and adds only a training-time c1-c4 frequency covariance auxiliary loss.
+- Seven freqcov settings have completed 50 epochs: default `lambda=0.01`, `lambda=0.1`, `lambda=1.0`, high-stage weighted `0.5,1,1,2` at `lambda=0.1/1.0/2.0`, and high-stage weighted with stage1 disabled `0,0.5,1,2` at `lambda=1.0`.
+- Best freqcov single run is default `lambda=0.01`, best val/mIoU `0.520539`; second useful signal is `lambda=1.0`, weights `0,0.5,1,2`, best val/mIoU `0.520060`.
+- Sweep mean best val/mIoU is `0.515697`, below the clean baseline mean by `0.001700`.
+- `lambda=2.0` with weights `0.5,1,1,2` is a clear negative result: best val/mIoU `0.504229`.
+- Paper boundary: freqcov can be described as a training-only auxiliary ablation with limited single-run positive signals, but it is not yet a stable paper improvement and must not be reported as the main result unless repeated runs beat the clean baseline mean.
+
+## 2026-05-07 MS-FreqCov Run01 Result Boundary
+
+- `dformerv2_ms_freqcov_run01` completed 50 validation epochs.
+- Best val/mIoU is `0.520539` at recorded epoch `50`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901`.
+- Run01 delta vs the clean ten-run baseline mean is `+0.003142`.
+- Interpretation: promising but not stable yet. The gain is smaller than one baseline standard deviation, so repeated runs are required before this can be written as a paper improvement.
+
+## 2026-05-07 MS-FreqCov Candidate Boundary
+
+- New candidate entry is `dformerv2_ms_freqcov`.
+- Motivation: test whether c1-c4 RGB/DFormer and depth features benefit from a training-only second-order frequency covariance auxiliary loss.
+- The inference architecture is unchanged: DFormerV2_S primary encoder, DepthEncoder, GatedFusion, and SimpleFPNDecoder.
+- This is not a new fusion block, not a reconstruction head, not KD, and not full VICReg or Barlow Twins SSL.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
 ## 2026-05-07 GatedFusion Baseline Boundary
 
 - New repeated baseline evidence is `dformerv2_mid_fusion_gate_baseline`.

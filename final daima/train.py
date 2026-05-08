@@ -32,6 +32,8 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
     LitMidFusion,
     LitDFormerV2MidFusion,
+    LitDFormerV2MSFreqCov,
+    LitDFormerV2FeatMaskRecC34,
 )
 
 
@@ -39,6 +41,8 @@ MODEL_REGISTRY = {
     "early": LitEarlyFusion,
     "mid_fusion": LitMidFusion,
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_ms_freqcov": LitDFormerV2MSFreqCov,
+    "dformerv2_feat_maskrec_c34": LitDFormerV2FeatMaskRecC34,
 }
 
 
@@ -91,6 +95,17 @@ def build_parser():
     parser.add_argument("--devices", type=str, default="1")
     parser.add_argument("--accelerator", type=str, default="auto")
     parser.add_argument("--dformerv2_pretrained", type=str, default=None)
+    parser.add_argument("--lambda_freq", type=float, default=0.01)
+    parser.add_argument("--freq_eta", type=float, default=1.0)
+    parser.add_argument("--freq_proj_dim", type=int, default=64)
+    parser.add_argument("--freq_kernel_size", type=int, default=3)
+    parser.add_argument("--freq_stage_weights", type=str, default="1,1,1,1")
+    parser.add_argument("--lambda_mask", type=float, default=0.01)
+    parser.add_argument("--mask_ratio_depth", type=float, default=0.30)
+    parser.add_argument("--mask_ratio_primary", type=float, default=0.15)
+    parser.add_argument("--maskrec_alpha", type=float, default=0.5)
+    parser.add_argument("--maskrec_loss_type", type=str, default="smooth_l1")
+    parser.add_argument("--maskrec_stage_weights", type=str, default="1,1,1,1")
     return parser
 
 
@@ -113,6 +128,33 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
+    if args.model == "dformerv2_ms_freqcov":
+        freq_stage_weights = tuple(float(v.strip()) for v in args.freq_stage_weights.split(","))
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            lambda_freq=args.lambda_freq,
+            freq_eta=args.freq_eta,
+            freq_proj_dim=args.freq_proj_dim,
+            freq_kernel_size=args.freq_kernel_size,
+            freq_stage_weights=freq_stage_weights,
+        )
+    if args.model == "dformerv2_feat_maskrec_c34":
+        maskrec_stage_weights = tuple(float(v.strip()) for v in args.maskrec_stage_weights.split(","))
+        if len(maskrec_stage_weights) != 4:
+            raise ValueError("--maskrec_stage_weights must contain 4 comma-separated values")
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            lambda_mask=args.lambda_mask,
+            mask_ratio_depth=args.mask_ratio_depth,
+            mask_ratio_primary=args.mask_ratio_primary,
+            maskrec_alpha=args.maskrec_alpha,
+            maskrec_loss_type=args.maskrec_loss_type,
+            maskrec_stage_weights=maskrec_stage_weights,
+        )
     if args.model in {
         "dformerv2_mid_fusion",
     }:

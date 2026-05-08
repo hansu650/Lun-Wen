@@ -1,5 +1,36 @@
 # Model Changes
 
+## 2026-05-08 DFormerv2 Feature-Level Mask Reconstruction Auxiliary Loss
+
+- Added experiment entry `dformerv2_feat_maskrec_c34`.
+- Added `src/models/mask_reconstruction_loss.py` with `FeatureMaskReconstructionLoss`.
+- Added `LitDFormerV2FeatMaskRecC34` in `src/models/mid_fusion.py`.
+- The experiment reuses `DFormerV2MidFusionSegmentor.extract_features(rgb, depth)` to obtain DFormerv2 primary c1-c4 features, aligned DepthEncoder c1-c4 features, and original GatedFusion fused features.
+- The segmentation inference path remains unchanged: `DFormerV2_S + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- The auxiliary loss is training-only and creates reconstruction heads for c1-c4.
+- `maskrec_stage_weights` now explicitly controls which stages affect the total loss; weight `0` stages are skipped and logged as zero.
+- Example stage weights: `0,0,1,1` for c3+c4, `0,0,0,1` for c4 only, `0,0.5,1,1` for weak c2 plus c3+c4, and `1,1,1,1` for all stages.
+- Primary-to-depth direction: mask the depth feature, concatenate `[primary_feat, masked_depth_feat]`, predict the original depth feature, and compute loss only on masked depth locations.
+- Depth-to-primary direction: mask the primary/DFormerv2 feature, concatenate `[depth_feat, masked_primary_feat]`, predict the original primary feature, and compute loss only on masked primary locations.
+- Reconstruction targets are detached; source features and masked target inputs are not detached, so the auxiliary loss can update the encoders and reconstruction heads.
+- Training loss: `L_total = L_seg + lambda_mask * sum_i w_i * (depth_rec_i + maskrec_alpha * primary_rec_i) / sum_i w_i`.
+- Defaults: `lambda_mask=0.01`, `mask_ratio_depth=0.30`, `mask_ratio_primary=0.15`, `maskrec_alpha=0.5`, `maskrec_loss_type=smooth_l1`; formal experiment commands must explicitly pass `--maskrec_stage_weights`.
+- Kept `dformerv2_mid_fusion` and `dformerv2_ms_freqcov` unchanged.
+
+## 2026-05-07 DFormerv2 Multi-Scale Frequency Covariance Auxiliary Loss
+
+- Added experiment entry `dformerv2_ms_freqcov`.
+- Added `src/models/freq_cov_loss.py` with `MultiScaleFrequencyCovarianceLoss`.
+- Added `DFormerV2MidFusionSegmentor.extract_features(rgb, depth)` so training can access DFormerv2 c1-c4 features, aligned DepthEncoder c1-c4 features, and fused GatedFusion features without changing baseline inference behavior.
+- Added `LitDFormerV2MSFreqCov` in `src/models/mid_fusion.py`.
+- Training loss: `L_total = L_seg + lambda_freq * sum_i w_i * (L_high_cov_i + eta * L_low_cov_i) / sum_i w_i`.
+- Frequency split is training-only and uses `avg_pool2d` smoothing: `low = avg_pool2d(x)`, `high = x - low`.
+- Each stage has separate 1x1 projection heads for DFormerv2 features and DepthEncoder features before covariance calculation.
+- Covariance calculation centers projected BCHW features after flattening to `[B*H*W, C]`, then computes `cov = z.T @ z / (N - 1)`.
+- The segmentation inference path remains `DFormerV2_S + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- Kept `dformerv2_mid_fusion` unchanged as the baseline registry entry.
+- Did not restore DGC-AF++, Full++, guided adapter simple, or archived modules to the main training path.
+
 ## 2026-05-06 Archive Deprecated Fusion Modules Outside Main Path
 
 - Created `feiqi/` as the archive folder for deprecated fusion experiment modules.
