@@ -1,19 +1,34 @@
 # Experiment Log
 
+## 2026-05-09 dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01
+
+- model: `dformerv2_fft_hilo_enhance`
+- change: FFT low/high dual-band gated residual enhancement on both primary/DFormerV2 features and aligned depth features before GatedFusion.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- total params: 46.6M
+- recorded validation epochs: `50`
+- best val/mIoU: `0.519128` at recorded epoch `41`
+- last val/mIoU: `0.518313`
+- best val/loss: `1.017970` at recorded epoch `9`
+- train/loss_epoch: first `2.251478`, last `0.134208`
+- mean val/mIoU over last 10 epochs (40-49): `0.508414`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `+0.001731`
+- comparison clean 10-run baseline std: `0.004901`
+- delta in baseline std units: `+0.353`
+- comparison clean 10-run baseline best single run: `0.524425`
+- delta vs clean baseline best single run: `-0.005297`
+- comparison dformerv2_fft_freq_enhance g01 best: `0.522688`
+- delta vs freq_enhance g01: `-0.003560`
+- evidence: `miou_list/dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01.md`
+- conclusion: positive single-run signal but marginal. Best val/mIoU 0.519128 beats the clean 10-run baseline mean by +0.001731 (0.35 std), but does not beat the baseline best single run 0.524425. The last-epoch mIoU 0.518313 is very close to the best, indicating stable late training without collapse. However, this result is weaker than the original dformerv2_fft_freq_enhance (gamma=0.1) single run 0.522688. The HiLo dual-band design with alpha_low=0.03, alpha_high=0.10 did not outperform the simpler high-frequency-only freq_enhance design. Training shows significant oscillation in val/mIoU throughout (drops at epochs 21, 29-30, 36, 42-43), suggesting the dual-band enhancement introduces more instability than the single-band design.
+- next step: do not claim as improvement. The HiLo design adds complexity without clear gain over the simpler freq_enhance. If pursuing this direction, test alpha_low_init=0 (disable low-freq enhancement) to isolate whether the low-frequency branch hurts; or test higher alpha_high_init=0.15 to match freq_enhance's effective gamma range.
+
 ## 2026-05-09 dformerv2_fft_hilo_enhance implementation
 
 - model: `dformerv2_fft_hilo_enhance`
-- status: code implemented; waiting for formal training.
-- purpose: strengthen the promising post-encoder/pre-fusion FFT inference-path direction with low/high dual-band residual enhancement.
-- inference path: `dformer_feats, aligned_depth -> FFTHiLoEnhance -> GatedFusion -> SimpleFPNDecoder`.
-- objects: both primary/DFormerV2 features and aligned depth features are enhanced at all four stages by default.
-- frequency decomposition: spatial `torch.fft.fft2` over H/W, `torch.fft.fftshift`, hard circular low-frequency mask in the Fourier plane, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
-- formula: `x_low = IFFT2(M_low * FFT2(x)).real`, `x_high = x - x_low`, `out = x + alpha_low * gate_low([x,x_low,x_high]) * clean_low(x_low) + alpha_high * gate_high([x,x_low,x_high]) * clean_high(x_high)`.
-- alpha bound: `alpha = alpha_max * sigmoid(raw_alpha)` with inverse-sigmoid initialization.
-- first configuration: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`.
-- training loss: segmentation loss only; no auxiliary loss is added.
-- code evidence: `src/models/fft_hilo_enhance.py`, `src/models/mid_fusion.py`, and `train.py`.
-- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+- status: code implemented; training completed (see run01 entry above).
 
 ## 2026-05-09 dformerv2_cm_infonce_c34_lam005_t01_s256_run01
 

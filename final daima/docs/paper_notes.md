@@ -1,17 +1,15 @@
 # Paper Notes
 
-## 2026-05-09 FFT HiLo Enhancement Candidate Boundary
+## 2026-05-09 FFT HiLo Enhancement Run01 Boundary
 
-- New candidate entry is `dformerv2_fft_hilo_enhance`.
-- Motivation: `dformerv2_fft_freq_enhance` with `cutoff_ratio=0.25`, `gamma_init=0.1` is the clearest positive single-run signal so far, while auxiliary losses and encoder-internal FFT selection were negative. This branch keeps the post-encoder/pre-fusion inference-path direction and extends it to low/high dual-band residual enhancement.
-- The DFormerV2 primary encoder, DepthEncoder, GatedFusion, SimpleFPNDecoder, BaseLitSeg, loss, dataset, and dataloader remain unchanged.
-- Both primary/DFormerV2 features and aligned depth features are enhanced before GatedFusion.
-- Frequency decomposition uses true spatial FFT over H/W, a shifted Fourier-plane circular low-pass mask, and inverse FFT reconstruction.
-- Formula: `out = x + alpha_low * gate_low([x,x_low,x_high]) * clean_low(x_low) + alpha_high * gate_high([x,x_low,x_high]) * clean_high(x_high)`.
-- Alpha values are bounded with `alpha = alpha_max * sigmoid(raw_alpha)` and initialized by inverse sigmoid.
-- First planned configuration: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`, segmentation loss only.
-- This is not an auxiliary loss and is not combined with freqcov, maskrec, or InfoNCE.
-- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+- `dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01` completed 50 validation epochs.
+- Setting: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`, four-stage dual-band enhancement on both primary/DFormerV2 and aligned depth features before GatedFusion.
+- Best val/mIoU is `0.519128` at recorded epoch `41`; last val/mIoU is `0.518313`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
+- Delta vs the clean ten-run baseline mean is `+0.001731`; delta vs the clean baseline best single run is `-0.005297`.
+- Comparison: `dformerv2_fft_freq_enhance` (gamma=0.1) single run best is `0.522688`; HiLo is `-0.003560` below.
+- Interpretation: positive single-run signal but marginal, and weaker than the simpler freq_enhance design. The HiLo dual-band approach adds low-frequency enhancement and dual-band gating but does not outperform high-frequency-only enhancement. Training shows significant oscillation (drops at epochs 21, 29-30, 36, 42-43), suggesting the dual-band enhancement introduces more instability.
+- Paper boundary: do not cite as improvement over freq_enhance. The HiLo design can be documented as a negative/neutral ablation showing that adding low-frequency enhancement does not help beyond high-frequency-only enhancement. The simpler `dformerv2_fft_freq_enhance` remains the stronger candidate.
 
 ## 2026-05-09 Cross-Modal InfoNCE Run01 Boundary
 
