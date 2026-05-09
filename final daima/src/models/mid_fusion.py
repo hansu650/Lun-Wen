@@ -61,8 +61,8 @@ class MidFusionSegmentor(nn.Module):
 
 
 class LitMidFusion(BaseLitSeg):
-    def __init__(self, num_classes=40, lr=1e-4):
-        super().__init__(num_classes=num_classes, lr=lr)
+    def __init__(self, num_classes=40, lr=1e-4, loss_type: str = "ce", dice_weight: float = 0.5):
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = MidFusionSegmentor(num_classes=num_classes)
 
 
@@ -100,8 +100,15 @@ class DFormerV2MidFusionSegmentor(nn.Module):
 
 
 class LitDFormerV2MidFusion(BaseLitSeg):
-    def __init__(self, num_classes=40, lr=1e-4, dformerv2_pretrained=None):
-        super().__init__(num_classes=num_classes, lr=lr)
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = DFormerV2MidFusionSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
@@ -145,8 +152,16 @@ class DFormerV2DepthFFTSelectSegmentor(nn.Module):
 
 
 class LitDFormerV2DepthFFTSelect(BaseLitSeg):
-    def __init__(self, num_classes=40, lr=1e-4, dformerv2_pretrained=None, cutoff_ratio=0.30):
-        super().__init__(num_classes=num_classes, lr=lr)
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        cutoff_ratio=0.30,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = DFormerV2DepthFFTSelectSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
@@ -211,8 +226,10 @@ class LitDFormerV2FFTFreqEnhance(BaseLitSeg):
         dformerv2_pretrained=None,
         cutoff_ratio=0.25,
         gamma_init=0.05,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
     ):
-        super().__init__(num_classes=num_classes, lr=lr)
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = DFormerV2FFTFreqEnhanceSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
@@ -315,8 +332,10 @@ class LitDFormerV2FFTHiLoEnhance(BaseLitSeg):
         alpha_high_init=0.10,
         alpha_max=0.5,
         stage_weights=(1.0, 1.0, 1.0, 1.0),
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
     ):
-        super().__init__(num_classes=num_classes, lr=lr)
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = DFormerV2FFTHiLoEnhanceSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,

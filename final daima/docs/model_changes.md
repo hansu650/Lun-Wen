@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-09 CE + Dice Loss Recipe Support
+
+- Added `src/losses/dice_loss.py` with multiclass `DiceLoss` and `CEDiceLoss`.
+- Added `src/losses/__init__.py` to export the loss classes.
+- Added `loss_type` and `dice_weight` support to `BaseLitSeg`.
+- Default `loss_type=ce` keeps the previous baseline behavior: `CrossEntropyLoss(ignore_index=255)`.
+- New `loss_type=ce_dice` uses `CE + dice_weight * DiceLoss`, with default `dice_weight=0.5`.
+- Training loss is selectable through `train.py`; validation loss remains fixed CE for comparability with historical logs.
+- `val/mIoU`, checkpoint monitor, model forward paths, decoder, GatedFusion, FFT modules, dataset, and dataloader are unchanged.
+- This is a logits-level segmentation loss recipe, not a restoration of archived feature-level auxiliary losses from `feiqi/losses/`.
+
 ## 2026-05-09 Archive Deprecated Auxiliary Loss Modules
 
 - Moved `src/models/freq_cov_loss.py` → `feiqi/losses/freq_cov_loss.py`

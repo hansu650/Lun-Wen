@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-09 CE + Dice Loss Recipe Candidate Boundary
+
+- New candidate setting: `dformerv2_mid_fusion` with `loss_type=ce_dice`, `dice_weight=0.5`.
+- Motivation: after fusion replacements, FFT variants, and feature-level auxiliary losses failed to produce stable gains, test a mature logits-level segmentation loss recipe without changing the model architecture.
+- The model path remains unchanged: DFormerV2 primary branch, DepthEncoder, GatedFusion, and SimpleFPNDecoder.
+- DiceLoss is a standard multiclass soft Dice loss over logits and labels, with `ignore_index=255` masked before one-hot conversion.
+- Validation loss remains CE and `val/mIoU` remains the primary metric.
+- Lovasz-Softmax remains a possible future IoU-surrogate loss candidate, but it is not implemented in this step.
+- Paper status: implementation-only candidate; no mIoU claim until repeated runs are completed and logged.
+
 ## 2026-05-09 FFT Freq Enhance 3-Run Summary Boundary
 
 - `dformerv2_fft_freq_enhance` (cutoff=0.25, gamma=0.1) has now been run 3 times.

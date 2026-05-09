@@ -97,6 +97,8 @@ def build_parser():
     parser.add_argument("--devices", type=str, default="1")
     parser.add_argument("--accelerator", type=str, default="auto")
     parser.add_argument("--dformerv2_pretrained", type=str, default=None)
+    parser.add_argument("--loss_type", type=str, default="ce", choices=["ce", "ce_dice"])
+    parser.add_argument("--dice_weight", type=float, default=0.5)
     parser.add_argument("--cutoff_ratio", type=float, default=0.25)
     parser.add_argument("--gamma_init", type=float, default=0.05)
     parser.add_argument("--hilo_alpha_low_init", type=float, default=0.03)
@@ -132,6 +134,8 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             cutoff_ratio=args.cutoff_ratio,
             gamma_init=args.gamma_init,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
         )
     if args.model == "dformerv2_fft_hilo_enhance":
         hilo_stage_weights = tuple(float(v.strip()) for v in args.hilo_stage_weights.split(","))
@@ -146,6 +150,8 @@ def build_model(args):
             alpha_high_init=args.hilo_alpha_high_init,
             alpha_max=args.hilo_alpha_max,
             stage_weights=hilo_stage_weights,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
         )
     if args.model == "dformerv2_depth_fft_select":
         return model_cls(
@@ -153,6 +159,8 @@ def build_model(args):
             lr=args.lr,
             dformerv2_pretrained=args.dformerv2_pretrained,
             cutoff_ratio=args.cutoff_ratio,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
         )
     if args.model in {
         "dformerv2_mid_fusion",
@@ -161,8 +169,15 @@ def build_model(args):
             num_classes=args.num_classes,
             lr=args.lr,
             dformerv2_pretrained=args.dformerv2_pretrained,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
         )
-    return model_cls(num_classes=args.num_classes, lr=args.lr)
+    return model_cls(
+        num_classes=args.num_classes,
+        lr=args.lr,
+        loss_type=args.loss_type,
+        dice_weight=args.dice_weight,
+    )
 
 
 def build_callbacks(args, monitor_metric: str):

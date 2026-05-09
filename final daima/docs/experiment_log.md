@@ -1,5 +1,19 @@
 # Experiment Log
 
+## 2026-05-09 planned dformerv2_mid_fusion_ce_dice
+
+- model: `dformerv2_mid_fusion`
+- status: planned; not run yet.
+- purpose: verify whether a mature logits-level segmentation loss recipe improves the clean DFormerv2 mid-fusion baseline.
+- baseline for comparison: clean 10-run `dformerv2_mid_fusion` mean best val/mIoU `0.517397`, std `0.004901`, best single run `0.524425`.
+- planned setting: `loss_type=ce_dice`, `dice_weight=0.5`.
+- training loss: `CrossEntropyLoss(ignore_index=255) + 0.5 * DiceLoss(ignore_index=255)`.
+- validation loss: fixed CE for comparability with previous logs.
+- validation metric: `val/mIoU` unchanged.
+- model structure: unchanged `DFormerV2 primary branch + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- note: this does not restore archived freqcov, maskrec, or InfoNCE auxiliary losses.
+- result: no mIoU yet; do not cite until completed runs have TensorBoard evidence and `miou_list` records.
+
 ## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01 3-run summary
 
 - model: `dformerv2_fft_freq_enhance`

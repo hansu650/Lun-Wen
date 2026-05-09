@@ -3,14 +3,24 @@ import torch.nn as nn
 import torch.distributed as dist
 import lightning as L
 
+from ..losses import CEDiceLoss
 from ..utils.metrics import compute_miou, sanitize_labels
 
 
 class BaseLitSeg(L.LightningModule):
-    def __init__(self, num_classes=40, lr=1e-4):
+    def __init__(self, num_classes=40, lr=1e-4, loss_type: str = "ce", dice_weight: float = 0.5):
         super().__init__()
         self.save_hyperparameters()
-        self.criterion = nn.CrossEntropyLoss(ignore_index=255)
+        self.loss_type = loss_type
+        self.dice_weight = float(dice_weight)
+        self.ce_criterion = nn.CrossEntropyLoss(ignore_index=255)
+        self.val_criterion = nn.CrossEntropyLoss(ignore_index=255)
+        if loss_type == "ce":
+            self.train_criterion = self.ce_criterion
+        elif loss_type == "ce_dice":
+            self.train_criterion = CEDiceLoss(ignore_index=255, dice_weight=dice_weight)
+        else:
+            raise ValueError("loss_type must be 'ce' or 'ce_dice'")
         self.register_buffer("_val_confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), persistent=False)
 
     def forward(self, rgb, depth):
@@ -23,7 +33,7 @@ class BaseLitSeg(L.LightningModule):
         rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
         label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
         logits = self(rgb, depth)
-        loss = self.criterion(logits, label)
+        loss = self.train_criterion(logits, label)
         self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
         return loss
 
@@ -32,7 +42,7 @@ class BaseLitSeg(L.LightningModule):
         label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
         logits = self(rgb, depth)
         logits_eval = self._eval_logits(logits, rgb, depth)
-        loss = self.criterion(logits, label)
+        loss = self.val_criterion(logits, label)
         pred = logits_eval.argmax(dim=1)
         miou_batch = compute_miou(pred, label, num_classes=self.hparams.num_classes)
         valid = label != 255

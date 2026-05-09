@@ -20,6 +20,6 @@ class EarlyFusionSegmentor(nn.Module):
 
 
 class LitEarlyFusion(BaseLitSeg):
-    def __init__(self, num_classes=40, lr=1e-4):
-        super().__init__(num_classes=num_classes, lr=lr)
+    def __init__(self, num_classes=40, lr=1e-4, loss_type: str = "ce", dice_weight: float = 0.5):
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
         self.model = EarlyFusionSegmentor(num_classes=num_classes)
