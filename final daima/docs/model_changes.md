@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-09 dformerv2_context_decoder
+
+- Added `PPMContextBlock` and `ContextFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2ContextDecoderSegmentor` and `LitDFormerV2ContextDecoder` in `src/models/mid_fusion.py`.
+- Added model entry `dformerv2_context_decoder` in `train.py`.
+- The new model keeps the same encoder and fusion path as `dformerv2_mid_fusion`: `DFormerV2_S + DepthEncoder + GatedFusion`.
+- The only structural change is decoder-side context refinement: fused `c4` is passed through a lightweight PPM-style context block before the original FPN top-down path.
+- `SimpleFPNDecoder` remains unchanged and is still used by the clean baseline.
+- This is not a fusion replacement, not FFT enhancement, and not an auxiliary loss.
+- Loss, metrics, checkpoint monitor, dataset, dataloader, optimizer, and validation logic are unchanged.
+- First planned setting: `pool_scales=(1,2,3,6)`, `alpha_init=0.1`, `branch_channels=max(C//4,64)`, `loss_type=ce`.
+- Status: code implemented; waiting for smoke test and formal training.
+
 ## 2026-05-09 CE + Dice Loss Recipe Support
 
 - Added `src/losses/dice_loss.py` with multiclass `DiceLoss` and `CEDiceLoss`.

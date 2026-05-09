@@ -32,6 +32,7 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
     LitMidFusion,
     LitDFormerV2MidFusion,
+    LitDFormerV2ContextDecoder,
     LitDFormerV2DepthFFTSelect,
     LitDFormerV2FFTFreqEnhance,
     LitDFormerV2FFTHiLoEnhance,
@@ -42,6 +43,7 @@ MODEL_REGISTRY = {
     "early": LitEarlyFusion,
     "mid_fusion": LitMidFusion,
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_context_decoder": LitDFormerV2ContextDecoder,
     "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_fft_hilo_enhance": LitDFormerV2FFTHiLoEnhance,
@@ -159,6 +161,14 @@ def build_model(args):
             lr=args.lr,
             dformerv2_pretrained=args.dformerv2_pretrained,
             cutoff_ratio=args.cutoff_ratio,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
+        )
+    if args.model == "dformerv2_context_decoder":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
         )

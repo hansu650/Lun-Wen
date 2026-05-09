@@ -1,5 +1,19 @@
 # Experiment Log
 
+## 2026-05-09 planned dformerv2_context_decoder_c4ppm_run01
+
+- model: `dformerv2_context_decoder`
+- change: decoder-side lightweight context refinement with a C4 PPM block.
+- setting: `DFormerV2 primary branch + DepthEncoder + GatedFusion + ContextFPNDecoder`
+- context placement: fused `c4` only, before the FPN lateral4 projection.
+- pool scales: `(1, 2, 3, 6)`
+- branch channels: `max(C//4, 64)`
+- residual scale: learnable `alpha`, initialized to `0.1`
+- loss: `loss_type=ce`
+- baseline reference: clean `dformerv2_mid_fusion` 10-run mean best mIoU `0.517397`, std `0.004901`, best single `0.524425`.
+- status: not run yet.
+- note: no result is claimed. This experiment does not modify DFormerV2, DepthEncoder, GatedFusion, loss, metrics, dataset, dataloader, or checkpoint logic.
+
 ## 2026-05-09 dformerv2_mid_fusion_ce_dice_w05_run01
 
 - model: `dformerv2_mid_fusion`

@@ -1,4 +1,5 @@
 """解码器模块"""
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -27,6 +28,66 @@ class SimpleFPNDecoder(nn.Module):
         p2 = self.lateral2(c2) + F.interpolate(p3, size=c2.shape[-2:], mode="bilinear", align_corners=False)
         p1 = self.lateral1(c1) + F.interpolate(p2, size=c1.shape[-2:], mode="bilinear", align_corners=False)
         
+        p1 = self.smooth(p1)
+        p1 = F.interpolate(p1, size=input_size, mode="bilinear", align_corners=False)
+        return self.classifier(p1)
+
+
+class PPMContextBlock(nn.Module):
+    def __init__(self, in_channels: int, pool_scales=(1, 2, 3, 6), branch_channels=None, alpha_init: float = 0.1):
+        super().__init__()
+        if branch_channels is None:
+            branch_channels = max(in_channels // 4, 64)
+        self.pool_scales = tuple(pool_scales)
+        self.branches = nn.ModuleList([
+            nn.Sequential(
+                nn.AdaptiveAvgPool2d(scale),
+                nn.Conv2d(in_channels, branch_channels, kernel_size=1, bias=True),
+                nn.ReLU(inplace=True),
+            )
+            for scale in self.pool_scales
+        ])
+        context_channels = in_channels + len(self.pool_scales) * branch_channels
+        self.fuse = nn.Sequential(
+            nn.Conv2d(context_channels, in_channels, kernel_size=1, bias=True),
+            nn.ReLU(inplace=True),
+        )
+        self.alpha = nn.Parameter(torch.tensor(float(alpha_init)))
+
+    def forward(self, x):
+        pooled = [
+            F.interpolate(branch(x), size=x.shape[-2:], mode="bilinear", align_corners=False)
+            for branch in self.branches
+        ]
+        context = self.fuse(torch.cat([x] + pooled, dim=1))
+        return x + self.alpha * context
+
+
+class ContextFPNDecoder(nn.Module):
+    def __init__(self, in_channels, out_channels=128, num_classes=40):
+        super().__init__()
+        self.context = PPMContextBlock(in_channels[3])
+        self.lateral4 = nn.Conv2d(in_channels[3], out_channels, 1)
+        self.lateral3 = nn.Conv2d(in_channels[2], out_channels, 1)
+        self.lateral2 = nn.Conv2d(in_channels[1], out_channels, 1)
+        self.lateral1 = nn.Conv2d(in_channels[0], out_channels, 1)
+
+        self.smooth = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels, 3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+        )
+        self.classifier = nn.Conv2d(out_channels, num_classes, 1)
+
+    def forward(self, features, input_size):
+        c1, c2, c3, c4 = features
+
+        c4 = self.context(c4)
+        p4 = self.lateral4(c4)
+        p3 = self.lateral3(c3) + F.interpolate(p4, size=c3.shape[-2:], mode="bilinear", align_corners=False)
+        p2 = self.lateral2(c2) + F.interpolate(p3, size=c2.shape[-2:], mode="bilinear", align_corners=False)
+        p1 = self.lateral1(c1) + F.interpolate(p2, size=c1.shape[-2:], mode="bilinear", align_corners=False)
+
         p1 = self.smooth(p1)
         p1 = F.interpolate(p1, size=input_size, mode="bilinear", align_corners=False)
         return self.classifier(p1)
