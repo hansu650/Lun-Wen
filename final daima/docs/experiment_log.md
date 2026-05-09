@@ -1,5 +1,48 @@
 # Experiment Log
 
+## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01 3-run summary
+
+- model: `dformerv2_fft_freq_enhance`
+- change: 3-run repeat of FFT high-frequency enhancement with cutoff=0.25, gamma_init=0.1.
+- run01: best val/mIoU `0.522688` at epoch `41`, last `0.514651`, delta vs baseline mean `+0.005291`
+- run02: best val/mIoU `0.5159` at epoch `38`, last `0.443`, delta vs baseline mean `-0.001497`
+- run03: best val/mIoU `0.5145` at epoch `42`, last `0.489`, delta vs baseline mean `-0.002897`
+- 3-run mean best val/mIoU: `0.517696`
+- 3-run population std: `0.003664`
+- 3-run mean delta vs clean 10-run baseline mean: `+0.000299` (0.061 std)
+- conclusion: **not a stable improvement**. The 3-run mean 0.517696 is essentially identical to the baseline mean 0.517397. run01 was a high-variance outlier; run02 and run03 both fell below baseline. The FFT freq_enhance direction does not produce consistent gains.
+- next step: deprioritize FFT freq_enhance. The initial positive signal was statistical noise. Consider whether any other direction warrants exploration, or whether the current baseline is already near-optimal for this architecture.
+
+## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run02
+
+- model: `dformerv2_fft_freq_enhance`
+- change: repeat of FFT freq_enhance with same settings as run01.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.25`, `gamma_init=0.1`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.5159` at recorded epoch `38`
+- last val/mIoU: `0.443`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.001497`
+- comparison run01 best: `0.522688`
+- delta vs run01: `-0.006788`
+- evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run02.md`
+- conclusion: negative result. Below baseline mean. Severe late collapse (best 0.5159 → last 0.443).
+
+## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run03
+
+- model: `dformerv2_fft_freq_enhance`
+- change: repeat of FFT freq_enhance with same settings as run01.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `cutoff_ratio=0.25`, `gamma_init=0.1`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.5145` at recorded epoch `42`
+- last val/mIoU: `0.489`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.002897`
+- comparison run01 best: `0.522688`
+- delta vs run01: `-0.008188`
+- evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run03.md`
+- conclusion: negative result. Below baseline mean. Late collapse (best 0.5145 → last 0.489).
+
 ## 2026-05-09 dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01
 
 - model: `dformerv2_fft_hilo_enhance`

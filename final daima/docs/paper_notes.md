@@ -1,5 +1,17 @@
 # Paper Notes
 
+## 2026-05-09 FFT Freq Enhance 3-Run Summary Boundary
+
+- `dformerv2_fft_freq_enhance` (cutoff=0.25, gamma=0.1) has now been run 3 times.
+- run01: best val/mIoU `0.522688` at epoch 41, delta vs baseline mean `+0.005291`
+- run02: best val/mIoU `0.5159` at epoch 38, delta vs baseline mean `-0.001497`
+- run03: best val/mIoU `0.5145` at epoch 42, delta vs baseline mean `-0.002897`
+- 3-run mean best val/mIoU: `0.517696`, 3-run std: `0.003664`
+- 3-run mean delta vs clean 10-run baseline mean: `+0.000299` (0.061 baseline std)
+- Interpretation: **not a stable improvement**. The 3-run mean is essentially identical to the baseline. run01 was a high-variance outlier; run02 and run03 both fell below baseline mean. Both run02 and run03 showed severe late collapse (run02: 0.5159→0.443, run03: 0.5145→0.489), while run01 was more stable (0.5227→0.5147).
+- Paper boundary: **FFT freq_enhance is not a valid paper improvement.** The initial positive signal was statistical noise. Do not cite as improvement. Can be documented as a negative ablation showing that post-encoder FFT high-frequency enhancement does not consistently beat the GatedFusion baseline.
+- Strategic implication: the FFT inference-path direction is now deprioritized. All inference-path modifications tested (FFT freq_enhance, FFT HiLo, depth FFT select) and all auxiliary losses (freqcov, maskrec, InfoNCE) have failed to produce stable gains. The GatedFusion baseline appears to be near-optimal for this architecture.
+
 ## 2026-05-09 FFT HiLo Enhancement Run01 Boundary
 
 - `dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01` completed 50 validation epochs.
