@@ -1,18 +1,30 @@
 # Experiment Log
 
-## 2026-05-09 planned dformerv2_mid_fusion_ce_dice
+## 2026-05-09 dformerv2_mid_fusion_ce_dice_w05_run01
 
 - model: `dformerv2_mid_fusion`
-- status: planned; not run yet.
-- purpose: verify whether a mature logits-level segmentation loss recipe improves the clean DFormerv2 mid-fusion baseline.
-- baseline for comparison: clean 10-run `dformerv2_mid_fusion` mean best val/mIoU `0.517397`, std `0.004901`, best single run `0.524425`.
-- planned setting: `loss_type=ce_dice`, `dice_weight=0.5`.
+- change: CE + Dice loss recipe; `loss_type=ce_dice`, `dice_weight=0.5`.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce_dice`, `dice_weight=0.5`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
 - training loss: `CrossEntropyLoss(ignore_index=255) + 0.5 * DiceLoss(ignore_index=255)`.
 - validation loss: fixed CE for comparability with previous logs.
 - validation metric: `val/mIoU` unchanged.
 - model structure: unchanged `DFormerV2 primary branch + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
-- note: this does not restore archived freqcov, maskrec, or InfoNCE auxiliary losses.
-- result: no mIoU yet; do not cite until completed runs have TensorBoard evidence and `miou_list` records.
+- recorded validation epochs: 50
+- best val/mIoU: 0.507000 at epoch 41
+- last val/mIoU: 0.489077
+- best val/loss: 1.037181 at epoch 6
+- last val/loss: 1.830893
+- mean val/mIoU over last 10 epochs: 0.498237
+- comparison clean 10-run baseline mean best: 0.517397
+- delta vs baseline mean best: -0.010397
+- comparison clean 10-run baseline std: 0.004901
+- delta in baseline std units: -2.121
+- comparison clean 10-run baseline best single: 0.524425
+- delta vs baseline best single: -0.017425
+- evidence: `miou_list/dformerv2_mid_fusion_ce_dice_w05_run01.md`
+- conclusion: **negative single-run result.** CE + Dice (w=0.5) significantly underperforms the clean CE baseline. Best mIoU 0.5070 is 2.12 baseline std below the baseline mean. Training shows clear overfitting: val/loss rises from 1.037 (epoch 6) to 1.831 (epoch 49) while train/loss continues decreasing from 1.069 to 0.282. The Dice component appears to destabilize late training, causing val/mIoU to plateau in the 0.48-0.51 range instead of the baseline's 0.50-0.52 range.
+- next step: do not claim as improvement. The CE + Dice recipe is harmful for this architecture. If pursuing loss experiments, test Dice weight 0.1 or 0.2 (weaker Dice); or test FocalLoss to see if class imbalance correction helps. Otherwise, remain on pure CE baseline.
 
 ## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01 3-run summary
 

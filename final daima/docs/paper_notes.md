@@ -1,14 +1,16 @@
 # Paper Notes
 
-## 2026-05-09 CE + Dice Loss Recipe Candidate Boundary
+## 2026-05-09 CE + Dice Loss Recipe Run01 Boundary
 
-- New candidate setting: `dformerv2_mid_fusion` with `loss_type=ce_dice`, `dice_weight=0.5`.
-- Motivation: after fusion replacements, FFT variants, and feature-level auxiliary losses failed to produce stable gains, test a mature logits-level segmentation loss recipe without changing the model architecture.
-- The model path remains unchanged: DFormerV2 primary branch, DepthEncoder, GatedFusion, and SimpleFPNDecoder.
-- DiceLoss is a standard multiclass soft Dice loss over logits and labels, with `ignore_index=255` masked before one-hot conversion.
-- Validation loss remains CE and `val/mIoU` remains the primary metric.
-- Lovasz-Softmax remains a possible future IoU-surrogate loss candidate, but it is not implemented in this step.
-- Paper status: implementation-only candidate; no mIoU claim until repeated runs are completed and logged.
+- `dformerv2_mid_fusion_ce_dice_w05_run01` completed 50 validation epochs.
+- Setting: `loss_type=ce_dice`, `dice_weight=0.5`, training loss = `CE + 0.5 * Dice`, validation loss = CE, model architecture unchanged.
+- Best val/mIoU is `0.507000` at epoch 41; last val/mIoU is `0.489077`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
+- Delta vs the clean ten-run baseline mean is `-0.010397`; delta in baseline std units is `-2.121`.
+- Training shows clear overfitting: val/loss rises from `1.037` (epoch 6) to `1.831` (epoch 49) while train/loss continues decreasing from `1.069` to `0.282`. The Dice component destabilizes late training.
+- Interpretation: **clear negative result.** CE + Dice at weight 0.5 significantly underperforms the pure CE baseline. The Dice loss causes train-val divergence and reduces final segmentation quality.
+- Paper boundary: **do not cite as improvement.** CE + Dice at w=0.5 is harmful for this architecture. If pursuing loss experiments, test weaker Dice weight (0.1 or 0.2) or pure FocalLoss for class imbalance. Otherwise, the pure CE baseline is the stronger choice.
+- Strategic implication: the GatedFusion baseline with pure CE loss remains the best-performing configuration. All tested modifications (fusion replacements, FFT variants, auxiliary losses, CE+Dice) have failed to produce stable improvements. The baseline appears to be near-optimal for this architecture on NYUDepthV2.
 
 ## 2026-05-09 FFT Freq Enhance 3-Run Summary Boundary
 
