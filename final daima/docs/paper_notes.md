@@ -1,5 +1,18 @@
 # Paper Notes
 
+## 2026-05-09 FFT HiLo Enhancement Candidate Boundary
+
+- New candidate entry is `dformerv2_fft_hilo_enhance`.
+- Motivation: `dformerv2_fft_freq_enhance` with `cutoff_ratio=0.25`, `gamma_init=0.1` is the clearest positive single-run signal so far, while auxiliary losses and encoder-internal FFT selection were negative. This branch keeps the post-encoder/pre-fusion inference-path direction and extends it to low/high dual-band residual enhancement.
+- The DFormerV2 primary encoder, DepthEncoder, GatedFusion, SimpleFPNDecoder, BaseLitSeg, loss, dataset, and dataloader remain unchanged.
+- Both primary/DFormerV2 features and aligned depth features are enhanced before GatedFusion.
+- Frequency decomposition uses true spatial FFT over H/W, a shifted Fourier-plane circular low-pass mask, and inverse FFT reconstruction.
+- Formula: `out = x + alpha_low * gate_low([x,x_low,x_high]) * clean_low(x_low) + alpha_high * gate_high([x,x_low,x_high]) * clean_high(x_high)`.
+- Alpha values are bounded with `alpha = alpha_max * sigmoid(raw_alpha)` and initialized by inverse sigmoid.
+- First planned configuration: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`, segmentation loss only.
+- This is not an auxiliary loss and is not combined with freqcov, maskrec, or InfoNCE.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
 ## 2026-05-09 Cross-Modal InfoNCE Run01 Boundary
 
 - `dformerv2_cm_infonce_c34_lam005_t01_s256_run01` completed 50 validation epochs.

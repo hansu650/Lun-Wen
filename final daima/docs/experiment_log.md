@@ -1,5 +1,20 @@
 # Experiment Log
 
+## 2026-05-09 dformerv2_fft_hilo_enhance implementation
+
+- model: `dformerv2_fft_hilo_enhance`
+- status: code implemented; waiting for formal training.
+- purpose: strengthen the promising post-encoder/pre-fusion FFT inference-path direction with low/high dual-band residual enhancement.
+- inference path: `dformer_feats, aligned_depth -> FFTHiLoEnhance -> GatedFusion -> SimpleFPNDecoder`.
+- objects: both primary/DFormerV2 features and aligned depth features are enhanced at all four stages by default.
+- frequency decomposition: spatial `torch.fft.fft2` over H/W, `torch.fft.fftshift`, hard circular low-frequency mask in the Fourier plane, `torch.fft.ifftshift`, and `torch.fft.ifft2(...).real`.
+- formula: `x_low = IFFT2(M_low * FFT2(x)).real`, `x_high = x - x_low`, `out = x + alpha_low * gate_low([x,x_low,x_high]) * clean_low(x_low) + alpha_high * gate_high([x,x_low,x_high]) * clean_high(x_high)`.
+- alpha bound: `alpha = alpha_max * sigmoid(raw_alpha)` with inverse-sigmoid initialization.
+- first configuration: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`.
+- training loss: segmentation loss only; no auxiliary loss is added.
+- code evidence: `src/models/fft_hilo_enhance.py`, `src/models/mid_fusion.py`, and `train.py`.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
 ## 2026-05-09 dformerv2_cm_infonce_c34_lam005_t01_s256_run01
 
 - model: `dformerv2_cm_infonce`

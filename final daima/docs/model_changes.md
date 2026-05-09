@@ -1,5 +1,32 @@
 # Model Changes
 
+## 2026-05-09 Archive Deprecated Auxiliary Loss Modules
+
+- Moved `src/models/freq_cov_loss.py` → `feiqi/losses/freq_cov_loss.py`
+- Moved `src/models/mask_reconstruction_loss.py` → `feiqi/losses/mask_reconstruction_loss.py`
+- Moved `src/models/contrastive_loss.py` → `feiqi/losses/contrastive_loss.py`
+- Removed from `train.py`: MODEL_REGISTRY entries `dformerv2_ms_freqcov`, `dformerv2_feat_maskrec_c34`, `dformerv2_cm_infonce`; their argparse arguments; and their `build_model` branches.
+- Removed from `src/models/mid_fusion.py`: imports of `CrossModalInfoNCELoss`, `MultiScaleFrequencyCovarianceLoss`, `FeatureMaskReconstructionLoss`; and classes `LitDFormerV2MSFreqCov`, `LitDFormerV2FeatMaskRecC34`, `LitDFormerV2CMInfoNCE`.
+- Active MODEL_REGISTRY now: `early`, `mid_fusion`, `dformerv2_mid_fusion`, `dformerv2_depth_fft_select`, `dformerv2_fft_freq_enhance`, `dformerv2_fft_hilo_enhance`.
+- Kept all experiment records in `miou_list/` and `docs/experiment_log.md` unchanged.
+- Archive README at `feiqi/losses/README.md`.
+
+## 2026-05-09 DFormerv2 FFT HiLo Enhancement
+
+- Added experiment entry `dformerv2_fft_hilo_enhance`.
+- Added `src/models/fft_hilo_enhance.py` with `FFTHiLoEnhance`.
+- Added `DFormerV2FFTHiLoEnhanceSegmentor` and `LitDFormerV2FFTHiLoEnhance` in `src/models/mid_fusion.py`.
+- The module is an inference-path FFT low/high dual-band residual enhancement inserted after encoder feature extraction and before `GatedFusion`.
+- Both primary/DFormerV2 features and aligned depth features are enhanced at all four stages by default.
+- Formula: `x_low = IFFT2(M_low * FFT2(x)).real`, `x_high = x - x_low`, `out = x + alpha_low * gate_low([x,x_low,x_high]) * clean_low(x_low) + alpha_high * gate_high([x,x_low,x_high]) * clean_high(x_high)`.
+- Alpha values are bounded: `alpha = alpha_max * sigmoid(raw_alpha)`. Raw alpha is initialized by inverse sigmoid, not by directly assigning the desired alpha value.
+- First planned configuration: `cutoff_ratio=0.25`, `alpha_high_init=0.10`, `alpha_low_init=0.03`, `alpha_max=0.5`, `hilo_stage_weights=1,1,1,1`.
+- `gate_low` and `gate_high` are zero-initialized so initial gates are `0.5`; `clean_low` and `clean_high` use near-zero normal initialization with `std=1e-4`.
+- This branch adds no auxiliary loss and does not stack with freqcov, maskrec, or InfoNCE.
+- Did not modify DFormerV2, `DepthEncoder`, `GatedFusion`, `SimpleFPNDecoder`, `BaseLitSeg`, validation, inference logic beyond this model path, dataset, or dataloader.
+- Kept `dformerv2_mid_fusion`, `dformerv2_fft_freq_enhance`, `dformerv2_depth_fft_select`, `dformerv2_ms_freqcov`, `dformerv2_feat_maskrec_c34`, and `dformerv2_cm_infonce` unchanged.
+- Status: code implemented; waiting for formal training.
+
 ## 2026-05-08 DFormerv2 Cross-Modal InfoNCE Auxiliary Loss
 
 - Added experiment entry `dformerv2_cm_infonce`.

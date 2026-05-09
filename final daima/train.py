@@ -34,9 +34,7 @@ from src.models.mid_fusion import (
     LitDFormerV2MidFusion,
     LitDFormerV2DepthFFTSelect,
     LitDFormerV2FFTFreqEnhance,
-    LitDFormerV2MSFreqCov,
-    LitDFormerV2FeatMaskRecC34,
-    LitDFormerV2CMInfoNCE,
+    LitDFormerV2FFTHiLoEnhance,
 )
 
 
@@ -46,9 +44,7 @@ MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
     "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
-    "dformerv2_ms_freqcov": LitDFormerV2MSFreqCov,
-    "dformerv2_feat_maskrec_c34": LitDFormerV2FeatMaskRecC34,
-    "dformerv2_cm_infonce": LitDFormerV2CMInfoNCE,
+    "dformerv2_fft_hilo_enhance": LitDFormerV2FFTHiLoEnhance,
 }
 
 
@@ -101,24 +97,12 @@ def build_parser():
     parser.add_argument("--devices", type=str, default="1")
     parser.add_argument("--accelerator", type=str, default="auto")
     parser.add_argument("--dformerv2_pretrained", type=str, default=None)
-    parser.add_argument("--lambda_freq", type=float, default=0.01)
-    parser.add_argument("--freq_eta", type=float, default=1.0)
-    parser.add_argument("--freq_proj_dim", type=int, default=64)
-    parser.add_argument("--freq_kernel_size", type=int, default=3)
-    parser.add_argument("--freq_stage_weights", type=str, default="1,1,1,1")
     parser.add_argument("--cutoff_ratio", type=float, default=0.25)
     parser.add_argument("--gamma_init", type=float, default=0.05)
-    parser.add_argument("--lambda_mask", type=float, default=0.01)
-    parser.add_argument("--mask_ratio_depth", type=float, default=0.30)
-    parser.add_argument("--mask_ratio_primary", type=float, default=0.15)
-    parser.add_argument("--maskrec_alpha", type=float, default=0.5)
-    parser.add_argument("--maskrec_loss_type", type=str, default="smooth_l1")
-    parser.add_argument("--maskrec_stage_weights", type=str, default="1,1,1,1")
-    parser.add_argument("--lambda_contrast", type=float, default=0.005)
-    parser.add_argument("--contrast_temperature", type=float, default=0.1)
-    parser.add_argument("--contrast_proj_dim", type=int, default=64)
-    parser.add_argument("--contrast_sample_points", type=int, default=256)
-    parser.add_argument("--contrast_stage_weights", type=str, default="0,0,1,1")
+    parser.add_argument("--hilo_alpha_low_init", type=float, default=0.03)
+    parser.add_argument("--hilo_alpha_high_init", type=float, default=0.10)
+    parser.add_argument("--hilo_alpha_max", type=float, default=0.5)
+    parser.add_argument("--hilo_stage_weights", type=str, default="1,1,1,1")
     return parser
 
 
@@ -141,47 +125,6 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_ms_freqcov":
-        freq_stage_weights = tuple(float(v.strip()) for v in args.freq_stage_weights.split(","))
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            lambda_freq=args.lambda_freq,
-            freq_eta=args.freq_eta,
-            freq_proj_dim=args.freq_proj_dim,
-            freq_kernel_size=args.freq_kernel_size,
-            freq_stage_weights=freq_stage_weights,
-        )
-    if args.model == "dformerv2_feat_maskrec_c34":
-        maskrec_stage_weights = tuple(float(v.strip()) for v in args.maskrec_stage_weights.split(","))
-        if len(maskrec_stage_weights) != 4:
-            raise ValueError("--maskrec_stage_weights must contain 4 comma-separated values")
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            lambda_mask=args.lambda_mask,
-            mask_ratio_depth=args.mask_ratio_depth,
-            mask_ratio_primary=args.mask_ratio_primary,
-            maskrec_alpha=args.maskrec_alpha,
-            maskrec_loss_type=args.maskrec_loss_type,
-            maskrec_stage_weights=maskrec_stage_weights,
-        )
-    if args.model == "dformerv2_cm_infonce":
-        contrast_stage_weights = tuple(float(v.strip()) for v in args.contrast_stage_weights.split(","))
-        if len(contrast_stage_weights) != 4:
-            raise ValueError("--contrast_stage_weights must contain 4 comma-separated values")
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            lambda_contrast=args.lambda_contrast,
-            temperature=args.contrast_temperature,
-            proj_dim=args.contrast_proj_dim,
-            sample_points=args.contrast_sample_points,
-            stage_weights=contrast_stage_weights,
-        )
     if args.model == "dformerv2_fft_freq_enhance":
         return model_cls(
             num_classes=args.num_classes,
@@ -189,6 +132,20 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             cutoff_ratio=args.cutoff_ratio,
             gamma_init=args.gamma_init,
+        )
+    if args.model == "dformerv2_fft_hilo_enhance":
+        hilo_stage_weights = tuple(float(v.strip()) for v in args.hilo_stage_weights.split(","))
+        if len(hilo_stage_weights) != 4:
+            raise ValueError("--hilo_stage_weights must contain 4 comma-separated values")
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            cutoff_ratio=args.cutoff_ratio,
+            alpha_low_init=args.hilo_alpha_low_init,
+            alpha_high_init=args.hilo_alpha_high_init,
+            alpha_max=args.hilo_alpha_max,
+            stage_weights=hilo_stage_weights,
         )
     if args.model == "dformerv2_depth_fft_select":
         return model_cls(
