@@ -36,6 +36,7 @@ from src.models.mid_fusion import (
     LitDFormerV2FFTFreqEnhance,
     LitDFormerV2MSFreqCov,
     LitDFormerV2FeatMaskRecC34,
+    LitDFormerV2CMInfoNCE,
 )
 
 
@@ -47,6 +48,7 @@ MODEL_REGISTRY = {
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_ms_freqcov": LitDFormerV2MSFreqCov,
     "dformerv2_feat_maskrec_c34": LitDFormerV2FeatMaskRecC34,
+    "dformerv2_cm_infonce": LitDFormerV2CMInfoNCE,
 }
 
 
@@ -112,6 +114,11 @@ def build_parser():
     parser.add_argument("--maskrec_alpha", type=float, default=0.5)
     parser.add_argument("--maskrec_loss_type", type=str, default="smooth_l1")
     parser.add_argument("--maskrec_stage_weights", type=str, default="1,1,1,1")
+    parser.add_argument("--lambda_contrast", type=float, default=0.005)
+    parser.add_argument("--contrast_temperature", type=float, default=0.1)
+    parser.add_argument("--contrast_proj_dim", type=int, default=64)
+    parser.add_argument("--contrast_sample_points", type=int, default=256)
+    parser.add_argument("--contrast_stage_weights", type=str, default="0,0,1,1")
     return parser
 
 
@@ -160,6 +167,20 @@ def build_model(args):
             maskrec_alpha=args.maskrec_alpha,
             maskrec_loss_type=args.maskrec_loss_type,
             maskrec_stage_weights=maskrec_stage_weights,
+        )
+    if args.model == "dformerv2_cm_infonce":
+        contrast_stage_weights = tuple(float(v.strip()) for v in args.contrast_stage_weights.split(","))
+        if len(contrast_stage_weights) != 4:
+            raise ValueError("--contrast_stage_weights must contain 4 comma-separated values")
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            lambda_contrast=args.lambda_contrast,
+            temperature=args.contrast_temperature,
+            proj_dim=args.contrast_proj_dim,
+            sample_points=args.contrast_sample_points,
+            stage_weights=contrast_stage_weights,
         )
     if args.model == "dformerv2_fft_freq_enhance":
         return model_cls(

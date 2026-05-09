@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-08 DFormerv2 Cross-Modal InfoNCE Auxiliary Loss
+
+- Added experiment entry `dformerv2_cm_infonce`.
+- Added `src/models/contrastive_loss.py` with `CrossModalInfoNCELoss`.
+- Added `LitDFormerV2CMInfoNCE` in `src/models/mid_fusion.py`.
+- The experiment keeps the inference path unchanged: `DFormerV2_S + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- Training uses a one-way depth-to-primary contrastive auxiliary loss on aligned c3/c4 features by default.
+- Key/query design: `k = primary_proj(P.detach())`, `q = depth_proj(D)`.
+- This protects the DFormerV2 primary encoder from contrast loss gradients while still allowing the primary projection head, depth projection head, and DepthEncoder to learn.
+- Primary and depth features use separate per-stage 1x1 projection heads because their channels are not assumed to be shared.
+- Positives are same-batch, same-spatial-location primary/depth pairs sampled with a shared spatial index set; negatives are all other sampled keys in the `[B*S, B*S]` similarity matrix.
+- Defaults: `lambda_contrast=0.005`, `contrast_temperature=0.1`, `contrast_proj_dim=64`, `contrast_sample_points=256`, `contrast_stage_weights=0,0,1,1`.
+- Did not modify DFormerV2, `DepthEncoder`, `GatedFusion`, `SimpleFPNDecoder`, `BaseLitSeg`, validation, inference, dataset, or dataloader.
+- Status: code implemented; waiting for formal training.
+- Result note for `dformerv2_cm_infonce_c34_lam005_t01_s256_run01`: best val/mIoU `0.514461`, below clean 10-run baseline mean `0.517397` by `0.002936`; negative single-run result.
+
 ## 2026-05-08 DFormerv2 Depth FFT Frequency Selection
 
 - Added experiment entry `dformerv2_depth_fft_select`.

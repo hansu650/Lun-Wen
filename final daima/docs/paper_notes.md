@@ -1,5 +1,28 @@
 # Paper Notes
 
+## 2026-05-09 Cross-Modal InfoNCE Run01 Boundary
+
+- `dformerv2_cm_infonce_c34_lam005_t01_s256_run01` completed 50 validation epochs.
+- Setting: one-way depth-to-primary InfoNCE on c3/c4, `lambda_contrast=0.005`, `temperature=0.1`, `proj_dim=64`, `sample_points=256`, primary encoder gradient detached.
+- Best val/mIoU is `0.514461` at recorded epoch `46`; last val/mIoU is `0.498469`.
+- Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
+- Delta vs the clean ten-run baseline mean is `-0.002936`; delta vs the clean baseline best single run is `-0.009964`.
+- Contrast loss converged from `5.575` to `3.089` (45% drop), confirming the InfoNCE signal is active and learning cross-modal alignment.
+- Interpretation: negative single-run result. The contrastive alignment loss is technically correct (loss decreases) but does not translate to improved segmentation. The late collapse pattern (epoch 46→49: `0.5145→0.4985`) is consistent with other auxiliary loss experiments.
+- Paper boundary: do not cite as improvement. Cross-modal InfoNCE at `lambda=0.005` is weaker than the clean baseline mean. Can be documented as a negative ablation showing that cross-modal contrastive alignment at this weight does not help.
+
+## 2026-05-08 Cross-Modal InfoNCE Candidate Boundary
+
+- New candidate entry is `dformerv2_cm_infonce`.
+- Motivation: prior reconstruction/covariance auxiliary losses did not provide stable gains, so this branch tests a more direct cross-modal alignment signal without changing inference.
+- The inference architecture is unchanged: DFormerV2_S primary encoder, DepthEncoder, GatedFusion, and SimpleFPNDecoder.
+- Contrastive design is one-way depth-to-primary: depth features are queries and DFormerV2 primary features are keys.
+- Key/query formula: `k = primary_proj(P.detach())`, `q = depth_proj(D)`.
+- The `P.detach()` boundary protects the DFormerV2 primary encoder, while `primary_proj` remains trainable under the contrastive loss.
+- First planned configuration uses c3+c4 only, `lambda_contrast=0.005`, `temperature=0.1`, `proj_dim=64`, and `sample_points=256`.
+- This is not symmetric contrast, not KD, not memory bank contrast, not label-aware contrast, not mask reconstruction, and not a change to validation/inference.
+- Paper status: implementation-only candidate; no mIoU claim until formal training logs and `miou_list` evidence exist.
+
 ## 2026-05-08 Depth FFT Frequency Selection Run01 Boundary
 
 - `dformerv2_depth_fft_select_c030_run01` completed 50 validation epochs.

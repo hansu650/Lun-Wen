@@ -1,5 +1,45 @@
 # Experiment Log
 
+## 2026-05-09 dformerv2_cm_infonce_c34_lam005_t01_s256_run01
+
+- model: `dformerv2_cm_infonce`
+- change: training-only c3+c4 one-way depth-to-primary InfoNCE contrastive auxiliary loss on top of the unchanged DFormerv2 mid-fusion inference path.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `lambda_contrast=0.005`, `contrast_temperature=0.1`, `contrast_proj_dim=64`, `contrast_sample_points=256`, `contrast_stage_weights=0,0,1,1`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.514461` at recorded epoch `46`
+- last val/mIoU: `0.498469`
+- train/contrast_loss_epoch: first `5.574991`, last `3.089162`
+- contrast loss dropped 45% from init, indicating InfoNCE is learning cross-modal alignment.
+- lambda-weighted contrast contribution: first `0.027875`, last `0.015446`
+- train/seg_loss_epoch: first `2.231843`, last `0.154907`
+- comparison clean 10-run GatedFusion baseline mean best: `0.517397`
+- delta vs clean 10-run baseline mean: `-0.002936`
+- comparison clean 10-run baseline std: `0.004901`
+- delta in baseline std units: `-0.599`
+- comparison clean 10-run baseline best single run: `0.524425`
+- delta vs clean baseline best single run: `-0.009964`
+- late collapse: epoch 46 `0.514461` → epoch 49 `0.498469`, drop `0.015992` in 3 epochs.
+- evidence: `miou_list/dformerv2_cm_infonce_c34_lam005_t01_s256_run01.md`
+- conclusion: negative single-run result. InfoNCE contrast loss converges (5.57→3.09, 45% drop), but the alignment signal does not improve validation mIoU above the clean repeated baseline mean. The run shows late collapse similar to other auxiliary loss experiments. The contrast loss is learning, but the learned cross-modal alignment is either not beneficial for segmentation or too weak to overcome the noise it introduces.
+- next step: do not claim as improvement. If continuing InfoNCE, test `lambda_contrast=0.01` or `0.02` to see if stronger contrast signal helps; alternatively test `contrast_stage_weights=0,1,1,1` to include c2. If both negative, pivot away from contrastive losses entirely.
+
+## 2026-05-08 dformerv2_cm_infonce implementation
+
+- model: `dformerv2_cm_infonce`
+- status: code implemented; waiting for formal training.
+- purpose: add a training-only cross-modal InfoNCE auxiliary loss while keeping the DFormerv2 mid-fusion inference path unchanged.
+- inference path: `DFormerV2_S + DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- feature source: reuses `DFormerV2MidFusionSegmentor.extract_features(rgb, depth)` to obtain DFormerV2 primary c1-c4 features, aligned depth c1-c4 features, and fused features.
+- contrast direction: one-way depth query to primary key.
+- key/query design: `k = primary_proj(P.detach())`, `q = depth_proj(D)`.
+- gradient boundary: the DFormerV2 primary encoder is protected from contrast loss gradients, but the primary projection head still receives contrast loss gradients.
+- stage setting: first configuration uses c3+c4 only with `contrast_stage_weights=0,0,1,1`.
+- defaults: `lambda_contrast=0.005`, `contrast_temperature=0.1`, `contrast_proj_dim=64`, `contrast_sample_points=256`.
+- training loss: `L_total = L_seg + lambda_contrast * L_contrast`.
+- code evidence: `src/models/contrastive_loss.py`, `src/models/mid_fusion.py`, and `train.py`.
+- result: no mIoU yet; do not cite as an experimental improvement until a completed run has TensorBoard evidence and a `miou_list` record.
+
 ## 2026-05-08 dformerv2_depth_fft_select_c030_run01
 
 - model: `dformerv2_depth_fft_select`

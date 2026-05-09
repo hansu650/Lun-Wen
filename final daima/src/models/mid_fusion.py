@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
+from .contrastive_loss import CrossModalInfoNCELoss
 from .depth_fft_select import DepthEncoderFFTSelect
 from .decoder import SimpleFPNDecoder
 from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
@@ -318,6 +319,55 @@ class LitDFormerV2FeatMaskRecC34(BaseLitSeg):
         self.log("train/maskrec_loss", maskrec_loss, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/lambda_mask", self.lambda_mask, prog_bar=False, on_step=False, on_epoch=True)
         for name, value in maskrec_dict.items():
+            self.log(name, value, prog_bar=False, on_step=True, on_epoch=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2CMInfoNCE(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        lambda_contrast=0.005,
+        temperature=0.1,
+        proj_dim=64,
+        sample_points=256,
+        stage_weights=(0.0, 0.0, 1.0, 1.0),
+    ):
+        super().__init__(num_classes=num_classes, lr=lr)
+        self.lambda_contrast = float(lambda_contrast)
+        self.model = DFormerV2MidFusionSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+        self.contrast_loss = CrossModalInfoNCELoss(
+            primary_channels=self.model.rgb_encoder.out_channels,
+            depth_channels=self.model.depth_encoder.out_channels,
+            proj_dim=proj_dim,
+            temperature=temperature,
+            sample_points=sample_points,
+            stage_weights=stage_weights,
+        )
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+
+        dformer_feats, aligned_depth, fused_feats = self.model.extract_features(rgb, depth)
+        logits = self.model.decoder(fused_feats, input_size=rgb.shape[-2:])
+        seg_loss = self.criterion(logits, label)
+        contrast_loss, contrast_dict = self.contrast_loss(dformer_feats, aligned_depth)
+        loss = seg_loss + self.lambda_contrast * contrast_loss
+
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/seg_loss", seg_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/contrast_loss", contrast_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/lambda_contrast", self.lambda_contrast, prog_bar=False, on_step=False, on_epoch=True)
+        for name, value in contrast_dict.items():
             self.log(name, value, prog_bar=False, on_step=True, on_epoch=True)
         return loss
 
