@@ -1,18 +1,26 @@
 # Experiment Log
 
-## 2026-05-09 planned dformerv2_context_decoder_c4ppm_run01
+## 2026-05-10 dformerv2_context_decoder_c4ppm_run01
 
 - model: `dformerv2_context_decoder`
-- change: decoder-side lightweight context refinement with a C4 PPM block.
-- setting: `DFormerV2 primary branch + DepthEncoder + GatedFusion + ContextFPNDecoder`
-- context placement: fused `c4` only, before the FPN lateral4 projection.
-- pool scales: `(1, 2, 3, 6)`
-- branch channels: `max(C//4, 64)`
-- residual scale: learnable `alpha`, initialized to `0.1`
-- loss: `loss_type=ce`
-- baseline reference: clean `dformerv2_mid_fusion` 10-run mean best mIoU `0.517397`, std `0.004901`, best single `0.524425`.
-- status: not run yet.
-- note: no result is claimed. This experiment does not modify DFormerV2, DepthEncoder, GatedFusion, loss, metrics, dataset, dataloader, or checkpoint logic.
+- change: decoder-side lightweight context refinement with a C4 PPM block before FPN lateral4.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: 0.507293 at epoch 49
+- last val/mIoU: 0.507293
+- best val/loss: 1.042966 at epoch 11
+- last val/loss: 1.266029
+- mean val/mIoU over last 10 epochs: 0.498246
+- comparison clean 10-run baseline mean best: 0.517397
+- delta vs baseline mean best: -0.010104
+- comparison clean 10-run baseline std: 0.004901
+- delta in baseline std units: -2.062
+- comparison clean 10-run baseline best single: 0.524425
+- delta vs baseline best single: -0.017132
+- evidence: `miou_list/dformerv2_context_decoder_c4ppm_run01.md`
+- conclusion: **negative single-run result.** C4 PPM context decoder underperforms the clean baseline by 2.06 std. Best mIoU 0.5073 is essentially identical to CE+Dice's 0.5070, both well below the baseline mean 0.5174. The PPM context block does not help this architecture. val/loss rises from 1.04 (epoch 11) to 1.27 (epoch 49) while train/loss decreases to 0.14, showing moderate overfitting but less severe than CE+Dice.
+- next step: do not claim as improvement. The decoder-side PPM context refinement does not produce gains on this architecture. At this point, all tested modification categories (fusion replacement, FFT enhancement, auxiliary loss, loss recipe, decoder context) have failed to beat the clean baseline. Consider whether the architecture is already near-optimal for NYUDepthV2, or whether a fundamentally different approach is needed.
 
 ## 2026-05-09 dformerv2_mid_fusion_ce_dice_w05_run01
 

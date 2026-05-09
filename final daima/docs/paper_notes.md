@@ -1,13 +1,21 @@
 # Paper Notes
 
-## 2026-05-09 CE + Dice Loss Recipe Run01 Boundary
+## 2026-05-10 C4 PPM Context Decoder Run01 Boundary
 
-- `dformerv2_mid_fusion_ce_dice_w05_run01` completed 50 validation epochs.
-- Setting: `loss_type=ce_dice`, `dice_weight=0.5`, training loss = `CE + 0.5 * Dice`, validation loss = CE, model architecture unchanged.
-- Best val/mIoU is `0.507000` at epoch 41; last val/mIoU is `0.489077`.
+- `dformerv2_context_decoder_c4ppm_run01` completed 50 validation epochs.
+- Setting: C4 PPM context refinement before FPN lateral4, `pool_scales=(1,2,3,6)`, `alpha_init=0.1`, `loss_type=ce`, model = `DFormerV2 + DepthEncoder + GatedFusion + ContextFPNDecoder`.
+- Best val/mIoU is `0.507293` at epoch 49; last val/mIoU is `0.507293`.
 - Clean ten-run `dformerv2_mid_fusion` GatedFusion baseline mean best is `0.517397`, with population std `0.004901` and best single run `0.524425`.
-- Delta vs the clean ten-run baseline mean is `-0.010397`; delta in baseline std units is `-2.121`.
-- Training shows clear overfitting: val/loss rises from `1.037` (epoch 6) to `1.831` (epoch 49) while train/loss continues decreasing from `1.069` to `0.282`. The Dice component destabilizes late training.
+- Delta vs the clean ten-run baseline mean is `-0.010104`; delta in baseline std units is `-2.062`.
+- Interpretation: **clear negative result.** C4 PPM context decoder significantly underperforms the clean baseline. The PPM block does not help this architecture on NYUDepthV2. val/loss rises from 1.04 (epoch 11) to 1.27 (epoch 49) while train/loss decreases to 0.14, showing moderate overfitting.
+- Paper boundary: **do not cite as improvement.** The decoder-side PPM context refinement is a negative ablation. This completes the decoder-side modification category — the SimpleFPNDecoder baseline is stronger than the PPM-enhanced variant.
+- Strategic implication: **all tested modification categories have now failed to beat the clean baseline:**
+  - Fusion replacement (DGC-AF, SA-Gate, PG-SparseComp, etc.): negative
+  - FFT enhancement (freq_enhance, HiLo, depth_fft_select): not stable
+  - Auxiliary loss (freqcov, maskrec, InfoNCE): negative
+  - Loss recipe (CE + Dice): negative
+  - Decoder context (C4 PPM): negative
+- The GatedFusion + SimpleFPNDecoder baseline appears to be near-optimal for this architecture on NYUDepthV2. Further improvements likely require either a fundamentally different architectural approach or a different experimental setup (larger dataset, different backbone, different training recipe).
 - Interpretation: **clear negative result.** CE + Dice at weight 0.5 significantly underperforms the pure CE baseline. The Dice loss causes train-val divergence and reduces final segmentation quality.
 - Paper boundary: **do not cite as improvement.** CE + Dice at w=0.5 is harmful for this architecture. If pursuing loss experiments, test weaker Dice weight (0.1 or 0.2) or pure FocalLoss for class imbalance. Otherwise, the pure CE baseline is the stronger choice.
 - Strategic implication: the GatedFusion baseline with pure CE loss remains the best-performing configuration. All tested modifications (fusion replacements, FFT variants, auxiliary losses, CE+Dice) have failed to produce stable improvements. The baseline appears to be near-optimal for this architecture on NYUDepthV2.
