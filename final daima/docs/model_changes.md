@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-10 PMAD Phase 0-1 Minimal Implementation
+
+- Added `src/models/teacher_model.py` with `DFormerV2RGBTeacherSegmentor` and `LitDFormerV2RGBTeacher`.
+- Registered new model `dformerv2_rgb_teacher_constdepth` in `train.py`.
+- The RGB teacher uses `DFormerv2_S + SimpleFPNDecoder` and constructs constant zero depth inside `forward`, so real batch depth is not used.
+- Added `src/models/primkd_lit.py` with `LitDFormerV2PrimKD`.
+- Registered new model `dformerv2_primkd_logit_only` in `train.py`.
+- PMAD Phase 1 is logit-only: `CE(student_logits, label) + kd_weight * KL(student/T, teacher/T) * T^2`, with `ignore_index=255` pixels excluded from KD.
+- Added CLI args `--teacher_ckpt`, `--kd_weight`, `--kd_temperature`, and `--save_student_only`.
+- Added optional checkpoint export support in `DirectStateDictCheckpoint`: when `--save_student_only` is set and the LightningModule exposes `export_state_dict()`, only the student model state is saved.
+- Did not change `dformerv2_mid_fusion`, `BaseLitSeg`, DFormerV2 attention, dataset/dataloader, decoder, feature KD, reliability gating, or MixPrompt.
+- Verification: `compileall` passed; `train.py --help` lists both new model names and new args under the `qintian-rgbd` environment; 1-epoch smoke tests for `dformerv2_rgb_teacher_constdepth` and `dformerv2_primkd_logit_only` produced checkpoints. Smoke mIoU values are not formal results and must not be cited.
+
 ## 2026-05-09 dformerv2_context_decoder
 
 - Added `PPMContextBlock` and `ContextFPNDecoder` in `src/models/decoder.py`.

@@ -37,6 +37,8 @@ from src.models.mid_fusion import (
     LitDFormerV2FFTFreqEnhance,
     LitDFormerV2FFTHiLoEnhance,
 )
+from src.models.primkd_lit import LitDFormerV2PrimKD
+from src.models.teacher_model import LitDFormerV2RGBTeacher
 
 
 MODEL_REGISTRY = {
@@ -47,16 +49,19 @@ MODEL_REGISTRY = {
     "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_fft_hilo_enhance": LitDFormerV2FFTHiLoEnhance,
+    "dformerv2_rgb_teacher_constdepth": LitDFormerV2RGBTeacher,
+    "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
 }
 
 
 class DirectStateDictCheckpoint(Callback):
-    def __init__(self, dirpath, filename_prefix, monitor, mode="max"):
+    def __init__(self, dirpath, filename_prefix, monitor, mode="max", save_student_only=False):
         super().__init__()
         self.dirpath = dirpath
         self.filename_prefix = filename_prefix
         self.monitor = monitor
         self.mode = mode
+        self.save_student_only = save_student_only
         self.best_model_score = None
         self.best_model_path = ""
 
@@ -79,7 +84,10 @@ class DirectStateDictCheckpoint(Callback):
         monitor_name = self.monitor.replace("/", "_")
         filename = f"{self.filename_prefix}-epoch={epoch:02d}-{monitor_name}={current:.4f}.pt"
         filepath = os.path.join(self.dirpath, filename)
-        torch.save(pl_module.state_dict(), filepath)
+        if self.save_student_only and hasattr(pl_module, "export_state_dict"):
+            torch.save(pl_module.export_state_dict(), filepath)
+        else:
+            torch.save(pl_module.state_dict(), filepath)
         if self.best_model_path and self.best_model_path != filepath and os.path.exists(self.best_model_path):
             os.remove(self.best_model_path)
         self.best_model_path = filepath
@@ -107,6 +115,10 @@ def build_parser():
     parser.add_argument("--hilo_alpha_high_init", type=float, default=0.10)
     parser.add_argument("--hilo_alpha_max", type=float, default=0.5)
     parser.add_argument("--hilo_stage_weights", type=str, default="1,1,1,1")
+    parser.add_argument("--teacher_ckpt", type=str, default=None)
+    parser.add_argument("--kd_weight", type=float, default=0.2)
+    parser.add_argument("--kd_temperature", type=float, default=4.0)
+    parser.add_argument("--save_student_only", action="store_true")
     return parser
 
 
@@ -172,6 +184,25 @@ def build_model(args):
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
         )
+    if args.model == "dformerv2_rgb_teacher_constdepth":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
+        )
+    if args.model == "dformerv2_primkd_logit_only":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            teacher_ckpt=args.teacher_ckpt,
+            kd_weight=args.kd_weight,
+            kd_temperature=args.kd_temperature,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
+        )
     if args.model in {
         "dformerv2_mid_fusion",
     }:
@@ -197,6 +228,7 @@ def build_callbacks(args, monitor_metric: str):
         filename_prefix=args.model,
         monitor=monitor_metric,
         mode="max",
+        save_student_only=args.save_student_only,
     )
     early_stop_callback = EarlyStopping(
         monitor=monitor_metric,
