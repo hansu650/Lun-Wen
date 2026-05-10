@@ -1,5 +1,40 @@
 # Experiment Log
 
+## 2026-05-10 dformerv2_primkd_logit_only_w010_t4_run01
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: PMAD / PrimKD logit-only KD weight ablation after the positive `kd_weight=0.15` single run.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`, `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_weight=0.10`, `kd_temperature=4.0`, logit-only, no feature KD
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.510068` at epoch 50
+- last val/mIoU: `0.510068`
+- best val/loss: `1.079473` at epoch 12
+- last val/loss: `1.232582`
+- mean val/mIoU over last 10 epochs: `0.500400`
+- final train/loss: `0.197795`
+- final train/ce_loss: `0.151020`
+- final train/kd_loss: `0.467753`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison geometry-primary teacher best: `0.516824`
+- comparison `dformerv2_primkd_logit_only_w015_t4_run01` best: `0.522998`
+- delta vs clean baseline mean: `-0.007329` (`-1.495` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.012230`
+- delta vs clean baseline best single: `-0.014357`
+- delta vs teacher best: `-0.006756`
+- delta vs `kd_weight=0.15` PMAD run: `-0.012930`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w010_t4_run01/dformerv2_primkd_logit_only-epoch=49-val_mIoU=0.5101.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w010_t4_run01.md`
+- conclusion: **negative KD-weight ablation.** Reducing KD from `0.15` to `0.10` removes the positive PMAD signal and falls well below the clean baseline mean. This does not support the hypothesis that weaker logit KD is safer for the usable-but-not-strong geometry-primary teacher.
+- next step: do not repeat `kd_weight=0.10` and do not add feature KD on top of this setting. If continuing PMAD, the only decision-value next run is `kd_weight=0.20` or a repeat of the current best `kd_weight=0.15`; stop the logit-KD branch if those do not recover the `0.522+` signal.
+
 ## 2026-05-10 dformerv2_primkd_logit_only_w015_t4_run01
 
 - model: `dformerv2_primkd_logit_only`

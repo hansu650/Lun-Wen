@@ -1,5 +1,17 @@
 # Paper Notes
 
+## 2026-05-10 PMAD Logit-Only KD Weight 0.10 Boundary
+
+- `dformerv2_primkd_logit_only_w010_t4_run01` completed 50 validation epochs.
+- Setting: student = full `dformerv2_mid_fusion`; teacher = frozen geometry-primary teacher; logit-only KD with `kd_weight=0.10`, `kd_temperature=4.0`.
+- Best val/mIoU is `0.510068` at epoch 50; last val/mIoU is also `0.510068`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `-0.007329`, equal to `-1.495` baseline std units.
+- Delta vs the previous `kd_weight=0.15` PMAD run is `-0.012930`.
+- Interpretation: **negative KD-weight ablation.** The `0.10` KD weight is not a safer version of PMAD; it substantially underperforms both the baseline and the `0.15` PMAD single run.
+- Paper boundary: do not cite `kd_weight=0.10` as a promising setting. It can be used only as an ablation showing that PMAD is sensitive to KD strength and that the initial `0.15` result is not automatically robust across nearby weights.
+- Strategic implication: do not repeat `0.10` and do not add feature KD on top of it. The remaining decision-value choices are `kd_weight=0.20` or repeating the best `0.15` setting before any feature-KD work.
+
 ## 2026-05-10 PMAD Logit-Only Run01 Boundary
 
 - `dformerv2_primkd_logit_only_w015_t4_run01` completed 50 validation epochs.
