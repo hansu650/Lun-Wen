@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-10 dformerv2_rgb_teacher_constdepth_run01
+
+- model: `dformerv2_rgb_teacher_constdepth`
+- purpose: Phase 0 RGB-only teacher sanity check before PMAD / PrimKD logit distillation.
+- architecture: `DFormerv2_S + SimpleFPNDecoder`; model-internal constant zero depth replaces real depth, so DFormerV2 geometry prior degenerates to position-only prior.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.488489` at epoch `43`
+- last val/mIoU: `0.456266`
+- best val/loss: `1.102055` at epoch `7`
+- last val/loss: `1.454060`
+- mean val/mIoU over last 10 epochs: `0.468347`
+- teacher usability threshold: `0.515000`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- delta vs teacher usability threshold: `-0.026511`
+- delta vs clean baseline mean: `-0.028908` (`-5.898` baseline std units)
+- checkpoint: `checkpoints/dformerv2_rgb_teacher_constdepth_run01/dformerv2_rgb_teacher_constdepth-epoch=42-val_mIoU=0.4885.pt`
+- evidence: `miou_list/dformerv2_rgb_teacher_constdepth_run01.md`
+- conclusion: **teacher sanity failed.** The constant-depth RGB-only DFormerV2 teacher is far below the minimum `0.515` gate and far below the RGB-D baseline. It should not be used as the PMAD teacher because logit distillation would anchor the RGB-D student to a weaker decision boundary.
+- next step: do not run formal `dformerv2_primkd_logit_only` with this checkpoint. Either fix the teacher design/training first or pause PMAD. The most likely issue is that zeroing depth removes useful DFormerV2 geometry information while the teacher still lacks the RGB-D baseline's depth branch and fusion path.
+
 ## 2026-05-10 dformerv2_mid_fusion_gate_baseline_repeat5 summary
 
 - model: `dformerv2_mid_fusion`

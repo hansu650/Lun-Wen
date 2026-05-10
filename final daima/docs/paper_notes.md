@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-10 RGB-Only Teacher Sanity Boundary
+
+- `dformerv2_rgb_teacher_constdepth_run01` completed 50 validation epochs as the Phase 0 teacher sanity check for PMAD / PrimKD.
+- The model uses `Dformerv2_S + SimpleFPNDecoder` with constant zero depth inside the model, so it is an RGB-only teacher candidate with position-only DFormerV2 geometry prior.
+- Best val/mIoU is `0.488489` at epoch 43; last val/mIoU is `0.456266`.
+- Clean ten-run RGB-D baseline mean best remains `0.517397`, std `0.004901`; the minimum teacher usability gate is `0.515000`.
+- Interpretation: **teacher sanity failed.** The teacher is `0.026511` below the minimum gate and `0.028908` below the RGB-D baseline mean.
+- Paper boundary: do not cite PMAD as an active improvement based on this teacher. This run should be described as a failed teacher-sanity check if discussed at all.
+- Strategic implication: PMAD is blocked by teacher quality, not yet by KD loss design. Do not run formal KD until a teacher reaches at least `0.515`.
+
 ## 2026-05-10 C4 PPM Context Decoder Run01 Boundary
 
 - `dformerv2_context_decoder_c4ppm_run01` completed 50 validation epochs.

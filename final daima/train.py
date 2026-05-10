@@ -38,7 +38,7 @@ from src.models.mid_fusion import (
     LitDFormerV2FFTHiLoEnhance,
 )
 from src.models.primkd_lit import LitDFormerV2PrimKD
-from src.models.teacher_model import LitDFormerV2RGBTeacher
+from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
 
 
 MODEL_REGISTRY = {
@@ -49,7 +49,7 @@ MODEL_REGISTRY = {
     "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
     "dformerv2_fft_hilo_enhance": LitDFormerV2FFTHiLoEnhance,
-    "dformerv2_rgb_teacher_constdepth": LitDFormerV2RGBTeacher,
+    "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
 }
 
@@ -184,7 +184,7 @@ def build_model(args):
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
         )
-    if args.model == "dformerv2_rgb_teacher_constdepth":
+    if args.model == "dformerv2_geometry_primary_teacher":
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,

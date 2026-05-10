@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
 from .mid_fusion import DFormerV2MidFusionSegmentor
-from .teacher_model import DFormerV2RGBTeacherSegmentor
+from .teacher_model import DFormerV2GeometryPrimaryTeacherSegmentor
 from ..utils.metrics import sanitize_labels
 
 
@@ -27,7 +27,7 @@ class LitDFormerV2PrimKD(BaseLitSeg):
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )
-        self.teacher = DFormerV2RGBTeacherSegmentor(num_classes=num_classes)
+        self.teacher = DFormerV2GeometryPrimaryTeacherSegmentor(num_classes=num_classes)
         state = torch.load(teacher_ckpt, map_location="cpu")
         teacher_state = {
             key[len("model.") :]: value
@@ -61,7 +61,7 @@ class LitDFormerV2PrimKD(BaseLitSeg):
         student_logits = self(rgb, depth)
         self.teacher.eval()
         with torch.no_grad():
-            teacher_logits = self.teacher(rgb)
+            teacher_logits = self.teacher(rgb, depth)
         ce_loss = self.train_criterion(student_logits, label)
         kd_loss = self.segmentation_kl_loss(
             student_logits,

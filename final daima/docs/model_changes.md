@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-10 Geometry-Primary Teacher Update
+
+- Replaced the PMAD teacher candidate with a geometry-primary DFormerV2 teacher.
+- Renamed the active teacher registry entry to `dformerv2_geometry_primary_teacher`.
+- Updated `src/models/teacher_model.py`: `DFormerV2GeometryPrimaryTeacherSegmentor` now uses `DFormerv2_S(rgb, depth) + SimpleFPNDecoder` and no longer constructs constant zero depth.
+- Updated `src/models/primkd_lit.py`: the frozen teacher forward now receives real batch depth through `self.teacher(rgb, depth)`.
+- Updated `train.py` imports, `MODEL_REGISTRY`, and `build_model()` branch for the new teacher name.
+- Motivation: the previous `dformerv2_rgb_teacher_constdepth_run01` failed because zero depth removed DFormerV2's depth geometry prior; this update preserves DFormerV2 geometry self-attention while still excluding the extra `DepthEncoder + GatedFusion` branch.
+- Did not change `dformerv2_mid_fusion`, `BaseLitSeg`, DFormerV2 attention internals, decoder, data module, feature KD, reliability, or MixPrompt.
+- The old `dformerv2_rgb_teacher_constdepth_run01` result remains a failed teacher-sanity record and should not be merged with future geometry-primary teacher results.
+
 ## 2026-05-10 PMAD Phase 0-1 Minimal Implementation
 
 - Added `src/models/teacher_model.py` with `DFormerV2RGBTeacherSegmentor` and `LitDFormerV2RGBTeacher`.
