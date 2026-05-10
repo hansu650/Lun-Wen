@@ -1,5 +1,66 @@
 # Experiment Log
 
+## 2026-05-10 dformerv2_primkd_logit_only_w015_t4_run01
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: Phase 1 PMAD / PrimKD logit-only distillation with geometry-primary teacher.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`, `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only, no feature KD
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.522998` at epoch `48` (checkpoint filename epoch `47`)
+- last val/mIoU: `0.513176`
+- best val/loss: `1.060515` at epoch `7`
+- last val/loss: `1.203945`
+- mean val/mIoU over last 10 epochs: `0.504683`
+- final train/loss_epoch: `0.246043`
+- final train/ce_loss_epoch: `0.172287`
+- final train/kd_loss_epoch: `0.491706`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison repeat5 RGB-D baseline mean best: `0.511893`
+- comparison geometry-primary teacher best: `0.516824`
+- delta vs clean baseline mean: `+0.005601` (`+1.143` baseline std units)
+- delta vs clean baseline mean + 1 std: `+0.000700`
+- delta vs clean baseline best single: `-0.001427`
+- delta vs repeat5 mean: `+0.011105`
+- delta vs teacher best: `+0.006174`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run01/dformerv2_primkd_logit_only-epoch=47-val_mIoU=0.5230.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run01.md`
+- conclusion: **positive single-run PMAD signal.** Logit-only PMAD with `kd_weight=0.15` exceeds the clean baseline mean by more than 1 std and is above the pre-defined strong-signal threshold, though it does not exceed the best clean baseline single run. This is the best PMAD evidence so far but not yet a stable improvement claim.
+- next step: do not add feature KD yet. First confirm the logit-only effect with decision-value ablations: run `kd_weight=0.10` and/or `kd_weight=0.20`, then repeat the best setting for 3 runs if it remains above baseline mean + 1 std.
+
+## 2026-05-10 dformerv2_geometry_primary_teacher_run01
+
+- model: `dformerv2_geometry_primary_teacher`
+- purpose: Phase 0 geometry-primary teacher sanity check before PMAD / PrimKD logit distillation.
+- architecture: `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`; no extra `DepthEncoder + GatedFusion` branch.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.516824` at epoch `38` (checkpoint filename epoch `37`)
+- last val/mIoU: `0.509223`
+- best val/loss: `1.032507` at epoch `8`
+- last val/loss: `1.263402`
+- mean val/mIoU over last 10 epochs: `0.504379`
+- teacher usability threshold: `0.515000`
+- strong teacher threshold (clean baseline mean + 1 std): `0.522298`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison constant-zero teacher best: `0.488489`
+- delta vs teacher usability threshold: `+0.001824`
+- delta vs clean baseline mean: `-0.000573` (`-0.117` baseline std units)
+- delta vs constant-zero teacher: `+0.028335`
+- checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- evidence: `miou_list/dformerv2_geometry_primary_teacher_run01.md`
+- conclusion: **usable teacher.** The geometry-primary teacher passes the minimum `0.515` gate and is essentially tied with the full RGB-D baseline mean, while improving over the failed constant-zero teacher by `+0.028335`. This confirms that real DFormerV2 depth geometry prior is necessary for the teacher.
+- next step: proceed to Phase 1 PMAD logit-only with this checkpoint. Use conservative KD settings because the teacher is usable but not strong: `kd_weight=0.15`, `kd_temperature=4.0`. Do not repeat teacher now; only revisit teacher repeats if PMAD shows a positive signal.
+
 ## 2026-05-10 dformerv2_rgb_teacher_constdepth_run01
 
 - model: `dformerv2_rgb_teacher_constdepth`

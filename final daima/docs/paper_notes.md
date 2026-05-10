@@ -1,5 +1,28 @@
 # Paper Notes
 
+## 2026-05-10 PMAD Logit-Only Run01 Boundary
+
+- `dformerv2_primkd_logit_only_w015_t4_run01` completed 50 validation epochs.
+- Setting: student = full `dformerv2_mid_fusion`; teacher = frozen geometry-primary teacher `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`; logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`.
+- Best val/mIoU is `0.522998` at epoch 48; last val/mIoU is `0.513176`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `+0.005601`, equal to `+1.143` baseline std units.
+- Delta vs clean baseline mean + 1 std is `+0.000700`; delta vs clean baseline best single is `-0.001427`.
+- Interpretation: **positive single-run signal.** This is the first PMAD logit-only run and it crosses the pre-defined strong-signal threshold, but it is not yet a stable improvement because there is no repeat evidence.
+- Paper boundary: can be described as a promising candidate result, not as a final method claim. Do not claim stable improvement until at least 3-run mean confirms it.
+- Strategic implication: keep PMAD logit-only as the active main direction. Next test only small KD-weight ablations (`0.10`, `0.20`) or repeat the best setting; do not add feature KD yet.
+
+## 2026-05-10 Geometry-Primary Teacher Sanity Boundary
+
+- `dformerv2_geometry_primary_teacher_run01` completed 50 validation epochs as the revised Phase 0 teacher sanity check for PMAD / PrimKD.
+- The model uses `Dformerv2_S(rgb, real_depth) + SimpleFPNDecoder`, preserving DFormerV2's internal depth geometry prior while removing the extra `DepthEncoder + GatedFusion` branch.
+- Best val/mIoU is `0.516824` at epoch 38; last val/mIoU is `0.509223`.
+- Clean ten-run RGB-D baseline mean best remains `0.517397`, std `0.004901`; the minimum teacher usability gate is `0.515000`.
+- Comparison to failed constant-zero teacher: `0.516824` vs `0.488489`, delta `+0.028335`.
+- Interpretation: **usable teacher, not strong teacher.** It passes the `0.515` gate but does not exceed the strong-teacher threshold `0.522298`.
+- Paper boundary: this can support entering PMAD Phase 1, but it is not a main result. The more important claim is that retaining real DFormerV2 geometry prior is necessary for a usable teacher.
+- Strategic implication: proceed with logit-only PMAD using conservative `kd_weight=0.15`, `kd_temperature=4.0`. Do not repeat teacher unless PMAD later becomes promising.
+
 ## 2026-05-10 RGB-Only Teacher Sanity Boundary
 
 - `dformerv2_rgb_teacher_constdepth_run01` completed 50 validation epochs as the Phase 0 teacher sanity check for PMAD / PrimKD.
