@@ -1,5 +1,32 @@
 # Experiment Log
 
+## 2026-05-10 dformerv2_mid_fusion_gate_baseline_repeat5 summary
+
+- model: `dformerv2_mid_fusion`
+- change: baseline sanity check — 5 repeated runs of the exact same baseline config after C4 PPM and CE+Dice experiments both yielded ~0.507
+- purpose: verify whether the baseline itself has shifted, or whether the ~0.507 results are genuine negatives
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- code diff vs original baseline: none (`dformerv2_mid_fusion` path untouched; all recent changes are purely additive to new model classes)
+- run01: best val/mIoU `0.509013` at epoch 32, last `0.496441`, best val/loss `1.000347` at epoch 10
+- run02: best val/mIoU `0.510994` at epoch 45, last `0.475698`, best val/loss `1.039783` at epoch 12
+- run03: best val/mIoU `0.510176` at epoch 46, last `0.466466`, best val/loss `1.028617` at epoch 13
+- run04: best val/mIoU `0.517698` at epoch 42, last `0.512032`, best val/loss `1.011931` at epoch 10
+- run05: best val/mIoU `0.511585` at epoch 39, last `0.476304`, best val/loss `1.024783` at epoch 11
+- repeat5 mean best val/mIoU: `0.511893`
+- repeat5 population std: `0.003028`
+- repeat5 min best: `0.509013` (run01)
+- repeat5 max best: `0.517698` (run04)
+- repeat5 mean last val/mIoU: `0.485388`
+- repeat5 mean best val/loss: `1.021093`
+- original 10-run baseline mean best: `0.517397`
+- original 10-run baseline std: `0.004901`
+- original 10-run baseline best single: `0.524425`
+- delta repeat5 mean vs original mean: `-0.005504` (1.12 original std units)
+- evidence: `miou_list/dformerv2_mid_fusion_gate_baseline_repeat5_run01.md` through `run05.md`, and `miou_list/dformerv2_mid_fusion_gate_baseline_repeat5_summary.md`
+- conclusion: **the repeat5 baseline is ~0.005 below the original 10-run mean.** No run exceeded 0.518; the upper tail (0.519-0.524) observed in the original 10 runs is missing. The distribution is compressed (std=0.003 vs 0.005). This suggests either random variance with only 5 samples, or a mild environmental shift. Relative to the repeat5 mean (0.5119), the CE+Dice (0.5070) and C4 PPM (0.5073) experiments are only ~1.6σ below — still negative, but less anomalous than when measured against the original mean. The baseline code is confirmed clean; the gap is likely due to seed/environment variance rather than code contamination.
+- next step: the two 0.507 experiments remain negative relative to both baselines. Use the repeat5 mean (0.5119) as the more conservative reference for future comparisons. If further experiments also fall below 0.510, investigate environmental factors (GPU state, driver version, data integrity).
+
 ## 2026-05-10 dformerv2_context_decoder_c4ppm_run01
 
 - model: `dformerv2_context_decoder`
