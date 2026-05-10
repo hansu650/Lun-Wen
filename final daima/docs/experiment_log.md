@@ -1,5 +1,44 @@
 # Experiment Log
 
+## 2026-05-10 dformerv2_primkd_logit_only_w015_t4_run02
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: repeat `kd_weight=0.15` PMAD / PrimKD logit-only run to test whether the positive run01 signal is reproducible.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`, `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only, no feature KD
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.520144` at epoch 47
+- last val/mIoU: `0.498182`
+- best val/loss: `1.065779` at epoch 8
+- last val/loss: `1.277715`
+- mean val/mIoU over last 10 epochs: `0.502338`
+- final train/loss: `0.295255`
+- final train/ce_loss: `0.206779`
+- final train/kd_loss: `0.589839`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison geometry-primary teacher best: `0.516824`
+- comparison `dformerv2_primkd_logit_only_w015_t4_run01` best: `0.522998`
+- comparison `dformerv2_primkd_logit_only_w010_t4_run01` best: `0.510068`
+- current `kd_weight=0.15` 2-run mean best: `0.521571`
+- current `kd_weight=0.15` 2-run population std: `0.001427`
+- delta vs clean baseline mean: `+0.002747` (`+0.560` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.002154`
+- delta vs clean baseline best single: `-0.004281`
+- delta vs teacher best: `+0.003320`
+- delta vs `kd_weight=0.15` run01: `-0.002854`
+- delta vs `kd_weight=0.10` run01: `+0.010075`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run02/dformerv2_primkd_logit_only-epoch=46-val_mIoU=0.5201.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run02.md`
+- conclusion: **positive but not strong repeat.** The second `kd_weight=0.15` run beats the clean baseline mean and is much healthier than `kd_weight=0.10`, but it does not cross the pre-defined strong-signal threshold. The two-run mean is positive (`0.521571`) but still below `mean+1std=0.522298`.
+- next step: run `dformerv2_primkd_logit_only_w015_t4_run03` before adding feature KD. If the 3-run mean stays `>=0.519`, PMAD can be treated as a marginal positive candidate; if it crosses `0.522298`, it becomes a strong main-result candidate. The late epoch-49 collapse should be noted as stability risk.
+
 ## 2026-05-10 dformerv2_primkd_logit_only_w010_t4_run01
 
 - model: `dformerv2_primkd_logit_only`

@@ -1,5 +1,18 @@
 # Paper Notes
 
+## 2026-05-10 PMAD Logit-Only KD Weight 0.15 Run02 Boundary
+
+- `dformerv2_primkd_logit_only_w015_t4_run02` completed 50 validation epochs.
+- Setting: student = full `dformerv2_mid_fusion`; teacher = frozen geometry-primary teacher; logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`.
+- Best val/mIoU is `0.520144` at epoch 47; last val/mIoU is `0.498182`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `+0.002747`, equal to `+0.560` baseline std units.
+- Delta vs the previous `kd_weight=0.15` PMAD run is `-0.002854`; delta vs `kd_weight=0.10` run is `+0.010075`.
+- Current `kd_weight=0.15` two-run mean best is `0.521571`, with population std `0.001427`.
+- Interpretation: **positive but not strong repeat.** This supports that `kd_weight=0.15` is healthier than `kd_weight=0.10`, but it does not yet prove stable improvement over the clean baseline because the two-run mean remains slightly below the mean + 1 std threshold.
+- Paper boundary: can continue treating PMAD logit-only as a candidate direction. Do not claim stable superiority yet; wait for `run03`.
+- Strategic implication: run `dformerv2_primkd_logit_only_w015_t4_run03` before feature KD. Feature KD should only be considered if the 3-run mean remains positive.
+
 ## 2026-05-10 PMAD Logit-Only KD Weight 0.10 Boundary
 
 - `dformerv2_primkd_logit_only_w010_t4_run01` completed 50 validation epochs.
