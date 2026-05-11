@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-11 CGPC Loss Minimal Implementation
+
+- Added `src/losses/cgpc_loss.py` with `CGPCLoss`.
+- Added `CGPCLoss` export in `src/losses/__init__.py`.
+- CGPC is a class-label-guided prototype contrast loss over fused features, not modality-to-modality alignment.
+- First implementation supports single-stage fused features only: `c2`, `c3`, or `c4`; default planned stage is `c3`.
+- Prototype construction is batch-local, class-label guided, sampled per class, and detached by default.
+- Did not add projection heads, memory banks, hard negative mining, full pixel-pairwise contrast, c3/c4 averaging, depth-to-primary contrast, or tri-prototype contrast.
+- Updated only `LitDFormerV2MidFusion` in `src/models/mid_fusion.py`: when `cgpc_weight=0`, `training_step()` immediately returns `super().training_step(...)`, preserving existing CE/DGBF paths; when `cgpc_weight>0`, it uses `self.model.extract_features()` to get fused features, decodes logits, computes segmentation loss, then adds `cgpc_weight * cgpc_loss`.
+- Added CLI args in `train.py`: `--cgpc_weight`, `--cgpc_temperature`, `--cgpc_stage`, `--cgpc_min_pixels_per_class`, and `--cgpc_max_pixels_per_class`.
+- Did not modify `BaseLitSeg`, `DFormerV2MidFusionSegmentor.forward()`, `GatedFusion`, DFormerV2 attention, PrimKD, teacher models, DGBF loss, decoder, or data module.
+- Verification: `train.py --help` lists CGPC args; `CGPCLoss` imports and forward/backward passes on synthetic tensors; `dformerv2_mid_fusion` builds with `cgpc_weight=0.0` and `cgpc_weight=0.01`; `compileall` passed.
+
 ## 2026-05-11 DGBF Loss Minimal Implementation
 
 - Added `src/losses/dgbf_loss.py` with `DGBFLoss`.

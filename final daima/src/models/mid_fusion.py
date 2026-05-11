@@ -10,6 +10,7 @@ from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .encoder import DepthEncoder, RGBEncoder
 from .fft_hilo_enhance import FFTHiLoEnhance
 from .freq_enhance import FFTFrequencyEnhance
+from ..losses import CGPCLoss
 from ..utils.metrics import sanitize_labels
 
 
@@ -110,6 +111,12 @@ class LitDFormerV2MidFusion(BaseLitSeg):
         dgbf_alpha: float = 1.0,
         dgbf_gamma: float = 2.0,
         dgbf_mode: str = "depth_semantic",
+        cgpc_weight: float = 0.0,
+        cgpc_temperature: float = 0.1,
+        cgpc_stage: str = "c3",
+        cgpc_min_pixels_per_class: int = 10,
+        cgpc_max_pixels_per_class: int = 128,
+        cgpc_detach_prototype: bool = True,
     ):
         super().__init__(
             num_classes=num_classes,
@@ -124,6 +131,45 @@ class LitDFormerV2MidFusion(BaseLitSeg):
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )
+        self.cgpc_weight = float(cgpc_weight)
+        if self.cgpc_weight > 0:
+            self.cgpc_criterion = CGPCLoss(
+                temperature=cgpc_temperature,
+                stage=cgpc_stage,
+                min_pixels_per_class=cgpc_min_pixels_per_class,
+                max_pixels_per_class=cgpc_max_pixels_per_class,
+                detach_prototype=cgpc_detach_prototype,
+                ignore_index=255,
+            )
+
+    def training_step(self, batch, batch_idx):
+        if self.cgpc_weight == 0:
+            return super().training_step(batch, batch_idx)
+
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+
+        _, _, fused_feats = self.model.extract_features(rgb, depth)
+        logits = self.model.decoder(fused_feats, input_size=rgb.shape[-2:])
+
+        if self.loss_type == "dgbf":
+            seg_loss = self.train_criterion(logits, label, depth)
+            for name, value in self.train_criterion.last_stats.items():
+                self.log(f"train/{name}", value, prog_bar=False, on_step=False, on_epoch=True)
+        else:
+            seg_loss = self.train_criterion(logits, label)
+
+        cgpc_loss = self.cgpc_criterion(fused_feats, label)
+        loss = seg_loss + self.cgpc_weight * cgpc_loss
+
+        self.log("train/seg_loss", seg_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/cgpc_loss", cgpc_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        stats = self.cgpc_criterion.last_stats
+        if stats:
+            self.log("train/cgpc_num_classes", stats["cgpc_num_classes"], prog_bar=False, on_step=False, on_epoch=True)
+            self.log("train/cgpc_num_queries", stats["cgpc_num_queries"], prog_bar=False, on_step=False, on_epoch=True)
+        return loss
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)

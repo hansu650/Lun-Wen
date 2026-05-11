@@ -127,6 +127,11 @@ def build_parser():
     parser.add_argument("--kd_weight", type=float, default=0.2)
     parser.add_argument("--kd_temperature", type=float, default=4.0)
     parser.add_argument("--save_student_only", action="store_true")
+    parser.add_argument("--cgpc_weight", type=float, default=0.0)
+    parser.add_argument("--cgpc_temperature", type=float, default=0.1)
+    parser.add_argument("--cgpc_stage", type=str, default="c3", choices=["c2", "c3", "c4"])
+    parser.add_argument("--cgpc_min_pixels_per_class", type=int, default=10)
+    parser.add_argument("--cgpc_max_pixels_per_class", type=int, default=128)
     return parser
 
 
@@ -223,6 +228,12 @@ def build_model(args):
             dgbf_alpha=args.dgbf_alpha,
             dgbf_gamma=args.dgbf_gamma,
             dgbf_mode=args.dgbf_mode,
+            cgpc_weight=args.cgpc_weight,
+            cgpc_temperature=args.cgpc_temperature,
+            cgpc_stage=args.cgpc_stage,
+            cgpc_min_pixels_per_class=args.cgpc_min_pixels_per_class,
+            cgpc_max_pixels_per_class=args.cgpc_max_pixels_per_class,
+            cgpc_detach_prototype=True,
         )
     return model_cls(
         num_classes=args.num_classes,
