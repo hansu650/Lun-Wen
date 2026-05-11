@@ -1,5 +1,37 @@
 # Experiment Log
 
+## 2026-05-11 dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01
+
+- model: `dformerv2_mid_fusion`
+- loss: `DGBFLoss`
+- DGBF settings: `alpha=1.0`, `gamma=2.0`, `mode=depth_semantic`
+- purpose: first output-level Depth-Geometry Boundary Focal Loss run on the clean DFormerV2 mid-fusion baseline.
+- architecture: unchanged `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.513194` at epoch 49
+- last val/mIoU: `0.443671`
+- best val/loss: `1.030464` at epoch 12
+- last val/loss: `1.385053`
+- mean val/mIoU over last 10 epochs: `0.497684`
+- final train/loss: `0.190071`
+- final DGBF boundary mean: `0.002385`
+- final DGBF boundary max: `0.946904`
+- final DGBF weight mean: `1.000793`
+- final DGBF weight max: `1.728474`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- delta vs clean baseline mean: `-0.004203` (`-0.857` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.009104`
+- delta vs clean baseline best single: `-0.011231`
+- checkpoint: `checkpoints/dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5132.pt`
+- evidence: `miou_list/dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01.md`
+- conclusion: **negative result.** The first DGBF `depth_semantic` setting underperforms the clean CE baseline and shows a late collapse at epoch 50. The boundary/weight averages are extremely close to zero/one, so this configuration behaves almost like CE on most pixels.
+- next step: do not repeat this exact setting. If DGBF is continued, use decision-value ablations only: `semantic_only` or larger `alpha` to test whether the current failure is due to overly sparse weighting. Do not add GSFR or GSA prior supervision yet.
+
 ## 2026-05-11 PMAD logit-only KD weight sweep summary
 
 - model: `dformerv2_primkd_logit_only`

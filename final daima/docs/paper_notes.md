@@ -1,5 +1,17 @@
 # Paper Notes
 
+## 2026-05-11 DGBF Run01 Boundary
+
+- `dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01` completed 50 validation epochs.
+- Setting: unchanged `dformerv2_mid_fusion` architecture with output-level `DGBFLoss`, `alpha=1.0`, `gamma=2.0`, `mode=depth_semantic`.
+- Best val/mIoU is `0.513194` at epoch 49; last val/mIoU is `0.443671`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `-0.004203`, equal to `-0.857` baseline std units.
+- DGBF diagnostics show that the effective weighting is tiny on average: final `dgbf_boundary_mean=0.002385` and `dgbf_weight_mean=1.000793`.
+- Interpretation: **negative first DGBF result.** The depth-semantic boundary weighting is too sparse/weak in this configuration and mostly behaves like CE, while still adding instability near the end of training.
+- Paper boundary: do not cite this as an improvement. It can be used as a negative ablation showing that naive output-level depth-boundary weighting is insufficient for this architecture.
+- Strategic implication: do not repeat this exact setting. If one more DGBF experiment is desired, prefer `semantic_only` or larger `alpha` as a diagnostic; otherwise return to PMAD/paper writing.
+
 ## 2026-05-11 PMAD Logit-Only KD 5-Run Summary Boundary
 
 - `dformerv2_primkd_logit_only` at `kd_weight=0.15`, `kd_temperature=4.0` has now been run 5 times.
