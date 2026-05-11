@@ -1,5 +1,23 @@
 # Paper Notes
 
+## 2026-05-11 PMAD Logit-Only KD 5-Run Summary Boundary
+
+- `dformerv2_primkd_logit_only` at `kd_weight=0.15`, `kd_temperature=4.0` has now been run 5 times.
+- run01: best `0.522998` at epoch 48, delta vs baseline mean `+0.005601` (+1.14 std)
+- run02: best `0.520144` at epoch 47, delta vs baseline mean `+0.002747` (+0.56 std)
+- run03: best `0.522600` at epoch 41, delta vs baseline mean `+0.005203` (+1.06 std)
+- run04: best `0.524028` at epoch 45, delta vs baseline mean `+0.006631` (+1.35 std)
+- run05: best `0.514204` at epoch 41, delta vs baseline mean `-0.003193` (-0.65 std)
+- 5-run mean best: `0.520795`, 5-run std: `0.003799`
+- 5-run mean delta vs clean baseline mean: `+0.003398` (+0.69 baseline std units)
+- 5-run mean delta vs baseline mean + 1 std: `-0.001503`
+- 5-run best single: `0.524028` (run04), nearly matches baseline best single `0.524425`
+- Runs above baseline mean: 4/5; runs above baseline mean + 1 std: 2/5
+- KD weight ablation: w=0.10 (0.5101, -1.50 std), w=0.15 (0.5208, +0.69 std), w=0.175 (0.5182, +0.16 std), w=0.20 (0.5145, -0.60 std)
+- Interpretation: **marginal positive candidate.** The 5-run mean beats the baseline mean by +0.69 std but does not cross the mean + 1 std threshold. 4/5 runs are positive, with one outlier (run05) pulling the mean down. The signal is directionally positive but not strong enough for a definitive claim. w=0.15 is clearly the best KD weight; higher weights show diminishing returns.
+- Paper boundary: PMAD logit-only KD at w=0.15 can be reported as a marginal positive ablation study. It demonstrates that geometry-primary teacher distillation with conservative logit KD can modestly improve RGB-D segmentation. Do not claim as a strong main result. The contribution is the KD framework and the ablation finding, not a state-of-the-art number.
+- Strategic implication: PMAD logit-only is sufficient. Do not add feature KD. The paper can include this as an ablation showing the effect of KD weight on segmentation quality, with w=0.15 as the recommended setting.
+
 ## 2026-05-10 PMAD Logit-Only KD Weight 0.15 Run02 Boundary
 
 - `dformerv2_primkd_logit_only_w015_t4_run02` completed 50 validation epochs.

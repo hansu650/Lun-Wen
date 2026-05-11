@@ -1,5 +1,167 @@
 # Experiment Log
 
+## 2026-05-11 PMAD logit-only KD weight sweep summary
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: complete PMAD logit-only KD weight sweep after run01/run02 showed positive w=0.15 signal.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`, `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_temperature=4.0`, logit-only, no feature KD
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- completed runs: 8 total (run01-run05 at w=0.15, run01 at w=0.175, run01 at w=0.20, plus earlier w=0.10 run01)
+- baseline reference: clean 10-run RGB-D baseline mean best `0.517397`, std `0.004901`, mean+1std `0.522298`, best single `0.524425`
+
+### w=0.15 T=4.0 5-run results
+
+| run | best val/mIoU | epoch | last val/mIoU | delta vs baseline mean |
+|-----|--------------|-------|---------------|----------------------|
+| run01 | 0.522998 | 48 | 0.513176 | +0.005601 |
+| run02 | 0.520144 | 47 | 0.498182 | +0.002747 |
+| run03 | 0.522600 | 41 | unknown | +0.005203 |
+| run04 | 0.524028 | 45 | 0.490264 | +0.006631 |
+| run05 | 0.514204 | 41 | 0.505725 | -0.003193 |
+| **5-run mean** | **0.520795** | | | **+0.003398** |
+| **5-run std** | **0.003799** | | | |
+
+- 5-run mean delta vs baseline mean: `+0.003398` (`+0.693` baseline std units)
+- 5-run mean delta vs baseline mean + 1 std: `-0.001503`
+- 5-run best single: `0.524028` (run04), delta vs baseline best single: `-0.000397`
+- runs above baseline mean: 4/5 (run01, run02, run03, run04)
+- runs above baseline mean + 1 std: 2/5 (run03, run04)
+
+### w=0.175 T=4.0 run01
+
+- best val/mIoU: `0.518158` at epoch 49, last `0.491036`
+- delta vs baseline mean: `+0.000761` (`+0.155` std units)
+- conclusion: near baseline, no advantage over w=0.15
+
+### w=0.20 T=4.0 run01
+
+- best val/mIoU: `0.514454` at epoch 40, last `0.513074`
+- delta vs baseline mean: `-0.002943` (`-0.600` std units)
+- conclusion: negative, below baseline mean
+
+### KD weight ablation summary
+
+| kd_weight | runs | mean best mIoU | delta vs baseline | verdict |
+|-----------|------|---------------|-------------------|---------|
+| 0.10 | 1 | 0.5101 | -0.0073 (-1.50 std) | negative |
+| 0.15 | 5 | 0.5208 | +0.0034 (+0.69 std) | marginal positive |
+| 0.175 | 1 | 0.5182 | +0.0008 (+0.16 std) | neutral |
+| 0.20 | 1 | 0.5145 | -0.0029 (-0.60 std) | negative |
+
+- conclusion: **w=0.15 is the best KD weight.** The 5-run mean 0.5208 beats the baseline mean by +0.69 std and is close to baseline mean + 1 std. 4/5 runs exceed baseline mean. Higher weights (0.175, 0.20) show diminishing returns. PMAD logit-only at w=0.15 is a marginal positive candidate for the paper.
+- next step: PMAD logit-only is sufficient as a marginal contribution. Do not add feature KD. Document as ablation study in paper.
+
+## 2026-05-11 dformerv2_primkd_logit_only_w020_t4_run01
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: PMAD / PrimKD logit-only KD weight ablation at w=0.20.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`
+- KD settings: `kd_weight=0.20`, `kd_temperature=4.0`, logit-only
+- recorded validation epochs: 50
+- best val/mIoU: `0.514454` at epoch 40
+- last val/mIoU: `0.513074`
+- mean val/mIoU over last 10 epochs: `0.500622`
+- best val/loss: `1.083174` at epoch 6
+- last val/loss: `1.257040`
+- final train/loss: `0.228650`
+- final train/ce_loss: `0.153539`
+- final train/kd_loss: `0.375556`
+- delta vs clean baseline mean: `-0.002943` (`-0.600` std units)
+- delta vs clean baseline mean + 1 std: `-0.007844`
+- delta vs w=0.15 5-run mean: `-0.006341`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w020_t4_run01/dformerv2_primkd_logit_only-epoch=39-val_mIoU=0.5145.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w020_t4_run01.md`
+- conclusion: **negative.** w=0.20 underperforms baseline mean. KD weight too high.
+
+## 2026-05-11 dformerv2_primkd_logit_only_w0175_t4_run01
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: PMAD / PrimKD logit-only KD weight ablation at w=0.175.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`
+- KD settings: `kd_weight=0.175`, `kd_temperature=4.0`, logit-only
+- recorded validation epochs: 50
+- best val/mIoU: `0.518158` at epoch 49
+- last val/mIoU: `0.491036`
+- mean val/mIoU over last 10 epochs: `0.498970`
+- best val/loss: `1.095414` at epoch 8
+- last val/loss: `1.303892`
+- final train/loss: `0.251676`
+- final train/ce_loss: `0.173178`
+- final train/kd_loss: `0.448565`
+- delta vs clean baseline mean: `+0.000761` (`+0.155` std units)
+- delta vs clean baseline mean + 1 std: `-0.004140`
+- delta vs w=0.15 5-run mean: `-0.002637`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w0175_t4_run01/dformerv2_primkd_logit_only-epoch=48-val_mIoU=0.5182.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w0175_t4_run01.md`
+- conclusion: **neutral.** Near baseline mean but no advantage over w=0.15.
+
+## 2026-05-11 dformerv2_primkd_logit_only_w015_t4_run05
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: 5th repeat of w=0.15 PMAD logit-only KD for stability statistics.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only
+- recorded validation epochs: 50
+- best val/mIoU: `0.514204` at epoch 41
+- last val/mIoU: `0.505725`
+- mean val/mIoU over last 10 epochs: `0.503790`
+- best val/loss: `1.068434` at epoch 8
+- last val/loss: `1.274728`
+- final train/loss: `0.209402`
+- final train/ce_loss: `0.149067`
+- final train/kd_loss: `0.402230`
+- delta vs clean baseline mean: `-0.003193` (`-0.651` std units)
+- delta vs clean baseline mean + 1 std: `-0.008094`
+- delta vs w=0.15 4-run mean (excl run05): `-0.009791`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run05/dformerv2_primkd_logit_only-epoch=40-val_mIoU=0.5142.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run05.md`
+- conclusion: **negative outlier.** This run pulled the 5-run mean down. Below baseline mean. The w=0.15 signal is not perfectly stable — 1/5 runs falls below baseline.
+
+## 2026-05-11 dformerv2_primkd_logit_only_w015_t4_run04
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: 4th repeat of w=0.15 PMAD logit-only KD for stability statistics.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only
+- recorded validation epochs: 50
+- best val/mIoU: `0.524028` at epoch 45
+- last val/mIoU: `0.490264`
+- mean val/mIoU over last 10 epochs: `0.504944`
+- best val/loss: `1.061741` at epoch 7
+- last val/loss: `1.274921`
+- final train/loss: `0.230699`
+- final train/ce_loss: `0.163558`
+- final train/kd_loss: `0.447604`
+- delta vs clean baseline mean: `+0.006631` (`+1.353` std units)
+- delta vs clean baseline mean + 1 std: `+0.001730`
+- delta vs clean baseline best single: `-0.000397`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run04/dformerv2_primkd_logit_only-epoch=44-val_mIoU=0.5240.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run04.md`
+- conclusion: **strong positive.** Best w=0.15 run, exceeds baseline mean + 1 std, nearly matches baseline best single. Shows PMAD can produce near-peak baseline performance.
+
+## 2026-05-11 dformerv2_primkd_logit_only_w015_t4_run03
+
+- model: `dformerv2_primkd_logit_only`
+- purpose: 3rd repeat of w=0.15 PMAD logit-only KD for stability statistics.
+- student: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- teacher: frozen `dformerv2_geometry_primary_teacher_run01`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only
+- recorded validation epochs: unknown (TensorBoard validation log incomplete)
+- best val/mIoU: `0.522600` at epoch 41 (from checkpoint filename)
+- delta vs clean baseline mean: `+0.005203` (`+1.062` std units)
+- delta vs clean baseline mean + 1 std: `+0.000302`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run03/dformerv2_primkd_logit_only-epoch=41-val_mIoU=0.5226.pt`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run03.md`
+- conclusion: **positive.** Exceeds baseline mean + 1 std. Consistent with run01/run04.
+
 ## 2026-05-10 dformerv2_primkd_logit_only_w015_t4_run02
 
 - model: `dformerv2_primkd_logit_only`
