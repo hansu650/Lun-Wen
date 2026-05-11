@@ -107,8 +107,19 @@ class LitDFormerV2MidFusion(BaseLitSeg):
         dformerv2_pretrained=None,
         loss_type: str = "ce",
         dice_weight: float = 0.5,
+        dgbf_alpha: float = 1.0,
+        dgbf_gamma: float = 2.0,
+        dgbf_mode: str = "depth_semantic",
     ):
-        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+            dgbf_alpha=dgbf_alpha,
+            dgbf_gamma=dgbf_gamma,
+            dgbf_mode=dgbf_mode,
+        )
         self.model = DFormerV2MidFusionSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,

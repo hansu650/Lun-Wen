@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-11 DGBF Loss Minimal Implementation
+
+- Added `src/losses/dgbf_loss.py` with `DGBFLoss`.
+- Added `DGBFLoss` export in `src/losses/__init__.py`.
+- Extended `BaseLitSeg` with `loss_type="dgbf"` while keeping `loss_type="ce"` behavior unchanged.
+- DGBF computes CE per pixel, a Sobel depth edge map, a valid semantic boundary map, optional focal modulation, and a final weighted CE loss.
+- Supported DGBF modes: `depth_semantic`, `semantic_only`, `depth_only`, `focal_only`, and `none`.
+- Added DGBF training logs: `train/dgbf_boundary_mean`, `train/dgbf_boundary_max`, `train/dgbf_weight_mean`, and `train/dgbf_weight_max`.
+- Added CLI args in `train.py`: `--dgbf_alpha`, `--dgbf_gamma`, and `--dgbf_mode`; `--loss_type` now supports `dgbf`.
+- Updated only `LitDFormerV2MidFusion.__init__` to pass DGBF parameters into `BaseLitSeg`; `DFormerV2MidFusionSegmentor.forward()` remains unchanged.
+- Did not implement GSFR, FFT, GSA prior supervision, DFormerV2 attention changes, dataset changes, teacher changes, PMAD changes, or model-structure changes.
+- Verification: `train.py --help` lists DGBF args; `DGBFLoss` imports and forward/backward passes on synthetic tensors; `dgbf_mode=none` exactly matches CE in a synthetic check; `dformerv2_mid_fusion` builds with both `loss_type=ce` and `loss_type=dgbf`.
+
 ## 2026-05-10 Geometry-Primary Teacher Update
 
 - Replaced the PMAD teacher candidate with a geometry-primary DFormerV2 teacher.

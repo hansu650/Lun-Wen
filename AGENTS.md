@@ -128,15 +128,20 @@ MODEL_REGISTRY = {
 17. 不要把 deprecated/invalid 记录重新写成有效 baseline，也不要在论文结果中引用。
 18. 当用户要求"总结这次实验结果"或类似实验总结时，必须从真实日志/TensorBoard event 中提取每个 epoch 的 `val/mIoU`，在 `final daima/miou_list/` 下为该实验生成单独的 Markdown 文件，并在 `final daima/docs/experiment_log.md` 中引用该 mIoU 明细文件。
 
+### 运行实验原则：决策价值导向实验
+
+19. 实验应以假设和决策价值为导向，而不是为了补齐口径、填满表格、让 ablation 看起来完整。每个实验都应回答一个明确假设，或支持一个后续决策。
+20. 不在低边际信息增益的方向上穷举。当可以预见某组实验对性能提升、方向判断或后续改进都没有明显贡献，尤其只是重复确认“不可行 / 无效果”时，就应停止，不做穷举式验证。
+
 ### 项目操作规则
 
-19. 修改代码前必须先阅读相关文件，理解现有结构。
-20. 不要随便改 backbone（DFormerv2_S）、dataset/dataloader（data_module.py）、decoder（SimpleFPNDecoder）。
-21. 不要删除 `final daima/checkpoints/`、`final daima/miou_list/`、`final daima/docs/` 里的已有记录。
-22. 新实验必须有独立 run name，checkpoint 目录命名格式：`{model_name}_{run_name}/`。
-23. 新模块尽量注册成单独 model name 或参数开关，不要硬改 baseline 代码。
-24. 每次修改后说明：改了哪些文件、如何运行、如何验证。
-25. 如果只是分析/理解/总结项目，请只读，不要改代码。
+21. 修改代码前必须先阅读相关文件，理解现有结构。
+22. 不要随便改 backbone（DFormerv2_S）、dataset/dataloader（data_module.py）、decoder（SimpleFPNDecoder）。
+23. 不要删除 `final daima/checkpoints/`、`final daima/miou_list/`、`final daima/docs/` 里的已有记录。
+24. 新实验必须有独立 run name，checkpoint 目录命名格式：`{model_name}_{run_name}/`。
+25. 新模块尽量注册成单独 model name 或参数开关，不要硬改 baseline 代码。
+26. 每次修改后说明：改了哪些文件、如何运行、如何验证。
+27. 如果只是分析/理解/总结项目，请只读，不要改代码。
 
 <!-- ARIS:BEGIN -->
 ## ARIS Skill Scope

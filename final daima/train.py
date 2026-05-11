@@ -107,8 +107,16 @@ def build_parser():
     parser.add_argument("--devices", type=str, default="1")
     parser.add_argument("--accelerator", type=str, default="auto")
     parser.add_argument("--dformerv2_pretrained", type=str, default=None)
-    parser.add_argument("--loss_type", type=str, default="ce", choices=["ce", "ce_dice"])
+    parser.add_argument("--loss_type", type=str, default="ce", choices=["ce", "ce_dice", "dgbf"])
     parser.add_argument("--dice_weight", type=float, default=0.5)
+    parser.add_argument("--dgbf_alpha", type=float, default=1.0)
+    parser.add_argument("--dgbf_gamma", type=float, default=2.0)
+    parser.add_argument(
+        "--dgbf_mode",
+        type=str,
+        default="depth_semantic",
+        choices=["depth_semantic", "semantic_only", "depth_only", "focal_only", "none"],
+    )
     parser.add_argument("--cutoff_ratio", type=float, default=0.25)
     parser.add_argument("--gamma_init", type=float, default=0.05)
     parser.add_argument("--hilo_alpha_low_init", type=float, default=0.03)
@@ -191,6 +199,9 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
+            dgbf_alpha=args.dgbf_alpha,
+            dgbf_gamma=args.dgbf_gamma,
+            dgbf_mode=args.dgbf_mode,
         )
     if args.model == "dformerv2_primkd_logit_only":
         return model_cls(

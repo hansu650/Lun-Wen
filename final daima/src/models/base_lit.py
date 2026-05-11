@@ -3,12 +3,21 @@ import torch.nn as nn
 import torch.distributed as dist
 import lightning as L
 
-from ..losses import CEDiceLoss
+from ..losses import CEDiceLoss, DGBFLoss
 from ..utils.metrics import compute_miou, sanitize_labels
 
 
 class BaseLitSeg(L.LightningModule):
-    def __init__(self, num_classes=40, lr=1e-4, loss_type: str = "ce", dice_weight: float = 0.5):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+        dgbf_alpha: float = 1.0,
+        dgbf_gamma: float = 2.0,
+        dgbf_mode: str = "depth_semantic",
+    ):
         super().__init__()
         self.save_hyperparameters()
         self.loss_type = loss_type
@@ -19,8 +28,15 @@ class BaseLitSeg(L.LightningModule):
             self.train_criterion = self.ce_criterion
         elif loss_type == "ce_dice":
             self.train_criterion = CEDiceLoss(ignore_index=255, dice_weight=dice_weight)
+        elif loss_type == "dgbf":
+            self.train_criterion = DGBFLoss(
+                alpha=dgbf_alpha,
+                gamma=dgbf_gamma,
+                mode=dgbf_mode,
+                ignore_index=255,
+            )
         else:
-            raise ValueError("loss_type must be 'ce' or 'ce_dice'")
+            raise ValueError("loss_type must be 'ce', 'ce_dice', or 'dgbf'")
         self.register_buffer("_val_confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), persistent=False)
 
     def forward(self, rgb, depth):
@@ -30,10 +46,17 @@ class BaseLitSeg(L.LightningModule):
         return logits
 
     def training_step(self, batch, batch_idx):
+        if self.loss_type == "dgbf" and "depth" not in batch:
+            raise KeyError("DGBFLoss requires batch['depth']")
         rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
         label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
         logits = self(rgb, depth)
-        loss = self.train_criterion(logits, label)
+        if self.loss_type == "dgbf":
+            loss = self.train_criterion(logits, label, depth)
+            for name, value in self.train_criterion.last_stats.items():
+                self.log(f"train/{name}", value, prog_bar=False, on_step=False, on_epoch=True)
+        else:
+            loss = self.train_criterion(logits, label)
         self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
         return loss
 
