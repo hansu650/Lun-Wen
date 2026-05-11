@@ -1,5 +1,18 @@
 # Paper Notes
 
+## 2026-05-11 CGPC Run01 Boundary
+
+- `dformerv2_mid_fusion_cgpc_w001_t01_c3_detach_run01` completed 50 validation epochs.
+- Setting: unchanged `dformerv2_mid_fusion` architecture with class-guided prototype contrastive loss on fused c3, `cgpc_weight=0.01`, `temperature=0.1`, detached prototypes.
+- Best val/mIoU is `0.515838` at epoch 50; last val/mIoU is also `0.515838`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `-0.001559`, equal to `-0.318` baseline std units.
+- CGPC diagnostics are healthy: final `cgpc_num_classes=13.440806`, `cgpc_num_queries=1120.790894`, and `cgpc_loss` decreases from `0.968080` to `0.372201`.
+- Interpretation: **neutral-to-negative first CGPC result.** Unlike DGBF, the auxiliary signal is active and well-sampled, but it still does not improve the final segmentation metric over CE. This suggests the simple batch-local c3 prototype contrast is not enough to add class-discriminative value to the already strong fused representation.
+- Paper boundary: do not cite as improvement. It can be discussed as a label-guided auxiliary loss attempt that is healthier than generic alignment but still below baseline.
+- Improvement idea: the next CGPC change should test a single mechanism. The first choice is `stage=c4`, because c4 should carry stronger class semantics than c3 and therefore make class prototypes more task-aligned. The second choice is `cgpc_weight=0.005` at c3, because the current auxiliary term may be regularizing a representation that CE already organizes well.
+- Strategic implication: one more CGPC diagnostic may be worth running only if it answers a clear question: lower weight (`0.005`) for less regularization pressure, or `c4` for more semantic prototypes. Avoid CGPC + DGBF or CGPC + PMAD stacking. If both diagnostics fail, CGPC should be recorded as a negative label-guided auxiliary loss and the paper should return to PMAD/paper writing.
+
 ## 2026-05-11 DGBF Run01 Boundary
 
 - `dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01` completed 50 validation epochs.
