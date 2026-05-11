@@ -1,5 +1,17 @@
 # Paper Notes
 
+## 2026-05-11 CGPC C4 Run01 Boundary
+
+- `dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01` completed 50 validation epochs.
+- Setting: unchanged `dformerv2_mid_fusion` architecture with class-guided prototype contrastive loss on fused c4, `cgpc_weight=0.01`, `temperature=0.1`, detached prototypes.
+- Best val/mIoU is `0.512659` at epoch 49; last val/mIoU is `0.507206`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `-0.004738`, equal to `-0.967` baseline std units.
+- Compared with CGPC c3 best `0.515838`, c4 is lower by `0.003179`.
+- CGPC diagnostics are active but lower-coverage than c3: final `cgpc_num_classes=9.790932`, `cgpc_num_queries=508.498749`, and `cgpc_loss` decreases from `0.884067` to `0.364393`.
+- Interpretation: **negative stage ablation.** Moving prototype contrast from c3 to the more semantic c4 stage did not improve segmentation quality and performed worse than c3.
+- Paper boundary: do not cite CGPC c4 as an improvement. It can be used as a negative stage ablation showing that simple batch-local class prototype contrast is not sufficient for this DFormerV2 mid-fusion baseline.
+
 ## 2026-05-11 CGPC Run01 Boundary
 
 - `dformerv2_mid_fusion_cgpc_w001_t01_c3_detach_run01` completed 50 validation epochs.
@@ -10,8 +22,6 @@
 - CGPC diagnostics are healthy: final `cgpc_num_classes=13.440806`, `cgpc_num_queries=1120.790894`, and `cgpc_loss` decreases from `0.968080` to `0.372201`.
 - Interpretation: **neutral-to-negative first CGPC result.** Unlike DGBF, the auxiliary signal is active and well-sampled, but it still does not improve the final segmentation metric over CE. This suggests the simple batch-local c3 prototype contrast is not enough to add class-discriminative value to the already strong fused representation.
 - Paper boundary: do not cite as improvement. It can be discussed as a label-guided auxiliary loss attempt that is healthier than generic alignment but still below baseline.
-- Improvement idea: the next CGPC change should test a single mechanism. The first choice is `stage=c4`, because c4 should carry stronger class semantics than c3 and therefore make class prototypes more task-aligned. The second choice is `cgpc_weight=0.005` at c3, because the current auxiliary term may be regularizing a representation that CE already organizes well.
-- Strategic implication: one more CGPC diagnostic may be worth running only if it answers a clear question: lower weight (`0.005`) for less regularization pressure, or `c4` for more semantic prototypes. Avoid CGPC + DGBF or CGPC + PMAD stacking. If both diagnostics fail, CGPC should be recorded as a negative label-guided auxiliary loss and the paper should return to PMAD/paper writing.
 
 ## 2026-05-11 DGBF Run01 Boundary
 
@@ -23,7 +33,6 @@
 - DGBF diagnostics show that the effective weighting is tiny on average: final `dgbf_boundary_mean=0.002385` and `dgbf_weight_mean=1.000793`.
 - Interpretation: **negative first DGBF result.** The depth-semantic boundary weighting is too sparse/weak in this configuration and mostly behaves like CE, while still adding instability near the end of training.
 - Paper boundary: do not cite this as an improvement. It can be used as a negative ablation showing that naive output-level depth-boundary weighting is insufficient for this architecture.
-- Strategic implication: do not repeat this exact setting. If one more DGBF experiment is desired, prefer `semantic_only` or larger `alpha` as a diagnostic; otherwise return to PMAD/paper writing.
 
 ## 2026-05-11 PMAD Logit-Only KD 5-Run Summary Boundary
 

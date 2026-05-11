@@ -1,5 +1,40 @@
 # Experiment Log
 
+## 2026-05-11 dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01
+
+- model: `dformerv2_mid_fusion`
+- loss: `CE + 0.01 * CGPCLoss`
+- CGPC settings: `stage=c4`, `temperature=0.1`, `min_pixels_per_class=10`, `max_pixels_per_class=128`, `detach_prototype=True`
+- purpose: single-variable CGPC stage ablation from c3 to c4.
+- architecture: unchanged `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.512659` at epoch 49
+- last val/mIoU: `0.507206`
+- best val/loss: `1.034627` at epoch 11
+- last val/loss: `1.292995`
+- mean val/mIoU over last 10 epochs: `0.501490`
+- final train/loss: `0.143598`
+- final train/seg_loss: `0.139954`
+- final train/cgpc_loss: `0.364393`
+- final cgpc_num_classes: `9.790932`
+- final cgpc_num_queries: `508.498749`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison CGPC c3 best: `0.515838`
+- comparison DGBF depth_semantic best: `0.513194`
+- delta vs clean baseline mean: `-0.004738` (`-0.967` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.009639`
+- delta vs clean baseline best single: `-0.011766`
+- delta vs CGPC c3: `-0.003179`
+- delta vs DGBF depth_semantic: `-0.000536`
+- checkpoint: `checkpoints/dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5127.pt`
+- evidence: `miou_list/dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01.md`
+- conclusion: **negative result.** CGPC c4 underperforms both the clean CE baseline and the CGPC c3 run. The c4 setting has active CGPC optimization but lower class/query coverage than c3, and the semantic-stage hypothesis is not supported by this run.
+
 ## 2026-05-11 dformerv2_mid_fusion_cgpc_w001_t01_c3_detach_run01
 
 - model: `dformerv2_mid_fusion`
@@ -30,9 +65,6 @@
 - checkpoint: `checkpoints/dformerv2_mid_fusion_cgpc_w001_t01_c3_detach_run01/dformerv2_mid_fusion-epoch=49-val_mIoU=0.5158.pt`
 - evidence: `miou_list/dformerv2_mid_fusion_cgpc_w001_t01_c3_detach_run01.md`
 - conclusion: **neutral-to-negative result.** CGPC c3 is much healthier than the failed DGBF setting and ends close to the CE baseline, but it does not exceed the clean baseline mean. Diagnostics show healthy class/query coverage, so this is not a sampling failure.
-- improvement idea: the most likely issue is not missing labels or invalid sampling, because CGPC sees about `13.4` classes and `1120` sampled queries per epoch. The failure is more likely that c3 prototypes are still not semantic enough, or that `cgpc_weight=0.01` adds auxiliary pressure without improving CE's decision boundary.
-- next step: do not repeat this exact setting as a main result. If continuing CGPC, use one decision-value diagnostic only: prefer `cgpc_stage=c4` with the same `cgpc_weight=0.01` to test whether higher-level semantic prototypes help; alternatively use `cgpc_weight=0.005` on c3 to test whether the auxiliary regularization is too strong. Do not combine CGPC with DGBF/PMAD yet.
-- suggested next command name: `dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01` if testing the semantic-stage hypothesis.
 
 ## 2026-05-11 dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01
 
@@ -64,7 +96,6 @@
 - checkpoint: `checkpoints/dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5132.pt`
 - evidence: `miou_list/dformerv2_mid_fusion_dgbf_a1_g2_depthsem_run01.md`
 - conclusion: **negative result.** The first DGBF `depth_semantic` setting underperforms the clean CE baseline and shows a late collapse at epoch 50. The boundary/weight averages are extremely close to zero/one, so this configuration behaves almost like CE on most pixels.
-- next step: do not repeat this exact setting. If DGBF is continued, use decision-value ablations only: `semantic_only` or larger `alpha` to test whether the current failure is due to overly sparse weighting. Do not add GSFR or GSA prior supervision yet.
 
 ## 2026-05-11 PMAD logit-only KD weight sweep summary
 
