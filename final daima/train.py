@@ -199,9 +199,6 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
-            dgbf_alpha=args.dgbf_alpha,
-            dgbf_gamma=args.dgbf_gamma,
-            dgbf_mode=args.dgbf_mode,
         )
     if args.model == "dformerv2_primkd_logit_only":
         return model_cls(
@@ -223,6 +220,9 @@ def build_model(args):
             dformerv2_pretrained=args.dformerv2_pretrained,
             loss_type=args.loss_type,
             dice_weight=args.dice_weight,
+            dgbf_alpha=args.dgbf_alpha,
+            dgbf_gamma=args.dgbf_gamma,
+            dgbf_mode=args.dgbf_mode,
         )
     return model_cls(
         num_classes=args.num_classes,
