@@ -1,5 +1,18 @@
 # Paper Notes
 
+## 2026-05-12 Class Context Decoder Run01 Boundary
+
+- `dformerv2_class_context_decoder_run01` completed 50 validation epochs.
+- Setting: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + ClassContextFPNDecoder`, with `class_context_channels=64`, `class_context_aux_weight=0.2`, and `class_context_alpha_init=0.1`.
+- Best val/mIoU is `0.519807` at epoch 46; last val/mIoU is `0.503151`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `+0.002410`, equal to `+0.492` baseline std units.
+- Compared with PMAD logit-only w0.15 5-run mean `0.520795`, this run is lower by `0.000988`.
+- Compared with CGPC c3 best `0.515838` and CGPC c4 best `0.512659`, this run is higher by `0.003969` and `0.007148`.
+- The late curve is unstable: mean val/mIoU over the last 10 epochs is `0.501142`, and epoch 47 drops sharply to `0.433597`.
+- Interpretation: **marginal positive but unstable decoder result.** The OCR-style class-context decoder is healthier than recent class-guided contrastive losses and beats the clean baseline mean in one run, but it does not cross the baseline mean + 1 std threshold.
+- Paper boundary: do not cite as a stable improvement yet. It can be kept as a promising single-run decoder ablation pending repeat or a stability-focused follow-up.
+
 ## 2026-05-11 CGPC C4 Run01 Boundary
 
 - `dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01` completed 50 validation epochs.

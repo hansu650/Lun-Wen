@@ -1,5 +1,28 @@
 # Model Changes
 
+## 2026-05-12 Class Context Decoder Bounded Alpha Update
+
+- Updated `ClassContextBlock` in `src/models/decoder.py` to use bounded residual strength for class-context refinement.
+- Replaced the previous unconstrained trainable `alpha` with `alpha = alpha_max * sigmoid(raw_alpha)`.
+- Added `alpha_max` support through `ClassContextFPNDecoder`, `DFormerV2ClassContextDecoderSegmentor`, `LitDFormerV2ClassContextDecoder`, and `train.py`.
+- Added CLI arg `--class_context_alpha_max`, default `0.2`.
+- Default initialization remains effectively unchanged: `class_context_alpha_init=0.1` and `class_context_alpha_max=0.2` initialize `raw_alpha=0`, so actual alpha starts at `0.1`.
+- Motivation: `dformerv2_class_context_decoder_run01` reached best val/mIoU `0.519807`, but `context_alpha` increased from `0.111641` to `0.621710` and late validation became unstable. The bounded update directly limits the refinement branch strength.
+- Did not modify `ContextFPNDecoder` / `PPMContextBlock`, `DFormerV2MidFusionSegmentor.forward()`, GatedFusion, DFormerV2 attention, BaseLitSeg, PMAD, teacher models, DGBF, CGPC, or the data module.
+
+## 2026-05-11 Class-Guided Context Decoder Minimal Implementation
+
+- Added `ClassContextBlock` and `ClassContextFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2ClassContextDecoderSegmentor` and `LitDFormerV2ClassContextDecoder` in `src/models/mid_fusion.py`.
+- Registered new model name `dformerv2_class_context_decoder` in `train.py`.
+- Added CLI args: `--class_context_channels`, `--class_context_aux_weight`, and `--class_context_alpha_init`.
+- The new model keeps `DFormerv2_S + DepthEncoder + GatedFusion` unchanged and replaces only the decoder with a lightweight class-context FPN decoder.
+- Decoder flow: fused features -> FPN `p1` -> auxiliary logits -> class probability map -> class context prototypes -> pixel-to-class attention -> refined `p1` -> final logits.
+- Training loss for the first version is `CE(final_logits, label) + class_context_aux_weight * CE(aux_logits, label)`.
+- The first version supports only `--loss_type ce`; it does not combine with DGBF, CGPC, PMAD, FFT, PPM/ASPP, Lovasz, or feature-level contrastive losses.
+- Did not modify `DFormerV2MidFusionSegmentor.forward()`, `GatedFusion`, DFormerV2 attention, `BaseLitSeg`, PrimKD, teacher models, DGBF, CGPC, decoder baselines, or the data module.
+- Verification: `py_compile` passed for `train.py`, `src/models/decoder.py`, and `src/models/mid_fusion.py`; `train.py --help` lists the new model and args; `ClassContextFPNDecoder` and `ClassContextBlock` import; random-tensor forward returns final logits and auxiliary logits with expected shape.
+
 ## 2026-05-11 CGPC Loss Minimal Implementation
 
 - Added `src/losses/cgpc_loss.py` with `CGPCLoss`.

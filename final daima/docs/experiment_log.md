@@ -1,5 +1,41 @@
 # Experiment Log
 
+## 2026-05-12 dformerv2_class_context_decoder_run01
+
+- model: `dformerv2_class_context_decoder`
+- loss: `CE(final_logits, label) + 0.2 * CE(aux_logits, label)`
+- class-context settings: `class_context_channels=64`, `class_context_aux_weight=0.2`, `class_context_alpha_init=0.1`
+- purpose: test whether a lightweight OCR-style class-context decoder can improve the DFormerv2 mid-fusion baseline without changing encoder or GatedFusion.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + ClassContextFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: 50
+- best val/mIoU: `0.519807` at epoch 46
+- last val/mIoU: `0.503151`
+- best val/loss: `1.055177` at epoch 10
+- last val/loss: `1.279098`
+- mean val/mIoU over last 10 epochs: `0.501142`
+- final train/loss: `0.221005`
+- final train/final_loss: `0.183129`
+- final train/aux_loss: `0.189379`
+- final train/context_alpha: `0.621710`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD logit-only w0.15 5-run mean best: `0.520795`
+- comparison CGPC c3 best: `0.515838`
+- comparison CGPC c4 best: `0.512659`
+- delta vs clean baseline mean: `+0.002410` (`+0.492` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.002491`
+- delta vs clean baseline best single: `-0.004618`
+- delta vs PMAD w0.15 mean: `-0.000988`
+- delta vs CGPC c3: `+0.003969`
+- delta vs CGPC c4: `+0.007148`
+- checkpoint: `checkpoints/dformerv2_class_context_decoder_run01/dformerv2_class_context_decoder-epoch=45-val_mIoU=0.5198.pt`
+- evidence: `miou_list/dformerv2_class_context_decoder_run01.md`
+- conclusion: **marginal positive but unstable single-run result.** The class-context decoder beats the clean baseline mean and clearly outperforms CGPC c3/c4, but the gain is below one baseline standard deviation and the late-epoch curve is unstable. Do not claim stable improvement from one run.
+
 ## 2026-05-11 dformerv2_mid_fusion_cgpc_w001_t01_c4_detach_run01
 
 - model: `dformerv2_mid_fusion`
