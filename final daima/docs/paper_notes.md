@@ -1,8 +1,21 @@
 # Paper Notes
 
+## 2026-05-12 TGGA Run02 and Two-Run Boundary
+
+- `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02` completed 50 validation epochs.
+- Run02 best val/mIoU is `0.517437` at epoch 49; last val/mIoU is `0.486566`.
+- Run02 is only `+0.000040` above the clean 10-run baseline mean `0.517397`, below baseline mean + 1 std `0.522298`, below baseline best single `0.524425`, and below PMAD logit-only w0.15 5-run mean `0.520795`.
+- Run01-run02 mean best val/mIoU is `0.519822`, which is `+0.002425` over the clean baseline mean but only `+0.495` baseline std units and still `-0.000973` below PMAD w0.15.
+- Both runs collapse late: run01 final `0.489865`; run02 final `0.486566`.
+- Run02 c3 TGGA opens more than run01: final `gate_c3_mean=0.409689`, `gate_c3_std=0.346383`; c4 remains weak and low variance with `gate_c4_mean=0.126628`, `gate_c4_std=0.010253`.
+- Interpretation: **weak positive but unstable.** TGGA c3/c4 has a real late-epoch signal, but the repeat does not support a stable paper improvement claim.
+- Paper boundary: do not report TGGA c3/c4 as an improved method. It can be discussed only as an unstable structure-side candidate pending diagnostics.
+- Next paper-relevant diagnostic: no-aux TGGA c3/c4 to test whether the late fluctuation comes from the auxiliary semantic CE heads or from TGGA gating itself.
+
 ## 2026-05-12 TGGA Diagnostic Variant Boundary
 
 - Original TGGA c3/c4 run01 remains promising but unstable: best `0.522206` at epoch 48, final `0.489865`.
+- Run02 weakens the claim: best `0.517437` at epoch 49, final `0.486566`, with the same late-collapse pattern.
 - Implemented `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1` as a diagnostic variant to isolate whether c3 high-resolution residual/gate noise contributes to late collapse.
 - Implemented `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1` as a diagnostic variant to preserve c3 capacity with weaker c3 residual strength and a more conservative c3 gate.
 - Neither variant has an mIoU result yet, so neither can be cited as effective.
@@ -11,11 +24,11 @@
 ## 2026-05-12 Active/Archived Boundary After Cleanup
 
 - Active main baseline: `dformerv2_mid_fusion`.
-- Active pending-repeat structure candidate: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`.
+- Active unstable structure candidate: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`.
 - Active marginal-positive KD candidate: `dformerv2_primkd_logit_only`.
 - Active PMAD dependency: `dformerv2_geometry_primary_teacher`.
 - Archived / deprecated as positive claims: DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, FFT freq enhance, FFT HiLo, depth FFT select, CE+Dice, and FreqCov-style auxiliary losses.
-- TGGA run01 remains promising but unstable: best `0.522206` at epoch 48, final `0.489865`; do not claim stable improvement until repeat runs.
+- TGGA run01-run02 is weak positive but unstable: mean best `0.519822`, mean final `0.488215`; do not claim stable improvement.
 - PMAD logit-only remains marginal positive, not a strong main result.
 - CGCD remains seed-sensitive; DGBF/CGPC/SGBR/FFT-style branches are negative or unstable ablations only.
 
@@ -32,7 +45,7 @@
 - Late-curve caveat: epoch 48 is a late high point, followed by `0.516722` at epoch 49 and `0.489865` at epoch 50. The final-epoch value is poor.
 - TGGA diagnostics: final `tgga_beta_c3=0.035080`, `tgga_beta_c4=0.023389`; c3 gate opens substantially (`gate_c3_mean=0.351956`, `gate_c3_std=0.305273`) while c4 remains conservative (`gate_c4_mean=0.131228`).
 - Interpretation: **promising single-run candidate, not stable yet.** TGGA is the first recent structure-side experiment to nearly reach the baseline mean + 1 std threshold and outperform PMAD's five-run mean in a single run. However, the gain is late and unstable, so it must be repeated before being treated as a main result.
-- Paper boundary: do not claim stable improvement yet. It can be described as a promising single-run structure candidate pending repeat.
+- Paper boundary: this run01-only boundary is superseded by the run01-run02 boundary above; do not claim TGGA c3/c4 as a stable improvement.
 
 ## 2026-05-12 Bounded Class Context Decoder 5-Run Boundary
 

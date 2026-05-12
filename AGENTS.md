@@ -148,3 +148,14 @@ MODEL_REGISTRY = {
 For ARIS workflows in this project, use only the project-local ARIS skills under `.agents/skills/aris`.
 Do not use global skills or non-ARIS project skills unless the user explicitly asks to mix them.
 <!-- ARIS:END -->
+
+## Default Experiment Result Workflow
+
+When a training run finishes and the user asks to summarize/discuss/commit/push the result, follow `final daima/docs/experiment_result_workflow.md` by default:
+
+1. Extract true per-epoch `val/mIoU` from TensorBoard/log evidence.
+2. Create or update the run file under `final daima/miou_list/`.
+3. Update `final daima/docs/experiment_log.md`.
+4. Update `final daima/docs/paper_notes.md` when the claim boundary changes.
+5. If useful, send the result to a separate GPT/subagent critique and record the discussion under `final daima/docs/`.
+6. Commit and push only relevant code/docs/result files; avoid staging unrelated checkpoint deletions, ignored checkpoint outputs, reference-code folders, or personal workspace files.

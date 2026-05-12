@@ -1,5 +1,59 @@
 # Experiment Log
 
+## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2 run01-run02 summary
+
+- model: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
+- completed runs: `2`
+- run01 best val/mIoU: `0.522206` at epoch `48`; last val/mIoU `0.489865`; last-10 mean `0.510627`
+- run02 best val/mIoU: `0.517437` at epoch `49`; last val/mIoU `0.486566`; last-10 mean `0.501329`
+- two-run mean best val/mIoU: `0.519822`
+- two-run population std best val/mIoU: `0.002384`
+- two-run mean last val/mIoU: `0.488215`
+- clean 10-run baseline mean best: `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`
+- delta vs clean baseline mean: `+0.002425` (`+0.495` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.002476`
+- delta vs PMAD logit-only w0.15 5-run mean `0.520795`: `-0.000973`
+- evidence: `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01.md`, `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02.md`, and `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_summary_run01_02.md`
+- GPT discussion record: `docs/tgga_run02_gpt_discussion.md`
+- conclusion: **weak positive but unstable, not a stable improvement.** The two-run best-mIoU mean is above the clean baseline mean but below PMAD w0.15 and below baseline mean + 1 std. Both runs collapse late to final mIoU around `0.49`, so TGGA should not be claimed as a paper improvement.
+- next step: do not blindly prioritize run03. The highest-value diagnostic is a no-aux TGGA c3/c4 run that removes `0.03 * aux_c3 + 0.03 * aux_c4` while keeping the TGGA structure unchanged.
+
+## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02
+
+- model: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
+- method: Task-Guided Geometry Calibration Adapter on DFormerV2 c3/c4 before external `DepthEncoder + GatedFusion`.
+- loss: `CE(final_logits, label) + 0.03 * CE(aux_c3, label) + 0.03 * CE(aux_c4, label)`
+- purpose: repeat the TGGA c3/c4 candidate after run01's promising but unstable result.
+- architecture: `DFormerv2_S + TGGA(c3,c4) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.517437` at epoch `49`
+- last val/mIoU: `0.486566`
+- best val/loss: `0.995109` at epoch `10`
+- last val/loss: `1.387486`
+- mean val/mIoU over last 10 epochs: `0.501329`
+- mean val/mIoU over last 5 epochs: `0.501959`
+- post-best mean val/mIoU: `0.486566`
+- final train/loss: `0.160672`
+- final train/main_loss: `0.140603`
+- final train/tgga_aux_loss_c3: `0.301237`
+- final train/tgga_aux_loss_c4: `0.367719`
+- final train/tgga_beta_c3: `0.039473`
+- final train/tgga_beta_c4: `0.022773`
+- final train/tgga_gate_c3_mean: `0.409689`
+- final train/tgga_gate_c4_mean: `0.126628`
+- final train/tgga_gate_c3_std: `0.346383`
+- final train/tgga_gate_c4_std: `0.010253`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- delta vs clean baseline mean: `+0.000040` (`+0.008` baseline std units)
+- delta vs PMAD w0.15 mean: `-0.003358`
+- late-curve check: epoch 41-50 val/mIoU = `0.510171, 0.512682, 0.516483, 0.495031, 0.469128, 0.487177, 0.507587, 0.511026, 0.517437, 0.486566`. The best epoch is epoch 49, then epoch 50 drops by `0.030871`.
+- checkpoint: `checkpoints/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2-epoch=48-val_mIoU=0.5174.pt`
+- evidence: `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02.md`
+- conclusion: **not a stable improvement.** Run02 only matches the clean baseline mean on best mIoU and repeats the late-collapse pattern, so it weakens the case for TGGA c3/c4 as a main method.
+
 ## 2026-05-12 TGGA diagnostic variant implementation
 
 - type: code implementation note, not a training run.
@@ -15,7 +69,7 @@
 - branch: `cleanup/archive-failed-modules`.
 - active registry now exposes `dformerv2_mid_fusion`, `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`, `dformerv2_geometry_primary_teacher`, and `dformerv2_primkd_logit_only`, plus legacy `early` / `mid_fusion`.
 - archived/default-hidden branches: DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, FFT freq enhance, FFT HiLo, and depth FFT select.
-- TGGA remains active / pending repeat; run01 is still interpreted as promising but unstable, not a stable improvement claim.
+- TGGA remains active but unstable after run01-run02; next priority is diagnostic rather than blind repeat.
 - No mIoU result, checkpoint, TensorBoard log, or evidence file changed.
 
 ## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01

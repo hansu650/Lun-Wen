@@ -10,10 +10,12 @@
 
 ### dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2
 
-- Status: active / pending repeat.
+- Status: active but unstable; pending diagnostic rather than blind repeat.
 - Run01 result: best val/mIoU `0.522206` at epoch 48; last val/mIoU `0.489865`.
-- Interpretation: promising but unstable single-run signal.
-- Claim: cannot claim stable improvement until run02/run03.
+- Run02 result: best val/mIoU `0.517437` at epoch 49; last val/mIoU `0.486566`.
+- Two-run mean best val/mIoU: `0.519822`; mean last val/mIoU `0.488215`.
+- Interpretation: weak positive best-mIoU signal but severe late instability.
+- Claim: do not claim stable improvement. Prioritize no-aux TGGA diagnostic before any blind run03.
 
 ### dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1
 
