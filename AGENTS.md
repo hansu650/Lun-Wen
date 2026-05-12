@@ -160,3 +160,39 @@ When a training run finishes and the user asks to summarize/discuss/commit/push 
 4. Update `final daima/docs/paper_notes.md` when the claim boundary changes.
 5. If useful, send the result to a separate GPT/subagent critique, but do not save one-off GPT/Pro prompts or discussion transcripts under `final daima/docs/` unless the user explicitly asks. Summarize any durable conclusion into `experiment_log.md` or `paper_notes.md` instead.
 6. Commit and push only relevant code/docs/result files; avoid staging unrelated checkpoint deletions, ignored checkpoint outputs, reference-code folders, or personal workspace files.
+
+## RGB-D mIoU Experiment Loop Rules
+
+Goal: raise NYUDepthV2 validation mIoU to `>= 0.53` using the active project at `C:\Users\qintian\Desktop\qintian\final daima`.
+
+Current setup phase: orchestration and file initialization only. Do not run full training during this setup phase.
+
+Hard forbidden changes unless the user explicitly changes the experiment contract:
+
+- Do not modify dataset split.
+- Do not modify eval metric.
+- Do not modify mIoU calculation.
+- Do not modify validation or test loader behavior.
+- Do not modify data augmentation.
+- Do not modify fixed training recipe parameters: optimizer, scheduler, batch size, epoch count, learning rate, worker count, early-stop setting, or other experiment parameters.
+- Do not submit checkpoint files, datasets, pretrained weights, TensorBoard event logs, or other large artifacts.
+- Do not push directly to `main`.
+
+Per-round experiment rules:
+
+- Use a feature branch or independent worktree for every experiment.
+- Test exactly one main hypothesis per round.
+- In the later experiment phase, every accepted experiment must run a full train with the fixed recipe. This setup phase is not allowed to train.
+- Every round must write a report under `reports/`.
+- Every round must update `metrics/runs.jsonl` and `metrics/leaderboard.csv`.
+- Failed experiments must still write reports and update metrics.
+- No evidence means no improvement claim. Use TensorBoard/checkpoint-backed metrics only.
+- Success requires `val/mIoU >= 0.53` without changing evaluation, data split, dataloaders, metric code, or introducing leakage.
+
+Coordination files:
+
+- `codex/ORCHESTRATION.md` is the shared operating manual.
+- `codex/roles/` defines role responsibilities.
+- `codex/prompts/` contains prompts to copy into separate Codex conversations.
+- `experiments/queue.jsonl`, `experiments/completed.jsonl`, and `experiments/rejected.jsonl` coordinate work.
+- `reports/EXPERIMENT_LOG.md`, `metrics/runs.jsonl`, and `metrics/leaderboard.csv` are the durable result ledger.
