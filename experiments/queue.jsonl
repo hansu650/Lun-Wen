@@ -1,0 +1,1 @@
+{"record_type":"schema","fields":["round_id","status","hypothesis","owner","branch","allowed_files","forbidden_changes","priority","notes"]}
