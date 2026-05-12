@@ -9,6 +9,7 @@ Input files:
 - `reports/EXPERIMENT_LOG.md`
 - `metrics/leaderboard.csv`
 - `metrics/runs.jsonl`
+- `experiments/candidates.jsonl`
 - `experiments/queue.jsonl`
 - `experiments/completed.jsonl`
 - `experiments/rejected.jsonl`
@@ -17,6 +18,7 @@ Input files:
 
 Output files:
 - `experiments/queue.jsonl`
+- `experiments/rejected.jsonl`
 - `reports/EXPERIMENT_LOG.md`
 
 Forbidden:

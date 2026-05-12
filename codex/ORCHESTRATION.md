@@ -4,6 +4,8 @@ This document defines the Goal-Driven experiment loop for the local Windows work
 
 Current phase: architecture and file initialization only. Do not train, edit model code, edit training parameters, edit data augmentation, or change evaluation behavior in this phase.
 
+For the step-by-step multi-window operating manual, see `codex/WINDOW_OPERATION_GUIDE.md`.
+
 ## Goal
 
 Raise NYUDepthV2 validation mIoU to `>= 0.53`.
@@ -99,6 +101,7 @@ Reason: local full training is long-running and GPU-bound. Independent worktrees
 
 ## Shared File Contract
 
+- `experiments/candidates.jsonl`: candidate ideas proposed by Literature/Idea agents.
 - `experiments/queue.jsonl`: proposed or approved experiments waiting to run.
 - `experiments/completed.jsonl`: completed experiments after reviewer/reproducer resolution.
 - `experiments/rejected.jsonl`: ideas rejected before training or rejected after review.
@@ -109,8 +112,8 @@ Reason: local full training is long-running and GPU-bound. Independent worktrees
 ## Startup Order
 
 1. Orchestrator: read `AGENTS.md`, this file, `metrics/`, `experiments/`, and existing `final daima/docs/`.
-2. Literature/Idea: propose candidates into `experiments/queue.jsonl`.
-3. Orchestrator: approve exactly one next experiment.
+2. Literature/Idea: propose candidates into `experiments/candidates.jsonl`.
+3. Orchestrator: approve exactly one next experiment and append it to `experiments/queue.jsonl`.
 4. Experimenter: create a feature branch/worktree and execute one approved round.
 5. Reviewer: inspect code changes and report on the experiment branch.
 6. Reproducer: verify command, evidence paths, and metric extraction.

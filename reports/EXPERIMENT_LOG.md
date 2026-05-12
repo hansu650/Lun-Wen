@@ -19,5 +19,6 @@ Baseline reference:
 ### 2026-05-12 Orchestration Setup
 
 - Created the shared Goal-Driven experiment loop files.
+- Added `codex/WINDOW_OPERATION_GUIDE.md` for concrete multi-window usage.
 - No training was run.
 - No model, training script, data, optimizer, scheduler, metric, loader, or augmentation code was modified.

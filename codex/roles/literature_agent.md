@@ -12,7 +12,7 @@ Inputs:
 
 Outputs:
 
-- Candidate records appended to `experiments/queue.jsonl`
+- Candidate records appended to `experiments/candidates.jsonl`
 - Rationale with hypothesis, expected signal, risk, and forbidden-change check
 
 Forbidden:

@@ -194,5 +194,5 @@ Coordination files:
 - `codex/ORCHESTRATION.md` is the shared operating manual.
 - `codex/roles/` defines role responsibilities.
 - `codex/prompts/` contains prompts to copy into separate Codex conversations.
-- `experiments/queue.jsonl`, `experiments/completed.jsonl`, and `experiments/rejected.jsonl` coordinate work.
+- `experiments/candidates.jsonl`, `experiments/queue.jsonl`, `experiments/completed.jsonl`, and `experiments/rejected.jsonl` coordinate work.
 - `reports/EXPERIMENT_LOG.md`, `metrics/runs.jsonl`, and `metrics/leaderboard.csv` are the durable result ledger.
