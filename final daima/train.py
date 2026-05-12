@@ -38,6 +38,7 @@ from src.models.mid_fusion import (
     LitDFormerV2FFTFreqEnhance,
     LitDFormerV2FFTHiLoEnhance,
     LitDFormerV2SGBRDecoder,
+    LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
 )
 from src.models.primkd_lit import LitDFormerV2PrimKD
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
@@ -49,6 +50,7 @@ MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
     "dformerv2_class_context_decoder": LitDFormerV2ClassContextDecoder,
     "dformerv2_sgbr_decoder": LitDFormerV2SGBRDecoder,
+    "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2": LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
     "dformerv2_context_decoder": LitDFormerV2ContextDecoder,
     "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
     "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
@@ -230,6 +232,14 @@ def build_model(args):
             sgbr_aux_weight=args.sgbr_aux_weight,
             sgbr_beta_init=args.sgbr_beta_init,
             sgbr_beta_max=args.sgbr_beta_max,
+        )
+    if args.model == "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2":
+        return model_cls(
+            num_classes=args.num_classes,
+            lr=args.lr,
+            dformerv2_pretrained=args.dformerv2_pretrained,
+            loss_type=args.loss_type,
+            dice_weight=args.dice_weight,
         )
     if args.model == "dformerv2_geometry_primary_teacher":
         return model_cls(

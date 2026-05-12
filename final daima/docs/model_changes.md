@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-12 TGGA C3/C4 Minimal Structure Experiment
+
+- Added `TGGABlock` in `src/models/mid_fusion.py`.
+- Added `DFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2Segmentor` and `LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2`.
+- Registered new model name `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2` in `train.py`.
+- TGGA is inserted only after DFormerV2-S outputs `c3` and `c4`, before the existing external `DepthEncoder + GatedFusion` path.
+- The baseline path is otherwise preserved: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- TGGA gate cues are task-guided and detached from the auxiliary semantic head: uncertainty, semantic edge, RGB Sobel edge, depth Sobel edge, and RGB-depth edge difference.
+- Residual branch uses depthwise convolution, GroupNorm, GELU, and pointwise convolution.
+- Residual strength is bounded as `effective_beta = 0.1 * tanh(raw_beta)`, initialized to approximately `0.02`.
+- Training loss for this model only is `CE(final_logits, label) + 0.03 * CE(aux_c3, label) + 0.03 * CE(aux_c4, label)`.
+- The first version supports only `--loss_type ce`; it does not combine with DGBF, CGPC, PMAD/KD, LightHam, Dice, Lovasz, Focal, boundary CE, or deep supervision.
+- Did not modify `DFormerV2MidFusionSegmentor.forward()`, DFormerV2-S encoder internals, `DepthEncoder`, `GatedFusion`, `SimpleFPNDecoder`, `BaseLitSeg`, data module, optimizer, learning rate, epoch count, or augmentation.
+- Verification: `py_compile` passed for `train.py`, `src/models/mid_fusion.py`, and `src/models/decoder.py`; `train.py --help` lists the new model; dummy `240x320` forward/backward passed with final logits `[1,40,240,320]`, c3 aux logits `[1,40,15,20]`, c4 aux logits `[1,40,8,10]`, initial beta values near `0.02`, and both TGGA raw beta gradients present. Loading the old `LitDFormerV2MidFusion` state dict into the new Lit model with `strict=False` produced no unexpected keys and missing keys only under `model.tgga_c3.*` and `model.tgga_c4.*`.
+
 ## 2026-05-12 SGBR-Lite Decoder Minimal Implementation
 
 - Added `SGBRBlock` and `SGBRFPNDecoder` in `src/models/decoder.py`.
