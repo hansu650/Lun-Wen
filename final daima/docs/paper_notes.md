@@ -1,5 +1,21 @@
 # Paper Notes
 
+## 2026-05-13 TGGA C4-Only Diagnostic Boundary
+
+- `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01` completed 50 validation epochs.
+- Setting: TGGA only on c4 with `beta_c4_init=0.02`, `aux_weight=0.03`, detached semantic cue, `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- Best val/mIoU is `0.522849` at epoch 42; last val/mIoU is `0.509320`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `+0.005452`, equal to `+1.112` baseline std units.
+- Delta vs clean baseline mean + 1 std is `+0.000551`; delta vs clean baseline best single is `-0.001576`.
+- Delta vs PMAD w0.15/T4 mean is `+0.002054`.
+- Diagnostic: final `gate_c4_mean=0.130742`, `gate_c4_std=0.014394`, and `tgga_beta_c4=0.022874`; the c4 gate is conservative but gradually opens.
+- Late-curve caveat remains: best epoch 42 falls to final `0.509320`, a best-to-last drop of `0.013529`.
+- Interpretation: **strong single-run diagnostic signal, not a success claim.** Removing c3 improves the TGGA diagnostic relative to recent failed loop runs and slightly exceeds baseline mean + 1 std, but it does not reach `0.53` and does not beat the best single clean baseline.
+- Paper boundary: do not cite c4-only TGGA as a stable improvement. It can be cited only as a promising diagnostic showing that c4-level semantic/geometry calibration is safer than the original c3/c4 high-resolution gate.
+- Strategic implication: the next TGGA test should be a narrow follow-up around c4-safe calibration, not a repeat of failed PMAD filtering or the R002 frequency-aware decoder.
+
 ## 2026-05-13 Correct-and-Entropy-Selective PMAD Boundary
 
 - `dformerv2_primkd_correct_entropy_w015_t4_h025_run01` completed 50 validation epochs.

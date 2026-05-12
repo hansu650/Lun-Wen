@@ -84,6 +84,30 @@ Baseline reference:
 - Audit: code review `approved`; reproducer/report audit `audit_passed_no_rerun`.
 - Decision: reject this exact PMAD filtering setting; continue the loop after audit with the next highest-decision-value candidate.
 
+### 2026-05-13 R004 Approval: TGGA C4-Only Diagnostic
+
+- Approved one experiment on branch `exp/R004-tgga-c4only-diagnostic-v1`.
+- Hypothesis: TGGA c4-only can retain high-level semantic/geometry calibration while removing the c3 high-resolution gate/residual path that may cause c3/c4 TGGA late collapse.
+- Reason: PMAD filtering failed in R001 and R003; R002 decoder frequency fusion failed; original TGGA c3/c4 had the strongest remaining weak signal but collapsed late, and the already implemented c4-only diagnostic cleanly tests whether c3 is the unsafe component.
+- Planned model name: `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`.
+- Planned run name: `run01`; checkpoint directory `checkpoints/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01`.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- No code change is approved for this round; the model is already implemented and registered.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, TensorBoard-log, or code change is approved.
+- Status: approved for one full train after dry-check.
+
+### 2026-05-13 R004 Result: Partial Positive, Below Goal
+
+- `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01` completed 50 validation epochs.
+- best val/mIoU: `0.522849` at epoch `42`; last val/mIoU: `0.509320`.
+- Result is above the clean 10-run baseline mean `0.517397`, above baseline mean + 1 std `0.522298` by `0.000551`, and above PMAD logit-only w0.15/T4 five-run mean `0.520795`, but below the `0.53` goal and below the best single clean baseline run `0.524425`.
+- Evidence: `final daima/miou_list/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01.md`.
+- Report: `reports/R004-tgga-c4only-diagnostic-v1.md`.
+- Diagnostic: c4 gate remains conservative but opens gradually; final `gate_c4_mean=0.130742`, `gate_c4_std=0.014394`, `tgga_beta_c4=0.022874`.
+- Late-curve caveat: final val/mIoU is `0.013529` below the best epoch.
+- Audit: code review `approved_on_staged_diff`; reproducer/report audit `audit_passed_no_rerun`.
+- Decision: keep as the strongest current diagnostic signal, reject it as a goal-completing method, and continue the loop with the next highest-decision-value candidate.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.

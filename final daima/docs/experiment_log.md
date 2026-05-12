@@ -1,5 +1,46 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01
+
+- model: `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
+- method: TGGA diagnostic with only the c4 semantic/geometry gate active.
+- purpose: test whether removing the c3 high-resolution TGGA gate/residual path preserves the original TGGA c3/c4 high-epoch signal while reducing late collapse risk.
+- architecture: `DFormerv2_S + TGGA(c4 only) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- TGGA settings: `beta_c4_init=0.02`, `aux_weight=0.03`, detached semantic cue, no c3 TGGA.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.522849` at epoch `42`
+- last val/mIoU: `0.509320`
+- last-5 mean val/mIoU: `0.505936`
+- last-10 mean val/mIoU: `0.510887`
+- best val/loss: `1.003732` at epoch `12`
+- final train/loss: `0.146967`
+- final train/main_loss: `0.135671`
+- final train/tgga_aux_loss_c4: `0.376528`
+- final train/tgga_beta_c4: `0.022874`
+- final train/tgga_gate_c4_mean: `0.130742`
+- final train/tgga_gate_c4_std: `0.014394`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison original TGGA c3/c4 run01 best: `0.522206`
+- comparison original TGGA c3/c4 run01-run02 mean best: `0.519822`
+- delta vs clean baseline mean: `+0.005452` (`+1.112` baseline std units)
+- delta vs clean baseline mean + 1 std: `+0.000551`
+- delta vs clean baseline best single: `-0.001576`
+- delta vs PMAD w0.15/T4 five-run mean: `+0.002054`
+- delta vs original TGGA c3/c4 run01: `+0.000643`
+- best-to-last delta: `-0.013529`
+- checkpoint: `checkpoints/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1-epoch=41-val_mIoU=0.5228.pt`
+- TensorBoard event: `checkpoints/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01/lightning_logs/version_0/events.out.tfevents.1778620555.Administrator.23676.0`
+- evidence: `miou_list/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **strong diagnostic signal but not goal success.** C4-only TGGA is the strongest orchestration-loop run so far, crosses the clean baseline mean + 1 std threshold, and beats PMAD w0.15/T4 mean in this single run, but it remains below the `0.53` target and below the best single clean baseline run.
+- next step: do not claim success. Because c4-only TGGA is safer than the original c3/c4 gate but still drops after its best epoch, the next round should test one narrow follow-up that uses this c4 signal without repeating failed PMAD filtering or decoder frequency fusion.
+
 ## 2026-05-13 dformerv2_primkd_correct_entropy_w015_t4_h025_run01
 
 - model: `dformerv2_primkd_correct_entropy`
