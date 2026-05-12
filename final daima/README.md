@@ -128,3 +128,17 @@ tensorboard --logdir ./lightning_logs
 ## 许可证
 
 本框架仅供教学和研究使用。
+# Current Active Project Status
+
+This directory is the active RGB-D semantic segmentation project for NYUDepthV2 40-class experiments.
+
+The old teaching/demo model list below is deprecated. The current default training path is:
+
+- `dformerv2_mid_fusion`: clean main baseline, 10-run mean best mIoU `0.517397`, std `0.004901`, best single `0.524425`.
+- `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`: active / pending repeat. Run01 best `0.522206` at epoch 48, final `0.489865`; promising but unstable.
+- `dformerv2_geometry_primary_teacher`: active PMAD teacher dependency.
+- `dformerv2_primkd_logit_only`: active PMAD logit-only KD branch, marginal positive repeat signal around `0.520795` five-run mean at w0.15/T4.
+
+Archived or default-hidden experiments include DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, FFT freq enhance, FFT HiLo, depth FFT select, CE+Dice, and FreqCov-style auxiliary losses. They can be discussed as negative/unstable ablations, not as active methods.
+
+See `docs/ACTIVE_STATUS.md`, `docs/cleanup_notes.md`, and `feiqi/README.md` for the current active/archive boundary.

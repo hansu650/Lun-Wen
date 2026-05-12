@@ -1,8 +1,20 @@
 # Model Changes
 
+## 2026-05-12 cleanup/archive-failed-modules
+
+- Cleaned the default `train.py` active registry.
+- Moved active TGGA implementation from `src/models/mid_fusion.py` to `src/models/tgga_adapter.py` without changing TGGA forward, loss, or logging behavior.
+- Kept `dformerv2_mid_fusion` baseline active and slimmed `src/models/mid_fusion.py` back to baseline/legacy mid-fusion classes.
+- Moved archived decoder blocks from `src/models/decoder.py` to `feiqi/models/archived_decoders.py`; active `src/models/decoder.py` now keeps only `SimpleFPNDecoder`.
+- Kept `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2` active for run02/run03.
+- Kept `dformerv2_geometry_primary_teacher` and `dformerv2_primkd_logit_only` active for PMAD.
+- Removed DGBF/CGPC/SGBR/CGCD/FFT/depth FFT/context decoder models and parameters from the default `train.py` path.
+- Added `docs/ACTIVE_STATUS.md`, `docs/cleanup_notes.md`, and updated `feiqi/README.md`.
+- No experimental result changed.
+
 ## 2026-05-12 TGGA C3/C4 Minimal Structure Experiment
 
-- Added `TGGABlock` in `src/models/mid_fusion.py`.
+- Added `TGGABlock` in `src/models/mid_fusion.py` originally; after cleanup, active TGGA code lives in `src/models/tgga_adapter.py`.
 - Added `DFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2Segmentor` and `LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2`.
 - Registered new model name `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2` in `train.py`.
 - TGGA is inserted only after DFormerV2-S outputs `c3` and `c4`, before the existing external `DepthEncoder + GatedFusion` path.

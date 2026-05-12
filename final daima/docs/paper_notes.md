@@ -1,5 +1,16 @@
 # Paper Notes
 
+## 2026-05-12 Active/Archived Boundary After Cleanup
+
+- Active main baseline: `dformerv2_mid_fusion`.
+- Active pending-repeat structure candidate: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`.
+- Active marginal-positive KD candidate: `dformerv2_primkd_logit_only`.
+- Active PMAD dependency: `dformerv2_geometry_primary_teacher`.
+- Archived / deprecated as positive claims: DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, FFT freq enhance, FFT HiLo, depth FFT select, CE+Dice, and FreqCov-style auxiliary losses.
+- TGGA run01 remains promising but unstable: best `0.522206` at epoch 48, final `0.489865`; do not claim stable improvement until repeat runs.
+- PMAD logit-only remains marginal positive, not a strong main result.
+- CGCD remains seed-sensitive; DGBF/CGPC/SGBR/FFT-style branches are negative or unstable ablations only.
+
 ## 2026-05-12 TGGA C3/C4 Run01 Boundary
 
 - `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01` completed 50 validation epochs.
