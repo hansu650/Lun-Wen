@@ -1,1 +1,2 @@
 rank,run_id,model,branch,best_val_miou,best_epoch,last_val_miou,status,report_path,evidence_path
+1,R001-pmad-selective-kd-v1,dformerv2_primkd_boundary_conf,exp/R001-pmad-selective-kd-v1,0.511646,50,0.511646,completed_negative,reports/R001-pmad-selective-kd-v1.md,final daima/miou_list/dformerv2_primkd_boundary_conf_w015_t4_run01.md

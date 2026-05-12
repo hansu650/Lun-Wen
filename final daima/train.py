@@ -30,7 +30,7 @@ from lightning.pytorch.callbacks import Callback, EarlyStopping
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitDFormerV2MidFusion, LitMidFusion
-from src.models.primkd_lit import LitDFormerV2PrimKD
+from src.models.primkd_lit import LitDFormerV2PrimKD, LitDFormerV2PrimKDBoundaryConf
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
 from src.models.tgga_adapter import (
     LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
@@ -48,6 +48,7 @@ ACTIVE_MODEL_REGISTRY = {
     "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1": LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
+    "dformerv2_primkd_boundary_conf": LitDFormerV2PrimKDBoundaryConf,
 }
 
 LEGACY_MODEL_REGISTRY = {
@@ -141,7 +142,10 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_primkd_logit_only":
+    if args.model in {
+        "dformerv2_primkd_logit_only",
+        "dformerv2_primkd_boundary_conf",
+    }:
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,

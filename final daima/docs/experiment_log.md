@@ -1,5 +1,42 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_primkd_boundary_conf_w015_t4_run01
+
+- model: `dformerv2_primkd_boundary_conf`
+- method: PMAD / PrimKD logit-only KD with deterministic confidence weighting and semantic-boundary boosting.
+- purpose: test whether boundary/confidence-selective KD can preserve the positive `dformerv2_primkd_logit_only` w0.15/T4 signal while reducing harmful teacher transfer.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`; frozen geometry-primary teacher `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`.
+- loss: `CE(student, label) + 0.15 * selective_KL(student, teacher, T=4.0)`.
+- selective KD settings: confidence threshold `0.40`, confidence power `1.5`, boundary boost `1.0`.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.511646` at epoch `50`
+- last val/mIoU: `0.511646`
+- last-5 mean val/mIoU: `0.507105`
+- last-10 mean val/mIoU: `0.502303`
+- best val/loss: `1.059111`
+- final train/loss: `0.210573`
+- final train/ce_loss: `0.151268`
+- final train/kd_loss: `0.395367`
+- final train/kd_mask_ratio: `0.998182`
+- final train/kd_boundary_ratio: `0.061130`
+- final train/kd_conf_mean: `0.938347`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison PMAD logit-only w0.15/T4 five-run mean best: `0.520795`
+- delta vs clean baseline mean: `-0.005751` (`-1.173` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.010652`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.009149`
+- checkpoint: `checkpoints/dformerv2_primkd_boundary_conf_w015_t4_run01/dformerv2_primkd_boundary_conf-epoch=49-val_mIoU=0.5116.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_boundary_conf_w015_t4_run01/lightning_logs/version_0/events.out.tfevents.1778600707.Administrator.4516.0`
+- evidence: `miou_list/dformerv2_primkd_boundary_conf_w015_t4_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`; after metric/checkpoint writing, Rich progress teardown raised a Windows GBK `UnicodeEncodeError`.
+- conclusion: **negative result.** The run is below the clean baseline mean and below the existing PMAD w0.15/T4 repeated mean. The confidence threshold `0.40` was effectively non-selective because `kd_mask_ratio` stayed near `0.998`, so this setting mainly tested confidence-weighted and boundary-boosted KD rather than true uncertain-pixel filtering.
+- next step: do not repeat this exact setting. If PMAD is revisited, use a genuinely selective confidence threshold or entropy gate; otherwise prioritize a different high-decision-value direction such as decoder-side frequency fusion.
+
 ## 2026-05-12 dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01
 
 - model: `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`

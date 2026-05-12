@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-12 R001 PMAD Boundary/Confidence-Selective KD
+
+- Implemented `dformerv2_primkd_boundary_conf` as a separate model name.
+- Added `LitDFormerV2PrimKDBoundaryConf` in `src/models/primkd_lit.py`; it inherits the existing PMAD logit-only student/teacher setup from `LitDFormerV2PrimKD`.
+- The student remains `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- The frozen teacher remains `DFormerV2GeometryPrimaryTeacherSegmentor`; teacher checkpoint loading and `export_state_dict()` behavior are unchanged.
+- Training loss remains `CE(student, label) + kd_weight * KL(student, teacher)`, but the KL term is now weighted by a deterministic trust mask from teacher confidence and ground-truth semantic boundary pixels.
+- Boundary mask is computed only inside the training loss from sanitized labels; it does not change dataset split, loader behavior, augmentation, validation, test, metric, or inference.
+- Registered `dformerv2_primkd_boundary_conf` in `train.py`; `dformerv2_primkd_logit_only` remains unchanged.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py` and `src/models/primkd_lit.py`; a small tensor-level `selective_kl_loss` check returned finite loss and logging stats.
+- Result note for `dformerv2_primkd_boundary_conf_w015_t4_run01`: best val/mIoU `0.511646`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this model.
+
 ## 2026-05-12 TGGA C3/C4 No-Aux Semantic-Gradient Diagnostic
 
 - Implemented `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.

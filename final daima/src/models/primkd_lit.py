@@ -81,3 +81,94 @@ class LitDFormerV2PrimKD(BaseLitSeg):
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.model.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2PrimKDBoundaryConf(LitDFormerV2PrimKD):
+    confidence_threshold = 0.40
+    confidence_power = 1.5
+    boundary_boost = 1.0
+
+    @staticmethod
+    def semantic_boundary_mask(label, ignore_index=255):
+        valid = label != ignore_index
+        boundary = torch.zeros_like(valid, dtype=torch.bool)
+        if label.shape[-1] > 1:
+            pair_valid = valid[:, :, 1:] & valid[:, :, :-1]
+            pair_diff = (label[:, :, 1:] != label[:, :, :-1]) & pair_valid
+            boundary[:, :, 1:] |= pair_diff
+            boundary[:, :, :-1] |= pair_diff
+        if label.shape[-2] > 1:
+            pair_valid = valid[:, 1:, :] & valid[:, :-1, :]
+            pair_diff = (label[:, 1:, :] != label[:, :-1, :]) & pair_valid
+            boundary[:, 1:, :] |= pair_diff
+            boundary[:, :-1, :] |= pair_diff
+        return boundary & valid
+
+    @classmethod
+    def selective_kl_loss(cls, student_logits, teacher_logits, label, temperature, ignore_index=255):
+        valid = label != ignore_index
+        if valid.sum() == 0:
+            zero = student_logits.sum() * 0.0
+            stats = {
+                "kd_mask_ratio": zero.detach(),
+                "kd_boundary_ratio": zero.detach(),
+                "kd_conf_mean": zero.detach(),
+            }
+            return zero, stats
+
+        with torch.no_grad():
+            teacher_conf = F.softmax(teacher_logits, dim=1).amax(dim=1)
+            boundary = cls.semantic_boundary_mask(label, ignore_index=ignore_index)
+            trust = ((teacher_conf >= cls.confidence_threshold) | boundary) & valid
+            weight = teacher_conf.pow(cls.confidence_power)
+            weight = weight * (1.0 + cls.boundary_boost * boundary.float())
+            weight = weight * trust.float()
+            mean_weight = weight[valid].mean().clamp_min(1e-6)
+            weight = weight / mean_weight
+
+        student = student_logits.permute(0, 2, 3, 1)[valid]
+        teacher = teacher_logits.permute(0, 2, 3, 1)[valid]
+        pixel_weight = weight[valid]
+        if pixel_weight.sum() <= 0:
+            zero = student_logits.sum() * 0.0
+            stats = {
+                "kd_mask_ratio": zero.detach(),
+                "kd_boundary_ratio": boundary[valid].float().mean(),
+                "kd_conf_mean": teacher_conf[valid].mean(),
+            }
+            return zero, stats
+
+        student_log_prob = F.log_softmax(student / temperature, dim=1)
+        teacher_prob = F.softmax(teacher / temperature, dim=1)
+        kl_pixel = F.kl_div(student_log_prob, teacher_prob, reduction="none").sum(dim=1)
+        loss = (kl_pixel * pixel_weight).sum() / pixel_weight.sum().clamp_min(1.0)
+        loss = loss * (temperature ** 2)
+        stats = {
+            "kd_mask_ratio": trust[valid].float().mean(),
+            "kd_boundary_ratio": boundary[valid].float().mean(),
+            "kd_conf_mean": teacher_conf[valid].mean(),
+        }
+        return loss, stats
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+        student_logits = self(rgb, depth)
+        self.teacher.eval()
+        with torch.no_grad():
+            teacher_logits = self.teacher(rgb, depth)
+        ce_loss = self.train_criterion(student_logits, label)
+        kd_loss, kd_stats = self.selective_kl_loss(
+            student_logits,
+            teacher_logits,
+            label,
+            self.kd_temperature,
+            ignore_index=255,
+        )
+        loss = ce_loss + self.kd_weight * kd_loss
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/ce_loss", ce_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/kd_loss", kd_loss, prog_bar=False, on_step=True, on_epoch=True)
+        for name, value in kd_stats.items():
+            self.log(f"train/{name}", value, prog_bar=False, on_step=True, on_epoch=True)
+        return loss

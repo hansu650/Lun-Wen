@@ -1,5 +1,19 @@
 # Paper Notes
 
+## 2026-05-13 PMAD Boundary/Confidence-Selective KD Boundary
+
+- `dformerv2_primkd_boundary_conf_w015_t4_run01` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, confidence threshold `0.40`, confidence power `1.5`, and semantic-boundary boost `1.0`.
+- Best val/mIoU is `0.511646` at epoch 50; last val/mIoU is also `0.511646`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.005751`, equal to `-1.173` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.009149`.
+- Diagnostic: `kd_mask_ratio` stayed near `0.998` and final `kd_mask_ratio` is `0.998182`; the threshold `0.40` did not meaningfully filter uncertain pixels.
+- Interpretation: **negative result.** This exact boundary/confidence KD setting weakens PMAD rather than stabilizing it.
+- Paper boundary: do not cite `dformerv2_primkd_boundary_conf` as an improvement. It can be cited only as a negative PMAD refinement showing that weak confidence weighting plus boundary boosting does not improve the repeated PMAD signal.
+- Strategic implication: if continuing PMAD, the next test must be genuinely selective, not a near-all-pixel mask; otherwise the loop should pivot to another high-value direction.
+
 ## 2026-05-12 TGGA No-Aux Run01 Boundary
 
 - `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01` completed 50 validation epochs.
