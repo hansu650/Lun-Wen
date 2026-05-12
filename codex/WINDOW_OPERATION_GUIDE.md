@@ -1,6 +1,6 @@
-# Multi-Window Operation Guide
+# Codex Experiment Operation Guide
 
-This guide tells you exactly how to run the RGB-D mIoU Goal-Driven loop with multiple Codex windows.
+This guide tells you exactly how to run the RGB-D mIoU Goal-Driven loop. Use the one-window bootstrap for daily planning, then split into branch/worktree windows only when a real full train or audit starts.
 
 Current branch for review: `orchestration/experiment-loop`.
 
@@ -23,7 +23,35 @@ Before this branch is merged, all role windows should inspect this branch so the
 
 After this branch is merged into `main`, future experiment branches should start from `main`.
 
-## 1. Recommended Window Layout
+All later training and metric extraction must use the `qintian-rgbd` environment:
+
+```powershell
+conda activate qintian-rgbd
+```
+
+If PowerShell cannot activate conda, use the environment Python directly:
+
+```powershell
+& "D:\Anaconda\envs\qintian-rgbd\python.exe" train.py ...
+```
+
+## 1. Recommended Daily Flow: One Bootstrap Window
+
+Open one Codex window and paste:
+
+```text
+codex/prompts/05_single_window_bootstrap.md
+```
+
+This single window should do three roles in sequence:
+
+1. Literature/Idea: if candidates are empty, propose useful candidates.
+2. Orchestrator: approve exactly one next experiment into `experiments/queue.jsonl`.
+3. Experimenter dry-check: list planned files, branch/worktree, command, unique checkpoint directory, and forbidden-change audit.
+
+It must stop before model edits or full train. This prevents role-only windows from stopping when `experiments/candidates.jsonl` or `experiments/queue.jsonl` is empty.
+
+## 2. Multi-Window Layout For Real Runs
 
 Open these Codex windows:
 
@@ -35,7 +63,7 @@ Open these Codex windows:
 
 Only one Experimenter should run a full train at a time on the local GPU.
 
-## 2. File Ownership
+## 3. File Ownership
 
 Use this ownership table to avoid conflicts:
 
@@ -54,7 +82,7 @@ Use this ownership table to avoid conflicts:
 
 If two windows need to update the same file, stop and let Orchestrator choose one writer.
 
-## 3. Startup Sequence
+## 4. Startup Sequence For Multi-Window Mode
 
 ### Step 1: Orchestrator Window
 
@@ -145,6 +173,7 @@ git switch main
 git pull
 git worktree add "..\qintian_exp_R001" -b "exp/R001-short-name" main
 cd "..\qintian_exp_R001\final daima"
+conda activate qintian-rgbd
 ```
 
 Experimenter responsibilities:
@@ -218,11 +247,12 @@ Reproducer output status:
 - `blocked`
 - `failed`
 
-## 4. First Real Experiment Sanity Check
+## 5. First Real Experiment Sanity Check
 
 Before allowing the first full train, Orchestrator should ask Experimenter to do a dry audit only:
 
 - Confirm branch/worktree path.
+- Confirm `qintian-rgbd` environment or explicit `D:\Anaconda\envs\qintian-rgbd\python.exe`.
 - Confirm the approved queue record.
 - Confirm no forbidden files are modified.
 - Confirm the planned command still uses the fixed recipe.
@@ -231,7 +261,7 @@ Before allowing the first full train, Orchestrator should ask Experimenter to do
 
 Only after this sanity check should full train begin.
 
-## 5. What Can Run In Parallel
+## 6. What Can Run In Parallel
 
 Can run in parallel:
 
@@ -246,7 +276,7 @@ Must wait:
 - Reproducer waits for Experimenter report and evidence.
 - A second Experimenter waits until the local GPU is free.
 
-## 6. Conflict Avoidance Rules
+## 7. Conflict Avoidance Rules
 
 - One writer per shared file at a time.
 - Prefer append-only JSONL records.
@@ -255,18 +285,18 @@ Must wait:
 - Never let Literature edit code.
 - Never let Experimenter approve its own claim.
 
-## 7. Minimal Daily Loop
+## 8. Minimal Daily Loop
 
-1. Orchestrator reads current metrics and queue.
-2. Literature proposes new candidates if queue is empty or weak.
-3. Orchestrator approves one experiment.
-4. Experimenter runs one full train on one branch.
+1. One bootstrap window reads current metrics, candidates, queue, and reports.
+2. It proposes candidates if queue is empty or weak.
+3. It approves one experiment and performs a dry-check.
+4. After the user explicitly starts the experiment phase, Experimenter runs one full train on one branch.
 5. Reviewer audits branch and report.
 6. Reproducer verifies evidence.
 7. Orchestrator updates decision:
    - stop if `val/mIoU >= 0.53` and audit passes
    - otherwise select the next highest-value hypothesis
 
-## 8. Current Stop Point
+## 9. Current Stop Point
 
 This setup creates the operating manual only. Stop here until the user explicitly starts the experiment phase.

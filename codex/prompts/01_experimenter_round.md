@@ -18,6 +18,20 @@ Output files:
 - Updated `metrics/leaderboard.csv`
 - Updated `experiments/completed.jsonl` or `experiments/rejected.jsonl`
 
+Required environment:
+- Later training and metric extraction must run in `qintian-rgbd`.
+- Prefer:
+
+```powershell
+conda activate qintian-rgbd
+```
+
+- If shell activation is unavailable, call:
+
+```powershell
+& "D:\Anaconda\envs\qintian-rgbd\python.exe" train.py ...
+```
+
 Forbidden:
 - During the current architecture setup phase, do not run full train.
 - In the later experiment phase, run full train only after Orchestrator approval.
@@ -29,6 +43,7 @@ Success criteria:
 - Implement only the approved hypothesis.
 - Later, after training is allowed, produce TensorBoard-backed metrics and a complete report.
 - Report failure honestly if the experiment is negative or blocked.
+- Record the exact Python/environment command used.
 
 End condition:
 - Stop after writing the report and metrics records. Wait for Reviewer and Reproducer.
