@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: active experiment loop. R001 has completed one full train and did not reach the target.
+Current phase: active experiment loop. R002 has completed one full train and did not reach the target.
 
 Goal: `val/mIoU >= 0.53`.
 
@@ -37,6 +37,28 @@ Baseline reference:
 - Diagnostic: final `train/kd_mask_ratio` is `0.998182`, so confidence threshold `0.40` was effectively non-selective.
 - Audit: code review `approved`; reproducer/report audit `audit_passed_no_rerun`.
 - Decision: reject this exact setting; continue the loop after audit with the next highest-decision-value candidate.
+
+### 2026-05-13 R002 Approval: Frequency-Aware FPN Decoder
+
+- Approved one experiment on branch `exp/R002-freqfpn-decoder-v1`.
+- Hypothesis: frequency-aware top-down decoder fusion can reduce boundary displacement and feature-frequency mismatch in `SimpleFPNDecoder`.
+- Reason: R001 PMAD refinement failed, while the literature/idea scan ranked FreqFusion-style decoder fusion as the strongest remaining non-overlapping hypothesis. This tests decoder top-down fusion directly rather than repeating auxiliary loss, KD, or pre-fusion FFT directions.
+- Planned model name: `dformerv2_freqfpn_decoder`.
+- Planned run name: `run01`; checkpoint directory `checkpoints/dformerv2_freqfpn_decoder_run01`.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, or TensorBoard-log change is approved.
+- Status: approved for implementation and one full train after dry-check.
+
+### 2026-05-13 R002 Result: Negative
+
+- `dformerv2_freqfpn_decoder_run01` completed 50 validation epochs.
+- best val/mIoU: `0.516915` at epoch `44`; last val/mIoU: `0.486524`.
+- Result is slightly below the clean 10-run baseline mean `0.517397` and below PMAD logit-only w0.15/T4 five-run mean `0.520795`.
+- Evidence: `final daima/miou_list/dformerv2_freqfpn_decoder_run01.md`.
+- Report: `reports/R002-freqfpn-decoder-v1.md`.
+- Diagnostic: late instability after epoch 47; final val/mIoU drops to `0.486524`.
+- Audit: code review `approved`; reproducer/report audit `audit_passed_no_rerun`.
+- Decision: reject this exact decoder; continue the loop after audit with the next highest-decision-value candidate.
 
 ### 2026-05-12 Orchestrator Candidate Check
 

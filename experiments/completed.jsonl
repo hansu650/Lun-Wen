@@ -1,2 +1,3 @@
 {"record_type":"schema","fields":["round_id","run_id","branch","status","best_val_miou","report_path","review_status","reproducer_status"]}
 {"round_id":"R001","run_id":"R001-pmad-selective-kd-v1","branch":"exp/R001-pmad-selective-kd-v1","status":"completed_negative","best_val_miou":0.511646,"report_path":"reports/R001-pmad-selective-kd-v1.md","review_status":"approved","reproducer_status":"audit_passed_no_rerun"}
+{"round_id":"R002","run_id":"R002-freqfpn-decoder-v1","branch":"exp/R002-freqfpn-decoder-v1","status":"completed_negative","best_val_miou":0.516915,"report_path":"reports/R002-freqfpn-decoder-v1.md","review_status":"approved","reproducer_status":"audit_passed_no_rerun"}

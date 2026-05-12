@@ -1,5 +1,36 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_freqfpn_decoder_run01
+
+- model: `dformerv2_freqfpn_decoder`
+- method: decoder-side frequency-aware FPN top-down fusion.
+- purpose: test whether low/high-frequency correction inside the decoder top-down path can reduce boundary displacement and frequency mismatch without changing encoder, GatedFusion, loss, data, or training recipe.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + FrequencyAwareFPNDecoder`.
+- decoder change: `SimpleFPNDecoder` baseline remains unchanged; this model replaces only top-down FPN additions with `FrequencyAwareTopDownFuse`.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.516915` at epoch `44`
+- last val/mIoU: `0.486524`
+- last-5 mean val/mIoU: `0.498475`
+- last-10 mean val/mIoU: `0.504222`
+- best val/loss: `1.022916` at epoch `9`
+- final train/loss: `0.174152`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- delta vs clean baseline mean: `-0.000482` (`-0.098` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.005383`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.003880`
+- checkpoint: `checkpoints/dformerv2_freqfpn_decoder_run01/dformerv2_freqfpn_decoder-epoch=43-val_mIoU=0.5169.pt`
+- TensorBoard event: `checkpoints/dformerv2_freqfpn_decoder_run01/lightning_logs/version_0/events.out.tfevents.1778607762.Administrator.22656.0`
+- evidence: `miou_list/dformerv2_freqfpn_decoder_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **neutral/negative result.** Decoder-side frequency-aware top-down fusion peaks very close to the clean baseline mean but does not exceed it, does not approach the `0.53` target, and shows late instability after epoch 47.
+- next step: do not repeat this exact decoder unchanged. Prefer the next round to target a different high-value hypothesis with clearer room above the baseline mean.
+
 ## 2026-05-13 dformerv2_primkd_boundary_conf_w015_t4_run01
 
 - model: `dformerv2_primkd_boundary_conf`

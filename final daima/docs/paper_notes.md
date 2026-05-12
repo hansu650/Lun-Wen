@@ -1,5 +1,18 @@
 # Paper Notes
 
+## 2026-05-13 Frequency-Aware FPN Decoder Boundary
+
+- `dformerv2_freqfpn_decoder_run01` completed 50 validation epochs.
+- Setting: same DFormerv2_S, DepthEncoder, and GatedFusion baseline path, but `SimpleFPNDecoder` is replaced by a frequency-aware top-down FPN decoder in this separate model entry.
+- Best val/mIoU is `0.516915` at epoch 44; last val/mIoU is `0.486524`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.000482`, equal to `-0.098` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.003880`.
+- Interpretation: **neutral/negative result.** The decoder nearly matches the baseline mean at its best checkpoint but does not improve it and has a large late drop.
+- Paper boundary: do not cite `dformerv2_freqfpn_decoder` as an improvement. It can be cited only as a neutral/negative decoder ablation showing that this FreqFusion-style top-down approximation is insufficient.
+- Strategic implication: do not repeat this exact decoder unchanged; the next loop should pivot to a different hypothesis rather than further tune this decoder without a clearer diagnostic.
+
 ## 2026-05-13 PMAD Boundary/Confidence-Selective KD Boundary
 
 - `dformerv2_primkd_boundary_conf_w015_t4_run01` completed 50 validation epochs.

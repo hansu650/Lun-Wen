@@ -1,5 +1,19 @@
 # Model Changes
 
+## 2026-05-13 R002 Frequency-Aware FPN Decoder
+
+- Implemented `dformerv2_freqfpn_decoder` as a separate model name.
+- Added `FrequencyAwareTopDownFuse` and `FrequencyAwareFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2FreqFPNDecoderSegmentor` and `LitDFormerV2FreqFPNDecoder` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_freqfpn_decoder` in `train.py`; the clean `dformerv2_mid_fusion` path and `SimpleFPNDecoder` remain unchanged.
+- The model keeps the same encoder/fusion path as the clean baseline: `DFormerV2_S + ResNet-18 DepthEncoder + GatedFusion`.
+- The only structural change is decoder top-down fusion: each top-down step uses low-frequency residual correction from 5x5 average low-pass features and high-frequency residual correction from 3x3 high-pass features.
+- Correction projections are zero-initialized, so the initial `FrequencyAwareTopDownFuse` output is exactly `hr_feat + bilinear(lr_feat)` before training.
+- This is not PMAD/KD, not an auxiliary loss, not boundary loss, not FADC, not an imported FreqFusion/CARAFE module, and not a backbone or GatedFusion change.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py`, `src/models/decoder.py`, and `src/models/mid_fusion.py`; `train.py --help` lists the model; a tensor-level fuse check showed initial identity delta `0.0`; decoder smoke output shape was `(1, 40, 480, 640)`.
+- Result note for `dformerv2_freqfpn_decoder_run01`: best val/mIoU `0.516915`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this decoder.
+
 ## 2026-05-12 R001 PMAD Boundary/Confidence-Selective KD
 
 - Implemented `dformerv2_primkd_boundary_conf` as a separate model name.
