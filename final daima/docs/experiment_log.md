@@ -1,5 +1,14 @@
 # Experiment Log
 
+## 2026-05-12 code cleanup
+
+- type: code organization cleanup, not a training run.
+- branch: `cleanup/archive-failed-modules`.
+- active registry now exposes `dformerv2_mid_fusion`, `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`, `dformerv2_geometry_primary_teacher`, and `dformerv2_primkd_logit_only`, plus legacy `early` / `mid_fusion`.
+- archived/default-hidden branches: DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, FFT freq enhance, FFT HiLo, and depth FFT select.
+- TGGA remains active / pending repeat; run01 is still interpreted as promising but unstable, not a stable improvement claim.
+- No mIoU result, checkpoint, TensorBoard log, or evidence file changed.
+
 ## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01
 
 - model: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`

@@ -1,6 +1,6 @@
-"""统一训练脚本"""
-import os
+"""Training entry point for active RGB-D segmentation experiments."""
 import argparse
+import os
 import warnings
 
 os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
@@ -29,34 +29,27 @@ from lightning.pytorch.callbacks import Callback, EarlyStopping
 
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
-from src.models.mid_fusion import (
-    LitMidFusion,
-    LitDFormerV2MidFusion,
-    LitDFormerV2ClassContextDecoder,
-    LitDFormerV2ContextDecoder,
-    LitDFormerV2DepthFFTSelect,
-    LitDFormerV2FFTFreqEnhance,
-    LitDFormerV2FFTHiLoEnhance,
-    LitDFormerV2SGBRDecoder,
-    LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
-)
+from src.models.mid_fusion import LitDFormerV2MidFusion, LitMidFusion
 from src.models.primkd_lit import LitDFormerV2PrimKD
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
+from src.models.tgga_adapter import LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2
 
 
-MODEL_REGISTRY = {
-    "early": LitEarlyFusion,
-    "mid_fusion": LitMidFusion,
+ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
-    "dformerv2_class_context_decoder": LitDFormerV2ClassContextDecoder,
-    "dformerv2_sgbr_decoder": LitDFormerV2SGBRDecoder,
     "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2": LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
-    "dformerv2_context_decoder": LitDFormerV2ContextDecoder,
-    "dformerv2_depth_fft_select": LitDFormerV2DepthFFTSelect,
-    "dformerv2_fft_freq_enhance": LitDFormerV2FFTFreqEnhance,
-    "dformerv2_fft_hilo_enhance": LitDFormerV2FFTHiLoEnhance,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
+}
+
+LEGACY_MODEL_REGISTRY = {
+    "early": LitEarlyFusion,
+    "mid_fusion": LitMidFusion,
+}
+
+MODEL_REGISTRY = {
+    **ACTIVE_MODEL_REGISTRY,
+    **LEGACY_MODEL_REGISTRY,
 }
 
 
@@ -100,9 +93,9 @@ class DirectStateDictCheckpoint(Callback):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="RGB-D Semantic Segmentation Training")
-    parser.add_argument("--model", type=str, default="mid_fusion", choices=list(MODEL_REGISTRY.keys()))
-    parser.add_argument("--data_root", type=str, required=True, help="NYU Depth V2 数据集根目录")
+    parser = argparse.ArgumentParser(description="RGB-D semantic segmentation training")
+    parser.add_argument("--model", type=str, default="dformerv2_mid_fusion", choices=list(MODEL_REGISTRY.keys()))
+    parser.add_argument("--data_root", type=str, required=True, help="NYU Depth V2 dataset root")
     parser.add_argument("--num_classes", type=int, default=40)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--max_epochs", type=int, default=50)
@@ -113,38 +106,11 @@ def build_parser():
     parser.add_argument("--devices", type=str, default="1")
     parser.add_argument("--accelerator", type=str, default="auto")
     parser.add_argument("--dformerv2_pretrained", type=str, default=None)
-    parser.add_argument("--loss_type", type=str, default="ce", choices=["ce", "ce_dice", "dgbf"])
-    parser.add_argument("--dice_weight", type=float, default=0.5)
-    parser.add_argument("--dgbf_alpha", type=float, default=1.0)
-    parser.add_argument("--dgbf_gamma", type=float, default=2.0)
-    parser.add_argument(
-        "--dgbf_mode",
-        type=str,
-        default="depth_semantic",
-        choices=["depth_semantic", "semantic_only", "depth_only", "focal_only", "none"],
-    )
-    parser.add_argument("--cutoff_ratio", type=float, default=0.25)
-    parser.add_argument("--gamma_init", type=float, default=0.05)
-    parser.add_argument("--hilo_alpha_low_init", type=float, default=0.03)
-    parser.add_argument("--hilo_alpha_high_init", type=float, default=0.10)
-    parser.add_argument("--hilo_alpha_max", type=float, default=0.5)
-    parser.add_argument("--hilo_stage_weights", type=str, default="1,1,1,1")
+    parser.add_argument("--loss_type", type=str, default="ce", choices=["ce"])
     parser.add_argument("--teacher_ckpt", type=str, default=None)
     parser.add_argument("--kd_weight", type=float, default=0.2)
     parser.add_argument("--kd_temperature", type=float, default=4.0)
     parser.add_argument("--save_student_only", action="store_true")
-    parser.add_argument("--cgpc_weight", type=float, default=0.0)
-    parser.add_argument("--cgpc_temperature", type=float, default=0.1)
-    parser.add_argument("--cgpc_stage", type=str, default="c3", choices=["c2", "c3", "c4"])
-    parser.add_argument("--cgpc_min_pixels_per_class", type=int, default=10)
-    parser.add_argument("--cgpc_max_pixels_per_class", type=int, default=128)
-    parser.add_argument("--class_context_channels", type=int, default=64)
-    parser.add_argument("--class_context_aux_weight", type=float, default=0.2)
-    parser.add_argument("--class_context_alpha_init", type=float, default=0.1)
-    parser.add_argument("--class_context_alpha_max", type=float, default=0.2)
-    parser.add_argument("--sgbr_aux_weight", type=float, default=0.1)
-    parser.add_argument("--sgbr_beta_init", type=float, default=0.05)
-    parser.add_argument("--sgbr_beta_max", type=float, default=0.2)
     return parser
 
 
@@ -167,88 +133,6 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_fft_freq_enhance":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            cutoff_ratio=args.cutoff_ratio,
-            gamma_init=args.gamma_init,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
-    if args.model == "dformerv2_fft_hilo_enhance":
-        hilo_stage_weights = tuple(float(v.strip()) for v in args.hilo_stage_weights.split(","))
-        if len(hilo_stage_weights) != 4:
-            raise ValueError("--hilo_stage_weights must contain 4 comma-separated values")
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            cutoff_ratio=args.cutoff_ratio,
-            alpha_low_init=args.hilo_alpha_low_init,
-            alpha_high_init=args.hilo_alpha_high_init,
-            alpha_max=args.hilo_alpha_max,
-            stage_weights=hilo_stage_weights,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
-    if args.model == "dformerv2_depth_fft_select":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            cutoff_ratio=args.cutoff_ratio,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
-    if args.model == "dformerv2_context_decoder":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
-    if args.model == "dformerv2_class_context_decoder":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-            class_context_channels=args.class_context_channels,
-            class_context_aux_weight=args.class_context_aux_weight,
-            class_context_alpha_init=args.class_context_alpha_init,
-            class_context_alpha_max=args.class_context_alpha_max,
-        )
-    if args.model == "dformerv2_sgbr_decoder":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-            sgbr_aux_weight=args.sgbr_aux_weight,
-            sgbr_beta_init=args.sgbr_beta_init,
-            sgbr_beta_max=args.sgbr_beta_max,
-        )
-    if args.model == "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
-    if args.model == "dformerv2_geometry_primary_teacher":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-        )
     if args.model == "dformerv2_primkd_logit_only":
         return model_cls(
             num_classes=args.num_classes,
@@ -258,32 +142,22 @@ def build_model(args):
             kd_weight=args.kd_weight,
             kd_temperature=args.kd_temperature,
             loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
         )
     if args.model in {
         "dformerv2_mid_fusion",
+        "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2",
+        "dformerv2_geometry_primary_teacher",
     }:
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,
             dformerv2_pretrained=args.dformerv2_pretrained,
             loss_type=args.loss_type,
-            dice_weight=args.dice_weight,
-            dgbf_alpha=args.dgbf_alpha,
-            dgbf_gamma=args.dgbf_gamma,
-            dgbf_mode=args.dgbf_mode,
-            cgpc_weight=args.cgpc_weight,
-            cgpc_temperature=args.cgpc_temperature,
-            cgpc_stage=args.cgpc_stage,
-            cgpc_min_pixels_per_class=args.cgpc_min_pixels_per_class,
-            cgpc_max_pixels_per_class=args.cgpc_max_pixels_per_class,
-            cgpc_detach_prototype=True,
         )
     return model_cls(
         num_classes=args.num_classes,
         lr=args.lr,
         loss_type=args.loss_type,
-        dice_weight=args.dice_weight,
     )
 
 
@@ -323,12 +197,12 @@ def main():
     model = build_model(args)
     checkpoint_callback, early_stop_callback = build_callbacks(args, monitor_metric)
     trainer = build_trainer(args, callbacks=[checkpoint_callback, early_stop_callback])
-    print(f"开始训练模型: {args.model}")
+    print(f"Starting training model: {args.model}")
     trainer.fit(model, datamodule=datamodule)
     best_score = checkpoint_callback.best_model_score
     best_score_text = "N/A" if best_score is None else f"{best_score:.4f}"
-    print(f"训练完成！最优模型: {checkpoint_callback.best_model_path}")
-    print(f"最优 {monitor_metric}: {best_score_text}")
+    print(f"Training complete. Best model: {checkpoint_callback.best_model_path}")
+    print(f"Best {monitor_metric}: {best_score_text}")
 
 
 if __name__ == "__main__":
