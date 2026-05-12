@@ -1,5 +1,19 @@
 # Paper Notes
 
+## 2026-05-12 Bounded Class Context Decoder 5-Run Boundary
+
+- `dformerv2_class_context_decoder_bounded_a02_run01` through `run05` completed 50 validation epochs each.
+- Setting: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + ClassContextFPNDecoder`, with `class_context_channels=64`, `class_context_aux_weight=0.2`, `class_context_alpha_init=0.1`, and bounded `class_context_alpha_max=0.2`.
+- Five-run mean best val/mIoU is `0.515986`, population std `0.005208`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Mean delta vs clean baseline mean is `-0.001411`, equal to `-0.288` baseline std units.
+- Compared with PMAD logit-only w0.15 5-run mean `0.520795`, bounded class context is lower by `0.004809`.
+- Runs above baseline mean: `2/5`; runs above baseline mean + 1 std: `1/5`; runs above baseline best single: `1/5`.
+- Best single run is `0.525156` (`run01`), but the other four runs are `0.511353`, `0.511318`, `0.514017`, and `0.518087`.
+- Bounded alpha keeps the final context alpha stable around `0.134-0.135`, so it fixes the runaway-alpha symptom observed in the unbounded run.
+- Interpretation: **not a stable improvement.** The OCR-style class-context decoder can produce a high single run, but repeated-run statistics fall below the clean baseline mean. The main problem is no longer alpha explosion; it is seed sensitivity / inconsistent benefit from the class-context decoder.
+- Paper boundary: do not cite bounded CGCD as an improved method. It can be used as an ablation showing that class-context decoder refinement has occasional positive signal but does not reliably outperform the DFormerv2 mid-fusion baseline.
+
 ## 2026-05-12 Class Context Decoder Run01 Boundary
 
 - `dformerv2_class_context_decoder_run01` completed 50 validation epochs.
