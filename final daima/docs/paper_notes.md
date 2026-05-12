@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-12 TGGA Diagnostic Variant Boundary
+
+- Original TGGA c3/c4 run01 remains promising but unstable: best `0.522206` at epoch 48, final `0.489865`.
+- Implemented `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1` as a diagnostic variant to isolate whether c3 high-resolution residual/gate noise contributes to late collapse.
+- Implemented `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1` as a diagnostic variant to preserve c3 capacity with weaker c3 residual strength and a more conservative c3 gate.
+- Neither variant has an mIoU result yet, so neither can be cited as effective.
+- TGGA+PMAD remains a conditional future experiment only; it is not implemented as an active mainline here.
+
 ## 2026-05-12 Active/Archived Boundary After Cleanup
 
 - Active main baseline: `dformerv2_mid_fusion`.

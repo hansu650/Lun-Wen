@@ -1,5 +1,14 @@
 # Experiment Log
 
+## 2026-05-12 TGGA diagnostic variant implementation
+
+- type: code implementation note, not a training run.
+- implemented future diagnostic models:
+  - `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
+  - `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`
+- purpose: localize whether original TGGA run01 instability comes from c3 high-resolution residual/gate noise, and test a weaker c3 variant if c4-only is more stable.
+- no mIoU result yet.
+
 ## 2026-05-12 code cleanup
 
 - type: code organization cleanup, not a training run.

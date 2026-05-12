@@ -1,5 +1,15 @@
 # Model Changes
 
+## 2026-05-12 TGGA Diagnostic Variants
+
+- Implemented `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`.
+- Implemented `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`.
+- Added `gate_bias_init` to `TGGABlock` with default `-2.0`, preserving original TGGA behavior.
+- c4-only applies TGGA only to DFormerV2 c4 and uses only c4 auxiliary CE.
+- weak-c3 keeps TGGA on c3/c4 but uses weaker c3 settings: `beta_init=0.01`, `beta_max=0.05`, `gate_bias_init=-3.0`.
+- No training result is implied by this code change.
+- Original TGGA c34 model, `dformerv2_mid_fusion`, PMAD, and geometry-primary teacher remain unchanged.
+
 ## 2026-05-12 cleanup/archive-failed-modules
 
 - Cleaned the default `train.py` active registry.

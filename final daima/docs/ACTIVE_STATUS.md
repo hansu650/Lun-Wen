@@ -15,6 +15,18 @@
 - Interpretation: promising but unstable single-run signal.
 - Claim: cannot claim stable improvement until run02/run03.
 
+### dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1
+
+- Status: implemented diagnostic variant / pending run.
+- Purpose: test whether TGGA late collapse is mainly caused by c3 high-resolution residual/gate noise.
+- Claim: no mIoU claim until run result is recorded.
+
+### dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1
+
+- Status: implemented diagnostic variant / pending run.
+- Purpose: keep possible c3 benefit while reducing c3 gate strength.
+- Claim: no mIoU claim until run result is recorded.
+
 ### dformerv2_geometry_primary_teacher
 
 - Status: active because PMAD depends on it.

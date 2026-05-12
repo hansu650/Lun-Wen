@@ -24,6 +24,7 @@ class TGGABlock(nn.Module):
         num_classes: int = 40,
         beta_max: float = 0.1,
         beta_init: float = 0.02,
+        gate_bias_init: float = -2.0,
         eps: float = 1e-6,
     ):
         super().__init__()
@@ -39,7 +40,7 @@ class TGGABlock(nn.Module):
             nn.Sigmoid(),
         )
         nn.init.zeros_(self.gate[2].weight)
-        nn.init.constant_(self.gate[2].bias, -2.0)
+        nn.init.constant_(self.gate[2].bias, gate_bias_init)
 
         self.residual = nn.Sequential(
             nn.Conv2d(channels, channels, kernel_size=3, padding=1, groups=channels, bias=False),
@@ -227,3 +228,140 @@ class LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2(BaseLitSeg):
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class DFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1Segmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        channels = self.rgb_encoder.out_channels
+        self.tgga_c4 = TGGABlock(channels[3], num_classes=num_classes, beta_init=0.02, beta_max=0.1)
+
+    def extract_features(self, rgb, depth, return_aux=False):
+        dformer_feats = self.rgb_encoder(rgb, depth)
+        if len(dformer_feats) != 4:
+            raise ValueError(f"TGGA c4-only expects 4 DFormerV2 feature stages, got {len(dformer_feats)}")
+        c1, c2, c3, c4 = dformer_feats
+        c4_refined, aux_logits_c4, stats_c4 = self.tgga_c4(c4, rgb, depth)
+        if c4_refined.shape != c4.shape:
+            raise ValueError(f"TGGA c4 shape mismatch: {tuple(c4_refined.shape)} vs {tuple(c4.shape)}")
+        refined_feats = [c1, c2, c3, c4_refined]
+
+        depth_feats = self.depth_encoder(depth)
+        aligned_depth = []
+        for rf, df in zip(refined_feats, depth_feats):
+            if rf.shape[-2:] != df.shape[-2:]:
+                df = F.interpolate(df, size=rf.shape[-2:], mode="bilinear", align_corners=False)
+            aligned_depth.append(df)
+
+        fused_feats = [fusion(r, d) for fusion, r, d in zip(self.fusions, refined_feats, aligned_depth)]
+        if not return_aux:
+            return refined_feats, aligned_depth, fused_feats
+        aux = {
+            "aux_logits_c4": aux_logits_c4,
+            "tgga_stats_c4": stats_c4,
+            "c4_shape_before": tuple(c4.shape),
+            "c4_shape_after": tuple(c4_refined.shape),
+        }
+        return refined_feats, aligned_depth, fused_feats, aux
+
+    def forward(self, rgb, depth, return_aux=False):
+        if not return_aux:
+            _, _, fused_feats = self.extract_features(rgb, depth)
+            return self.decoder(fused_feats, input_size=rgb.shape[-2:])
+        _, _, fused_feats, aux = self.extract_features(rgb, depth, return_aux=True)
+        final_logits = self.decoder(fused_feats, input_size=rgb.shape[-2:])
+        return final_logits, aux
+
+
+class LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        if loss_type != "ce":
+            raise ValueError(
+                "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1 only supports --loss_type ce"
+            )
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
+        self.model = DFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1Segmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+        self.aux_weight_c4 = 0.03
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+        final_logits, aux = self.model(rgb, depth, return_aux=True)
+        loss_main = self.train_criterion(final_logits, label)
+
+        aux_logits_c4 = F.interpolate(
+            aux["aux_logits_c4"],
+            size=label.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
+        )
+        loss_aux_c4 = F.cross_entropy(aux_logits_c4, label, ignore_index=255)
+        loss = loss_main + self.aux_weight_c4 * loss_aux_c4
+
+        stats_c4 = aux["tgga_stats_c4"]
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/main_loss", loss_main, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/tgga_aux_loss_c4", loss_aux_c4, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/tgga_beta_c4", stats_c4["tgga_beta"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c4_mean", stats_c4["tgga_gate_mean"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c4_std", stats_c4["tgga_gate_std"], prog_bar=False, on_step=False, on_epoch=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class DFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1Segmentor(
+    DFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2Segmentor
+):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        channels = self.rgb_encoder.out_channels
+        self.tgga_c3 = TGGABlock(
+            channels[2],
+            num_classes=num_classes,
+            beta_init=0.01,
+            beta_max=0.05,
+            gate_bias_init=-3.0,
+        )
+        self.tgga_c4 = TGGABlock(
+            channels[3],
+            num_classes=num_classes,
+            beta_init=0.02,
+            beta_max=0.1,
+            gate_bias_init=-2.0,
+        )
+
+
+class LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1(
+    LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2
+):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        if loss_type != "ce":
+            raise ValueError(
+                "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1 only supports --loss_type ce"
+            )
+        BaseLitSeg.__init__(self, num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
+        self.model = DFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1Segmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+        self.aux_weight_c3 = 0.03
+        self.aux_weight_c4 = 0.03
