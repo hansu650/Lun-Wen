@@ -25,11 +25,13 @@ class TGGABlock(nn.Module):
         beta_max: float = 0.1,
         beta_init: float = 0.02,
         gate_bias_init: float = -2.0,
+        detach_semantic: bool = True,
         eps: float = 1e-6,
     ):
         super().__init__()
         self.eps = eps
         self.beta_max = float(beta_max)
+        self.detach_semantic = bool(detach_semantic)
         raw_beta = math.atanh(float(beta_init) / self.beta_max)
         self.raw_beta = nn.Parameter(torch.tensor(float(raw_beta)))
         self.aux_head = nn.Conv2d(channels, num_classes, kernel_size=1)
@@ -83,7 +85,8 @@ class TGGABlock(nn.Module):
         b, _, h, w = x.shape
         aux_logits = self.aux_head(x)
 
-        prob = F.softmax(aux_logits.detach(), dim=1)
+        semantic_logits = aux_logits.detach() if self.detach_semantic else aux_logits
+        prob = F.softmax(semantic_logits, dim=1)
         conf = prob.max(dim=1, keepdim=True).values
         uncertainty = 1.0 - conf
         semantic_edge = self._zscore_edge(self._sobel_magnitude(conf))
@@ -218,6 +221,86 @@ class LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2(BaseLitSeg):
         self.log("train/main_loss", loss_main, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/tgga_aux_loss_c3", loss_aux_c3, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/tgga_aux_loss_c4", loss_aux_c4, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/tgga_beta_c3", stats_c3["tgga_beta"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_beta_c4", stats_c4["tgga_beta"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c3_mean", stats_c3["tgga_gate_mean"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c4_mean", stats_c4["tgga_gate_mean"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c3_std", stats_c3["tgga_gate_std"], prog_bar=False, on_step=False, on_epoch=True)
+        self.log("train/tgga_gate_c4_std", stats_c4["tgga_gate_std"], prog_bar=False, on_step=False, on_epoch=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class DFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1Segmentor(
+    DFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2Segmentor
+):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        channels = self.rgb_encoder.out_channels
+        self.tgga_c3 = TGGABlock(
+            channels[2],
+            num_classes=num_classes,
+            beta_init=0.02,
+            beta_max=0.1,
+            detach_semantic=False,
+        )
+        self.tgga_c4 = TGGABlock(
+            channels[3],
+            num_classes=num_classes,
+            beta_init=0.02,
+            beta_max=0.1,
+            detach_semantic=False,
+        )
+
+
+class LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        if loss_type != "ce":
+            raise ValueError(
+                "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1 only supports --loss_type ce"
+            )
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
+        self.model = DFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1Segmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+        final_logits, aux = self.model(rgb, depth, return_aux=True)
+        loss = self.train_criterion(final_logits, label)
+
+        aux_logits_c3 = F.interpolate(
+            aux["aux_logits_c3"].detach(),
+            size=label.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
+        )
+        aux_logits_c4 = F.interpolate(
+            aux["aux_logits_c4"].detach(),
+            size=label.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
+        )
+        loss_aux_c3_diag = F.cross_entropy(aux_logits_c3, label, ignore_index=255)
+        loss_aux_c4_diag = F.cross_entropy(aux_logits_c4, label, ignore_index=255)
+
+        stats_c3 = aux["tgga_stats_c3"]
+        stats_c4 = aux["tgga_stats_c4"]
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/main_loss", loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/tgga_aux_ce_c3_diag", loss_aux_c3_diag, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/tgga_aux_ce_c4_diag", loss_aux_c4_diag, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/tgga_beta_c3", stats_c3["tgga_beta"], prog_bar=False, on_step=False, on_epoch=True)
         self.log("train/tgga_beta_c4", stats_c4["tgga_beta"], prog_bar=False, on_step=False, on_epoch=True)
         self.log("train/tgga_gate_c3_mean", stats_c3["tgga_gate_mean"], prog_bar=False, on_step=False, on_epoch=True)

@@ -34,6 +34,7 @@ from src.models.primkd_lit import LitDFormerV2PrimKD
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
 from src.models.tgga_adapter import (
     LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
+    LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1,
     LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
     LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
 )
@@ -42,6 +43,7 @@ from src.models.tgga_adapter import (
 ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
     "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2": LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
+    "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1": LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
     "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1": LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
@@ -152,6 +154,7 @@ def build_model(args):
     if args.model in {
         "dformerv2_mid_fusion",
         "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2",
+        "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",
         "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1",
         "dformerv2_geometry_primary_teacher",

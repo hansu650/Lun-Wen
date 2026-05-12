@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-12 TGGA C3/C4 No-Aux Semantic-Gradient Diagnostic
+
+- Implemented `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.
+- Added `detach_semantic` to `TGGABlock`; default remains `True`, so the original `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`, c4-only, and weak-c3 variants are unchanged.
+- The no-aux diagnostic keeps TGGA on DFormerV2 c3/c4 with `beta_init=0.02`, `beta_max=0.1`.
+- Removed auxiliary CE from the training objective: `L_total = CE(final_logits, label)`.
+- Because the original semantic cue is detached and would become randomly fixed without aux CE, this diagnostic sets `detach_semantic=False` so the final segmentation loss can train the semantic cue through the gate path.
+- Logged detached diagnostic auxiliary CE as `train/tgga_aux_ce_c3_diag` and `train/tgga_aux_ce_c4_diag`; these are not added to the loss.
+- Purpose: separate aux-CE conflict from TGGA gate/residual instability after TGGA run01-run02 showed weak positive best mIoU but severe late collapse.
+- Result note for run01: best val/mIoU `0.512152`, below clean baseline mean by `0.005245`; this is a negative diagnostic, not an improvement.
+
 ## 2026-05-12 TGGA Diagnostic Variants
 
 - Implemented `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`.

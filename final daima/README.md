@@ -136,6 +136,7 @@ The old teaching/demo model list below is deprecated. The current default traini
 
 - `dformerv2_mid_fusion`: clean main baseline, 10-run mean best mIoU `0.517397`, std `0.004901`, best single `0.524425`.
 - `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`: active but unstable. Run01 best `0.522206` at epoch 48, final `0.489865`; run02 best `0.517437` at epoch 49, final `0.486566`; two-run mean best `0.519822`, so this is weak positive but not a stable improvement.
+- `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`: negative no-aux diagnostic. Run01 best `0.512152`, final `0.492633`; removing aux CE lowers the peak and does not remove late instability.
 - `dformerv2_geometry_primary_teacher`: active PMAD teacher dependency.
 - `dformerv2_primkd_logit_only`: active PMAD logit-only KD branch, marginal positive repeat signal around `0.520795` five-run mean at w0.15/T4.
 

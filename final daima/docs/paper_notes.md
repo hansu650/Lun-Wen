@@ -1,5 +1,28 @@
 # Paper Notes
 
+## 2026-05-12 TGGA No-Aux Run01 Boundary
+
+- `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01` completed 50 validation epochs.
+- Setting: TGGA c3/c4 with final CE only; no auxiliary CE; semantic cue trained through final CE via the gate path.
+- Best val/mIoU is `0.512152` at epoch 48; last val/mIoU is `0.492633`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- Delta vs clean baseline mean is `-0.005245`, equal to `-1.070` baseline std units.
+- Delta vs PMAD logit-only w0.15 mean is `-0.008643`.
+- Delta vs original TGGA aux run01 is `-0.010054`; delta vs original TGGA aux run02 is `-0.005285`.
+- No epoch exceeds the clean baseline mean.
+- Late-curve caveat remains: epoch 48 best `0.512152`, then epoch 49 drops to `0.469468`, final epoch `0.492633`.
+- Gate diagnostics: final c3 gate is very open (`gate_c3_mean=0.474472`, `gate_c3_std=0.311781`), and c4 opens much more than in original TGGA (`gate_c4_mean=0.230513`, `gate_c4_std=0.135297`).
+- Interpretation: **negative diagnostic.** Removing auxiliary CE removes the high peak but does not remove late instability. Aux CE is not the only problem; TGGA gate/residual dynamics are not safe enough in this form.
+- Paper boundary: do not cite no-aux TGGA as an improvement. Use it only as diagnostic evidence that the TGGA line is unstable and that the original TGGA peak depends partly on auxiliary CE.
+
+## 2026-05-12 TGGA No-Aux Diagnostic Boundary
+
+- Implemented `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1` as the next diagnostic after TGGA run01-run02.
+- Purpose: test whether late collapse comes from auxiliary semantic CE or from TGGA gate/residual dynamics.
+- Run01 is negative: best val/mIoU `0.512152`, below the clean baseline mean by `0.005245`.
+- Boundary nuance: because the original `detachsem` semantic cue would become untrained if aux CE were simply removed, this diagnostic uses semantic-gradient gating and final CE only.
+- Paper boundary: no-aux TGGA is diagnostic-only and cannot be cited as effective.
+
 ## 2026-05-12 TGGA Run02 and Two-Run Boundary
 
 - `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02` completed 50 validation epochs.
@@ -10,7 +33,7 @@
 - Run02 c3 TGGA opens more than run01: final `gate_c3_mean=0.409689`, `gate_c3_std=0.346383`; c4 remains weak and low variance with `gate_c4_mean=0.126628`, `gate_c4_std=0.010253`.
 - Interpretation: **weak positive but unstable.** TGGA c3/c4 has a real late-epoch signal, but the repeat does not support a stable paper improvement claim.
 - Paper boundary: do not report TGGA c3/c4 as an improved method. It can be discussed only as an unstable structure-side candidate pending diagnostics.
-- Next paper-relevant diagnostic: no-aux TGGA c3/c4 to test whether the late fluctuation comes from the auxiliary semantic CE heads or from TGGA gating itself.
+- Next paper-relevant diagnostic: `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.
 
 ## 2026-05-12 TGGA Diagnostic Variant Boundary
 

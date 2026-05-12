@@ -17,6 +17,15 @@
 - Interpretation: weak positive best-mIoU signal but severe late instability.
 - Claim: do not claim stable improvement. Prioritize no-aux TGGA diagnostic before any blind run03.
 
+### dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1
+
+- Status: negative diagnostic.
+- Purpose: test whether TGGA late collapse is caused by auxiliary CE conflict or by TGGA gate/residual dynamics.
+- Difference from original TGGA: removes auxiliary CE from total loss and uses semantic-gradient gating instead of detached semantic cue, because a detached cue would be untrained without aux CE.
+- Run01 result: best val/mIoU `0.512152` at epoch 48; last val/mIoU `0.492633`.
+- Interpretation: removing aux CE lowers the peak and does not remove late instability.
+- Claim: do not claim as improvement; diagnostic-only negative evidence.
+
 ### dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1
 
 - Status: implemented diagnostic variant / pending run.

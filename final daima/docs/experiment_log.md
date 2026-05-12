@@ -1,5 +1,61 @@
 # Experiment Log
 
+## 2026-05-12 dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01
+
+- model: `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`
+- method: TGGA on DFormerV2 c3/c4, no auxiliary CE, semantic cue trained only through final CE via gate path.
+- loss: `CE(final_logits, label)` only.
+- purpose: diagnose whether original TGGA late collapse is mainly caused by auxiliary CE conflict or by TGGA gate/residual dynamics.
+- architecture: `DFormerv2_S + TGGA(c3,c4 no-aux semgrad) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.512152` at epoch `48`
+- last val/mIoU: `0.492633`
+- best val/loss: `1.032364` at epoch `15`
+- last val/loss: `1.275699`
+- mean val/mIoU over last 10 epochs: `0.501366`
+- mean val/mIoU over last 5 epochs: `0.498370`
+- post-best mean val/mIoU: `0.481050`
+- final train/loss: `0.187033`
+- final train/main_loss: `0.187033`
+- final train/tgga_aux_ce_c3_diag: `3.880328`
+- final train/tgga_aux_ce_c4_diag: `3.911476`
+- final train/tgga_beta_c3: `0.035324`
+- final train/tgga_beta_c4: `0.025326`
+- final train/tgga_gate_c3_mean: `0.474472`
+- final train/tgga_gate_c4_mean: `0.230513`
+- final train/tgga_gate_c3_std: `0.311781`
+- final train/tgga_gate_c4_std: `0.135297`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison PMAD logit-only w0.15 5-run mean best: `0.520795`
+- comparison original TGGA aux run01 best: `0.522206`
+- comparison original TGGA aux run02 best: `0.517437`
+- delta vs clean baseline mean: `-0.005245` (`-1.070` baseline std units)
+- delta vs PMAD w0.15 mean: `-0.008643`
+- delta vs original TGGA aux run01: `-0.010054`
+- delta vs original TGGA aux run02: `-0.005285`
+- epochs above clean baseline mean: `0/50`
+- late-curve check: epoch 41-50 val/mIoU = `0.495870, 0.503853, 0.504099, 0.508151, 0.509840, 0.510360, 0.507238, 0.512152, 0.469468, 0.492633`. The best epoch is epoch 48, then epoch 49 drops sharply.
+- checkpoint: `checkpoints/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1-epoch=47-val_mIoU=0.5122.pt`
+- evidence: `miou_list/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01.md`
+- Pro discussion prompt: `docs/tgga_noaux_run01_pro_prompt.md`
+- conclusion: **negative diagnostic result.** Removing auxiliary CE does not improve stability or performance. It lowers the peak relative to original TGGA and still shows late collapse, so auxiliary CE is not the only instability source; TGGA gate/residual dynamics are likely unsafe in this form.
+- next step: do not claim TGGA no-aux as improvement. Ask Pro to decide whether the only remaining worthwhile diagnostic is weak-c3/c4-only or whether to stop TGGA and return to PMAD/clean-baseline-safe directions.
+
+## 2026-05-12 TGGA c3/c4 no-aux semantic-gradient diagnostic implementation
+
+- type: code implementation note, not a training run.
+- implemented model: `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`
+- purpose: test whether TGGA late collapse is caused mainly by the auxiliary semantic CE loss or by TGGA gate/residual dynamics.
+- structure: same c3/c4 TGGA insertion as `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`.
+- loss: `CE(final_logits, label)` only.
+- semantic cue note: the original `detachsem` path would leave the aux head untrained if aux CE were removed, so this diagnostic uses semantic-gradient gating (`detach_semantic=False`) and lets final CE train the semantic cue through the gate.
+- diagnostic logs: `train/tgga_aux_ce_c3_diag`, `train/tgga_aux_ce_c4_diag`, `train/tgga_beta_c3`, `train/tgga_beta_c4`, `train/tgga_gate_c3_mean`, `train/tgga_gate_c4_mean`, `train/tgga_gate_c3_std`, and `train/tgga_gate_c4_std`.
+- result note: run01 best val/mIoU is `0.512152`, below the clean baseline mean by `0.005245`; see `miou_list/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01.md`.
+
 ## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2 run01-run02 summary
 
 - model: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
@@ -16,7 +72,7 @@
 - evidence: `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01.md`, `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02.md`, and `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_summary_run01_02.md`
 - GPT discussion record: `docs/tgga_run02_gpt_discussion.md`
 - conclusion: **weak positive but unstable, not a stable improvement.** The two-run best-mIoU mean is above the clean baseline mean but below PMAD w0.15 and below baseline mean + 1 std. Both runs collapse late to final mIoU around `0.49`, so TGGA should not be claimed as a paper improvement.
-- next step: do not blindly prioritize run03. The highest-value diagnostic is a no-aux TGGA c3/c4 run that removes `0.03 * aux_c3 + 0.03 * aux_c4` while keeping the TGGA structure unchanged.
+- next step: do not blindly prioritize run03. The highest-value diagnostic is `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.
 
 ## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02
 
