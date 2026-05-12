@@ -30,7 +30,7 @@ from lightning.pytorch.callbacks import Callback, EarlyStopping
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitDFormerV2FreqFPNDecoder, LitDFormerV2MidFusion, LitMidFusion
-from src.models.primkd_lit import LitDFormerV2PrimKD, LitDFormerV2PrimKDBoundaryConf
+from src.models.primkd_lit import LitDFormerV2PrimKD, LitDFormerV2PrimKDBoundaryConf, LitDFormerV2PrimKDCorrectEntropy
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
 from src.models.tgga_adapter import (
     LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
@@ -50,6 +50,7 @@ ACTIVE_MODEL_REGISTRY = {
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
     "dformerv2_primkd_boundary_conf": LitDFormerV2PrimKDBoundaryConf,
+    "dformerv2_primkd_correct_entropy": LitDFormerV2PrimKDCorrectEntropy,
 }
 
 LEGACY_MODEL_REGISTRY = {
@@ -120,6 +121,7 @@ def build_parser():
     parser.add_argument("--teacher_ckpt", type=str, default=None)
     parser.add_argument("--kd_weight", type=float, default=0.2)
     parser.add_argument("--kd_temperature", type=float, default=4.0)
+    parser.add_argument("--kd_entropy_threshold", type=float, default=0.25)
     parser.add_argument("--save_student_only", action="store_true")
     return parser
 
@@ -146,7 +148,11 @@ def build_model(args):
     if args.model in {
         "dformerv2_primkd_logit_only",
         "dformerv2_primkd_boundary_conf",
+        "dformerv2_primkd_correct_entropy",
     }:
+        kwargs = {}
+        if args.model == "dformerv2_primkd_correct_entropy":
+            kwargs["kd_entropy_threshold"] = args.kd_entropy_threshold
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,
@@ -155,6 +161,7 @@ def build_model(args):
             kd_weight=args.kd_weight,
             kd_temperature=args.kd_temperature,
             loss_type=args.loss_type,
+            **kwargs,
         )
     if args.model in {
         "dformerv2_mid_fusion",

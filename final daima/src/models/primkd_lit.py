@@ -1,4 +1,6 @@
 """Logit-only PMAD/PrimKD distillation Lightning module."""
+import math
+
 import torch
 import torch.nn.functional as F
 
@@ -163,6 +165,109 @@ class LitDFormerV2PrimKDBoundaryConf(LitDFormerV2PrimKD):
             teacher_logits,
             label,
             self.kd_temperature,
+            ignore_index=255,
+        )
+        loss = ce_loss + self.kd_weight * kd_loss
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/ce_loss", ce_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/kd_loss", kd_loss, prog_bar=False, on_step=True, on_epoch=True)
+        for name, value in kd_stats.items():
+            self.log(f"train/{name}", value, prog_bar=False, on_step=True, on_epoch=True)
+        return loss
+
+
+class LitDFormerV2PrimKDCorrectEntropy(LitDFormerV2PrimKD):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        teacher_ckpt=None,
+        kd_weight=0.2,
+        kd_temperature=4.0,
+        kd_entropy_threshold=0.25,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            dformerv2_pretrained=dformerv2_pretrained,
+            teacher_ckpt=teacher_ckpt,
+            kd_weight=kd_weight,
+            kd_temperature=kd_temperature,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.kd_entropy_threshold = float(kd_entropy_threshold)
+
+    @staticmethod
+    def correct_entropy_kl_loss(student_logits, teacher_logits, label, temperature, entropy_threshold, ignore_index=255):
+        valid = label != ignore_index
+        if valid.sum() == 0:
+            zero = student_logits.sum() * 0.0
+            stats = {
+                "kd_mask_ratio": zero.detach(),
+                "kd_entropy_mean": zero.detach(),
+                "kd_entropy_selected_mean": zero.detach(),
+                "kd_teacher_valid_acc": zero.detach(),
+                "kd_teacher_selected_acc": zero.detach(),
+                "kd_selected_kl": zero.detach(),
+            }
+            return zero, stats
+
+        with torch.no_grad():
+            teacher_prob_raw = F.softmax(teacher_logits, dim=1)
+            entropy = -(teacher_prob_raw * torch.log(teacher_prob_raw.clamp_min(1e-8))).sum(dim=1)
+            entropy = entropy / math.log(float(teacher_prob_raw.shape[1]))
+            teacher_pred = teacher_prob_raw.argmax(dim=1)
+            teacher_correct = teacher_pred == label
+            selected = valid & teacher_correct & (entropy <= entropy_threshold)
+
+        if selected.sum() == 0:
+            zero = student_logits.sum() * 0.0
+            stats = {
+                "kd_mask_ratio": zero.detach(),
+                "kd_entropy_mean": entropy[valid].mean(),
+                "kd_entropy_selected_mean": zero.detach(),
+                "kd_teacher_valid_acc": teacher_correct[valid].float().mean(),
+                "kd_teacher_selected_acc": zero.detach(),
+                "kd_selected_kl": zero.detach(),
+            }
+            return zero, stats
+
+        student = student_logits.permute(0, 2, 3, 1)[selected]
+        teacher = teacher_logits.permute(0, 2, 3, 1)[selected]
+        student_log_prob = F.log_softmax(student / temperature, dim=1)
+        teacher_prob = F.softmax(teacher / temperature, dim=1)
+        kl_pixel = F.kl_div(student_log_prob, teacher_prob, reduction="none").sum(dim=1)
+        valid_count = valid.float().sum().clamp_min(1.0)
+        loss = kl_pixel.sum() / valid_count
+        loss = loss * (temperature ** 2)
+        stats = {
+            "kd_mask_ratio": selected[valid].float().mean(),
+            "kd_entropy_mean": entropy[valid].mean(),
+            "kd_entropy_selected_mean": entropy[selected].mean(),
+            "kd_teacher_valid_acc": teacher_correct[valid].float().mean(),
+            "kd_teacher_selected_acc": teacher_correct[selected].float().mean(),
+            "kd_selected_kl": kl_pixel.mean().detach() * (temperature ** 2),
+        }
+        return loss, stats
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+        student_logits = self(rgb, depth)
+        self.teacher.eval()
+        with torch.no_grad():
+            teacher_logits = self.teacher(rgb, depth)
+        ce_loss = self.train_criterion(student_logits, label)
+        kd_loss, kd_stats = self.correct_entropy_kl_loss(
+            student_logits,
+            teacher_logits,
+            label,
+            self.kd_temperature,
+            self.kd_entropy_threshold,
             ignore_index=255,
         )
         loss = ce_loss + self.kd_weight * kd_loss

@@ -1,5 +1,19 @@
 # Model Changes
 
+## 2026-05-13 R003 Correct-and-Entropy-Selective PMAD KD
+
+- Implemented `dformerv2_primkd_correct_entropy` as a separate model name.
+- Added `LitDFormerV2PrimKDCorrectEntropy` in `src/models/primkd_lit.py`; it inherits the existing PMAD student/teacher setup from `LitDFormerV2PrimKD`.
+- The student remains `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- The frozen teacher remains `DFormerV2GeometryPrimaryTeacherSegmentor`; teacher checkpoint loading and `export_state_dict()` behavior are unchanged.
+- Training loss remains `CE(student, label) + kd_weight * KL(student, teacher)`, but KL is applied only to valid training pixels where the teacher prediction equals the sanitized label and normalized teacher entropy is `<= --kd_entropy_threshold`.
+- The R003 threshold is `--kd_entropy_threshold 0.25`; selected-pixel KL is normalized by the number of valid pixels, so selecting fewer pixels reduces total KD strength rather than amplifying selected pixels.
+- Added training logs: `train/kd_mask_ratio`, `train/kd_entropy_mean`, `train/kd_entropy_selected_mean`, `train/kd_teacher_valid_acc`, `train/kd_teacher_selected_acc`, and `train/kd_selected_kl`.
+- Registered `dformerv2_primkd_correct_entropy` in `train.py` and added `--kd_entropy_threshold`; `dformerv2_primkd_logit_only` and `dformerv2_primkd_boundary_conf` remain unchanged.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py` and `src/models/primkd_lit.py`; `train.py --help` lists the model and arg; a real one-batch smoke check gave `kd_mask_ratio=0.895539`, teacher trainable params `0`, and optimizer `AdamW(lr=6e-5, weight_decay=0.01)`.
+- Result note for `dformerv2_primkd_correct_entropy_w015_t4_h025_run01`: best val/mIoU `0.516597`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this model.
+
 ## 2026-05-13 R002 Frequency-Aware FPN Decoder
 
 - Implemented `dformerv2_freqfpn_decoder` as a separate model name.

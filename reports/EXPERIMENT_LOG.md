@@ -60,6 +60,30 @@ Baseline reference:
 - Audit: code review `approved`; reproducer/report audit `audit_passed_no_rerun`.
 - Decision: reject this exact decoder; continue the loop after audit with the next highest-decision-value candidate.
 
+### 2026-05-13 R003 Approval: Correct-and-Entropy-Selective PMAD KD
+
+- Approved one experiment on branch `exp/R003-pmad-correct-entropy-kd-v1`.
+- Hypothesis: PMAD logit KD can avoid harmful teacher transfer by distilling only pixels where the frozen teacher is both label-correct and low-entropy during training.
+- Reason: PMAD w0.15/T4 remains the best repeat-backed direction with five-run mean best val/mIoU `0.520795`; R001 only falsified a weak selector because `kd_mask_ratio` stayed near `0.998`, while R002 decoder frequency fusion did not improve over baseline.
+- Planned model name: `dformerv2_primkd_correct_entropy`.
+- Planned run name: `w015_t4_h025_run01`; checkpoint directory `checkpoints/dformerv2_primkd_correct_entropy_w015_t4_h025_run01`.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Selector settings: teacher argmax must match the sanitized training label and normalized teacher entropy must be `<=0.25`; no boundary override or boundary boost.
+- Smoke check on one real train batch: `kd_mask_ratio=0.895539`, `kd_entropy_mean=0.054600`, `kd_teacher_valid_acc=0.922844`, teacher trainable params `0`, optimizer `AdamW(lr=6e-5, weight_decay=0.01)`.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, or TensorBoard-log change is approved.
+- Status: approved for one full train after dry-check and smoke-check.
+
+### 2026-05-13 R003 Result: Negative
+
+- `dformerv2_primkd_correct_entropy_w015_t4_h025_run01` completed 50 validation epochs.
+- best val/mIoU: `0.516597` at epoch `50`; last val/mIoU: `0.516597`.
+- Result is slightly below the clean 10-run baseline mean `0.517397` and below PMAD logit-only w0.15/T4 five-run mean `0.520795`.
+- Evidence: `final daima/miou_list/dformerv2_primkd_correct_entropy_w015_t4_h025_run01.md`.
+- Report: `reports/R003-pmad-correct-entropy-kd-v1.md`.
+- Diagnostic: final `kd_mask_ratio=0.910636`, final `kd_teacher_selected_acc=1.000000`; the selector was meaningful but did not recover the original PMAD signal.
+- Audit: code review `approved`; reproducer/report audit `audit_passed_no_rerun`.
+- Decision: reject this exact PMAD filtering setting; continue the loop after audit with the next highest-decision-value candidate.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.

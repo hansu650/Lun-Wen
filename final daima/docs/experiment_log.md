@@ -1,5 +1,46 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_primkd_correct_entropy_w015_t4_h025_run01
+
+- model: `dformerv2_primkd_correct_entropy`
+- method: PMAD / PrimKD logit-only KD with a correct-and-low-entropy teacher trust gate.
+- purpose: test whether filtering KD to teacher-correct, low-entropy training pixels can preserve PMAD w0.15/T4 gains while avoiding harmful teacher transfer.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`; frozen geometry-primary teacher `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`.
+- loss: `CE(student, label) + 0.15 * gated_KL(student, teacher, T=4.0)`.
+- selector settings: sanitized-label correctness `teacher_argmax == label`, normalized teacher entropy `<=0.25`, selected-pixel KL normalized by valid-pixel count.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.516597` at epoch `50`
+- last val/mIoU: `0.516597`
+- last-5 mean val/mIoU: `0.505977`
+- last-10 mean val/mIoU: `0.500502`
+- best val/loss: `1.079330` at epoch `8`
+- final train/loss: `0.207509`
+- final train/ce_loss: `0.150859`
+- final train/kd_loss: `0.377668`
+- final train/kd_mask_ratio: `0.910636`
+- final train/kd_entropy_mean: `0.047532`
+- final train/kd_entropy_selected_mean: `0.030076`
+- final train/kd_teacher_valid_acc: `0.932230`
+- final train/kd_teacher_selected_acc: `1.000000`
+- final train/kd_selected_kl: `0.414943`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- delta vs clean baseline mean: `-0.000800` (`-0.163` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.005701`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.004198`
+- checkpoint: `checkpoints/dformerv2_primkd_correct_entropy_w015_t4_h025_run01/dformerv2_primkd_correct_entropy-epoch=49-val_mIoU=0.5166.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_correct_entropy_w015_t4_h025_run01/lightning_logs/version_0/events.out.tfevents.1778613991.Administrator.34044.0`
+- evidence: `miou_list/dformerv2_primkd_correct_entropy_w015_t4_h025_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **near-baseline but negative result.** The selector is meaningfully selective compared with R001 and selected teacher pixels are label-correct, but the run still peaks below the clean baseline mean and below PMAD w0.15/T4 mean.
+- next step: do not repeat this exact correct-and-entropy gate. This weakens the idea that PMAD can be improved simply by removing teacher-wrong pixels; the next round should move away from stricter PMAD filtering unless a clearly different KD mechanism is proposed.
+
 ## 2026-05-13 dformerv2_freqfpn_decoder_run01
 
 - model: `dformerv2_freqfpn_decoder`

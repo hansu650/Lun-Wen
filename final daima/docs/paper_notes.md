@@ -1,5 +1,19 @@
 # Paper Notes
 
+## 2026-05-13 Correct-and-Entropy-Selective PMAD Boundary
+
+- `dformerv2_primkd_correct_entropy_w015_t4_h025_run01` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, normalized teacher entropy threshold `0.25`, and KD only where `teacher_argmax == label` during training.
+- Best val/mIoU is `0.516597` at epoch 50; last val/mIoU is also `0.516597`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.000800`, equal to `-0.163` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.004198`.
+- Diagnostic: final `kd_mask_ratio` is `0.910636`, much more selective than R001's `0.998182`; final `kd_teacher_selected_acc` is `1.000000`.
+- Interpretation: **near-baseline but negative result.** The trust gate is meaningful, but it does not improve over the clean baseline or the original PMAD repeated mean.
+- Paper boundary: do not cite `dformerv2_primkd_correct_entropy` as an improvement. It can be cited only as a negative PMAD filtering ablation showing that removing teacher-wrong, high-entropy pixels does not preserve the original PMAD gain.
+- Strategic implication: stricter PMAD pixel filtering is unlikely to be the path to `>=0.53`; future PMAD work should require a different mechanism, not another small threshold variant.
+
 ## 2026-05-13 Frequency-Aware FPN Decoder Boundary
 
 - `dformerv2_freqfpn_decoder_run01` completed 50 validation epochs.

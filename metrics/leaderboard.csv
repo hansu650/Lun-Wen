@@ -1,3 +1,4 @@
 rank,run_id,model,branch,best_val_miou,best_epoch,last_val_miou,status,report_path,evidence_path
 1,R002-freqfpn-decoder-v1,dformerv2_freqfpn_decoder,exp/R002-freqfpn-decoder-v1,0.516915,44,0.486524,completed_negative,reports/R002-freqfpn-decoder-v1.md,final daima/miou_list/dformerv2_freqfpn_decoder_run01.md
-2,R001-pmad-selective-kd-v1,dformerv2_primkd_boundary_conf,exp/R001-pmad-selective-kd-v1,0.511646,50,0.511646,completed_negative,reports/R001-pmad-selective-kd-v1.md,final daima/miou_list/dformerv2_primkd_boundary_conf_w015_t4_run01.md
+2,R003-pmad-correct-entropy-kd-v1,dformerv2_primkd_correct_entropy,exp/R003-pmad-correct-entropy-kd-v1,0.516597,50,0.516597,completed_negative,reports/R003-pmad-correct-entropy-kd-v1.md,final daima/miou_list/dformerv2_primkd_correct_entropy_w015_t4_h025_run01.md
+3,R001-pmad-selective-kd-v1,dformerv2_primkd_boundary_conf,exp/R001-pmad-selective-kd-v1,0.511646,50,0.511646,completed_negative,reports/R001-pmad-selective-kd-v1.md,final daima/miou_list/dformerv2_primkd_boundary_conf_w015_t4_run01.md
