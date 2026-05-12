@@ -1,5 +1,51 @@
 # Experiment Log
 
+## 2026-05-12 dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01
+
+- model: `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
+- method: Task-Guided Geometry Calibration Adapter on DFormerV2 c3/c4 before external `DepthEncoder + GatedFusion`.
+- loss: `CE(final_logits, label) + 0.03 * CE(aux_c3, label) + 0.03 * CE(aux_c4, label)`
+- purpose: test whether task-guided semantic/high-frequency geometry calibration before GatedFusion can improve the stable DFormerv2 mid-fusion baseline without changing decoder, fusion, optimizer, data, PMAD/KD, or training recipe.
+- architecture: `DFormerv2_S + TGGA(c3,c4) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.522206` at epoch `48`
+- last val/mIoU: `0.489865`
+- best val/loss: `1.001215` at epoch `10`
+- last val/loss: `1.384536`
+- mean val/mIoU over last 10 epochs: `0.510627`
+- mean val/mIoU over last 5 epochs: `0.512473`
+- best-epoch local 5-epoch window mean: `0.517497`
+- post-best mean val/mIoU: `0.503293`
+- final train/loss: `0.183592`
+- final train/main_loss: `0.162046`
+- final train/tgga_aux_loss_c3: `0.327891`
+- final train/tgga_aux_loss_c4: `0.390297`
+- final train/tgga_beta_c3: `0.035080`
+- final train/tgga_beta_c4: `0.023389`
+- final train/tgga_gate_c3_mean: `0.351956`
+- final train/tgga_gate_c4_mean: `0.131228`
+- final train/tgga_gate_c3_std: `0.305273`
+- final train/tgga_gate_c4_std: `0.016975`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD logit-only w0.15 5-run mean best: `0.520795`
+- comparison bounded class-context 5-run mean best: `0.515986`
+- comparison SGBR-Lite run01 best: `0.510159`
+- delta vs clean baseline mean: `+0.004809` (`+0.981` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.000092`
+- delta vs clean baseline best single: `-0.002219`
+- delta vs PMAD w0.15 mean: `+0.001411`
+- delta vs bounded class-context mean: `+0.006220`
+- delta vs SGBR-Lite best: `+0.012047`
+- late-curve check: epoch 41-50 val/mIoU = `0.491948, 0.505812, 0.514443, 0.514902, 0.516806, 0.516127, 0.517443, 0.522206, 0.516722, 0.489865`. The best epoch is epoch 48, not the final epoch; the run rises to a strong late high point and then drops sharply at epoch 50.
+- checkpoint: `checkpoints/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2-epoch=47-val_mIoU=0.5222.pt`
+- evidence: `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01.md`
+- conclusion: **promising but unstable single-run result.** TGGA run01 beats the clean baseline mean and PMAD 5-run mean, and is almost exactly at the baseline mean + 1 std threshold. However, the high point appears late and is followed by a final collapse, so this is not yet stable evidence. A repeat is justified before claiming improvement.
+
 ## 2026-05-12 dformerv2_sgbr_decoder_w010_b005_run01
 
 - model: `dformerv2_sgbr_decoder`

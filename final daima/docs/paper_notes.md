@@ -1,5 +1,20 @@
 # Paper Notes
 
+## 2026-05-12 TGGA C3/C4 Run01 Boundary
+
+- `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01` completed 50 validation epochs.
+- Setting: `DFormerv2_S + TGGA(c3,c4) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`, with `0.03` auxiliary CE on each TGGA semantic head.
+- Best val/mIoU is `0.522206` at epoch 48; last val/mIoU is `0.489865`.
+- Clean ten-run RGB-D baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Delta vs clean baseline mean is `+0.004809`, equal to `+0.981` baseline std units.
+- Delta vs baseline mean + 1 std is `-0.000092`; delta vs baseline best single is `-0.002219`.
+- Compared with PMAD logit-only w0.15 5-run mean `0.520795`, TGGA run01 is higher by `0.001411`.
+- Compared with bounded CGCD 5-run mean `0.515986`, TGGA run01 is higher by `0.006220`.
+- Late-curve caveat: epoch 48 is a late high point, followed by `0.516722` at epoch 49 and `0.489865` at epoch 50. The final-epoch value is poor.
+- TGGA diagnostics: final `tgga_beta_c3=0.035080`, `tgga_beta_c4=0.023389`; c3 gate opens substantially (`gate_c3_mean=0.351956`, `gate_c3_std=0.305273`) while c4 remains conservative (`gate_c4_mean=0.131228`).
+- Interpretation: **promising single-run candidate, not stable yet.** TGGA is the first recent structure-side experiment to nearly reach the baseline mean + 1 std threshold and outperform PMAD's five-run mean in a single run. However, the gain is late and unstable, so it must be repeated before being treated as a main result.
+- Paper boundary: do not claim stable improvement yet. It can be described as a promising single-run structure candidate pending repeat.
+
 ## 2026-05-12 Bounded Class Context Decoder 5-Run Boundary
 
 - `dformerv2_class_context_decoder_bounded_a02_run01` through `run05` completed 50 validation epochs each.
