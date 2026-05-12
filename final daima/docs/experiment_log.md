@@ -41,7 +41,7 @@
 - late-curve check: epoch 41-50 val/mIoU = `0.495870, 0.503853, 0.504099, 0.508151, 0.509840, 0.510360, 0.507238, 0.512152, 0.469468, 0.492633`. The best epoch is epoch 48, then epoch 49 drops sharply.
 - checkpoint: `checkpoints/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1-epoch=47-val_mIoU=0.5122.pt`
 - evidence: `miou_list/dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01.md`
-- Pro discussion prompt: `docs/tgga_noaux_run01_pro_prompt.md`
+- Pro discussion prompt: provided in chat only; no standalone prompt file is kept.
 - conclusion: **negative diagnostic result.** Removing auxiliary CE does not improve stability or performance. It lowers the peak relative to original TGGA and still shows late collapse, so auxiliary CE is not the only instability source; TGGA gate/residual dynamics are likely unsafe in this form.
 - next step: do not claim TGGA no-aux as improvement. Ask Pro to decide whether the only remaining worthwhile diagnostic is weak-c3/c4-only or whether to stop TGGA and return to PMAD/clean-baseline-safe directions.
 
@@ -70,7 +70,7 @@
 - delta vs clean baseline mean + 1 std: `-0.002476`
 - delta vs PMAD logit-only w0.15 5-run mean `0.520795`: `-0.000973`
 - evidence: `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run01.md`, `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_run02.md`, and `miou_list/dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2_summary_run01_02.md`
-- GPT discussion record: `docs/tgga_run02_gpt_discussion.md`
+- GPT discussion record: conclusion summarized here; no standalone discussion file is kept.
 - conclusion: **weak positive but unstable, not a stable improvement.** The two-run best-mIoU mean is above the clean baseline mean but below PMAD w0.15 and below baseline mean + 1 std. Both runs collapse late to final mIoU around `0.49`, so TGGA should not be claimed as a paper improvement.
 - next step: do not blindly prioritize run03. The highest-value diagnostic is `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.
 

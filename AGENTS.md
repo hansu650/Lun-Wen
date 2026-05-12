@@ -127,21 +127,22 @@ MODEL_REGISTRY = {
 16. 每次论文叙事变化后必须更新 `final daima/docs/paper_notes.md`，同步动机、方法主线、消融设计和不能引用的结果边界。
 17. 不要把 deprecated/invalid 记录重新写成有效 baseline，也不要在论文结果中引用。
 18. 当用户要求"总结这次实验结果"或类似实验总结时，必须从真实日志/TensorBoard event 中提取每个 epoch 的 `val/mIoU`，在 `final daima/miou_list/` 下为该实验生成单独的 Markdown 文件，并在 `final daima/docs/experiment_log.md` 中引用该 mIoU 明细文件。
+19. GPT Pro / external GPT / reviewer discussion prompts are temporary conversation artifacts. Do not save them as standalone Markdown files under `final daima/docs/` unless the user explicitly asks; provide them directly in chat instead.
 
 ### 运行实验原则：决策价值导向实验
 
-19. 实验应以假设和决策价值为导向，而不是为了补齐口径、填满表格、让 ablation 看起来完整。每个实验都应回答一个明确假设，或支持一个后续决策。
-20. 不在低边际信息增益的方向上穷举。当可以预见某组实验对性能提升、方向判断或后续改进都没有明显贡献，尤其只是重复确认“不可行 / 无效果”时，就应停止，不做穷举式验证。
+20. 实验应以假设和决策价值为导向，而不是为了补齐口径、填满表格、让 ablation 看起来完整。每个实验都应回答一个明确假设，或支持一个后续决策。
+21. 不在低边际信息增益的方向上穷举。当可以预见某组实验对性能提升、方向判断或后续改进都没有明显贡献，尤其只是重复确认“不可行 / 无效果”时，就应停止，不做穷举式验证。
 
 ### 项目操作规则
 
-21. 修改代码前必须先阅读相关文件，理解现有结构。
-22. 不要随便改 backbone（DFormerv2_S）、dataset/dataloader（data_module.py）、decoder（SimpleFPNDecoder）。
-23. 不要删除 `final daima/checkpoints/`、`final daima/miou_list/`、`final daima/docs/` 里的已有记录。
-24. 新实验必须有独立 run name，checkpoint 目录命名格式：`{model_name}_{run_name}/`。
-25. 新模块尽量注册成单独 model name 或参数开关，不要硬改 baseline 代码。
-26. 每次修改后说明：改了哪些文件、如何运行、如何验证。
-27. 如果只是分析/理解/总结项目，请只读，不要改代码。
+22. 修改代码前必须先阅读相关文件，理解现有结构。
+23. 不要随便改 backbone（DFormerv2_S）、dataset/dataloader（data_module.py）、decoder（SimpleFPNDecoder）。
+24. 不要删除 `final daima/checkpoints/`、`final daima/miou_list/`、`final daima/docs/` 里的已有记录。
+25. 新实验必须有独立 run name，checkpoint 目录命名格式：`{model_name}_{run_name}/`。
+26. 新模块尽量注册成单独 model name 或参数开关，不要硬改 baseline 代码。
+27. 每次修改后说明：改了哪些文件、如何运行、如何验证。
+28. 如果只是分析/理解/总结项目，请只读，不要改代码。
 
 <!-- ARIS:BEGIN -->
 ## ARIS Skill Scope
@@ -157,5 +158,5 @@ When a training run finishes and the user asks to summarize/discuss/commit/push 
 2. Create or update the run file under `final daima/miou_list/`.
 3. Update `final daima/docs/experiment_log.md`.
 4. Update `final daima/docs/paper_notes.md` when the claim boundary changes.
-5. If useful, send the result to a separate GPT/subagent critique and record the discussion under `final daima/docs/`.
+5. If useful, send the result to a separate GPT/subagent critique, but do not save one-off GPT/Pro prompts or discussion transcripts under `final daima/docs/` unless the user explicitly asks. Summarize any durable conclusion into `experiment_log.md` or `paper_notes.md` instead.
 6. Commit and push only relevant code/docs/result files; avoid staging unrelated checkpoint deletions, ignored checkpoint outputs, reference-code folders, or personal workspace files.

@@ -16,7 +16,7 @@ Use this default workflow whenever a training run finishes and the user asks to 
 6. Update `final daima/docs/paper_notes.md` if the paper boundary or claim status changes.
 7. If the result changes active/archived status, update `final daima/docs/ACTIVE_STATUS.md` and the status note in `final daima/README.md`.
 8. Send the result to a separate GPT/subagent discussion when the user asks for GPT discussion or when the result is ambiguous enough to risk overclaiming.
-9. Record the discussion conclusion in `final daima/docs/`.
+9. Do not save one-off GPT/Pro prompts or discussion transcripts as standalone Markdown files unless the user explicitly asks. Put durable conclusions directly into `experiment_log.md` and `paper_notes.md`.
 10. Commit and push only the relevant code/docs/results. Avoid staging unrelated deleted checkpoints, ignored checkpoint outputs, personal notes, reference-code folders, or unrelated untracked files.
 
 ## Interpretation Rules
