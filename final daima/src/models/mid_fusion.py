@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
 from .depth_fft_select import DepthEncoderFFTSelect
-from .decoder import ClassContextFPNDecoder, ContextFPNDecoder, SimpleFPNDecoder
+from .decoder import ClassContextFPNDecoder, ContextFPNDecoder, SGBRFPNDecoder, SimpleFPNDecoder
 from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .encoder import DepthEncoder, RGBEncoder
 from .fft_hilo_enhance import FFTHiLoEnhance
@@ -261,6 +261,69 @@ class LitDFormerV2ClassContextDecoder(BaseLitSeg):
         self.log("train/final_loss", final_loss, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/aux_loss", aux_loss, prog_bar=False, on_step=True, on_epoch=True)
         self.log("train/context_alpha", self.model.decoder.class_context_block.alpha, prog_bar=False, on_step=False, on_epoch=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class DFormerV2SGBRDecoderSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(
+        self,
+        num_classes=40,
+        dformerv2_pretrained=None,
+        sgbr_beta_init: float = 0.05,
+        sgbr_beta_max: float = 0.2,
+    ):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.decoder = SGBRFPNDecoder(
+            self.rgb_encoder.out_channels,
+            out_channels=128,
+            num_classes=num_classes,
+            beta_init=sgbr_beta_init,
+            beta_max=sgbr_beta_max,
+        )
+
+    def forward(self, rgb, depth, return_aux=False):
+        _, _, fused_feats = self.extract_features(rgb, depth)
+        return self.decoder(fused_feats, depth=depth, input_size=rgb.shape[-2:], return_aux=return_aux)
+
+
+class LitDFormerV2SGBRDecoder(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+        sgbr_aux_weight: float = 0.1,
+        sgbr_beta_init: float = 0.05,
+        sgbr_beta_max: float = 0.2,
+    ):
+        if loss_type != "ce":
+            raise ValueError("dformerv2_sgbr_decoder only supports --loss_type ce in the first version")
+        super().__init__(num_classes=num_classes, lr=lr, loss_type=loss_type, dice_weight=dice_weight)
+        self.model = DFormerV2SGBRDecoderSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+            sgbr_beta_init=sgbr_beta_init,
+            sgbr_beta_max=sgbr_beta_max,
+        )
+        self.sgbr_aux_weight = float(sgbr_aux_weight)
+
+    def training_step(self, batch, batch_idx):
+        rgb, depth, label = batch["rgb"], batch["depth"], batch["label"]
+        label = sanitize_labels(label, num_classes=self.hparams.num_classes, ignore_index=255)
+        final_logits, aux_logits = self.model(rgb, depth, return_aux=True)
+        final_loss = self.train_criterion(final_logits, label)
+        aux_loss = F.cross_entropy(aux_logits, label, ignore_index=255)
+        loss = final_loss + self.sgbr_aux_weight * aux_loss
+
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train/final_loss", final_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/aux_loss", aux_loss, prog_bar=False, on_step=True, on_epoch=True)
+        self.log("train/sgbr_beta", self.model.decoder.sgbr_block.beta, prog_bar=False, on_step=False, on_epoch=True)
         return loss
 
     def configure_optimizers(self):

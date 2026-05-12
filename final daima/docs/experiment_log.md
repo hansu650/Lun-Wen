@@ -1,5 +1,40 @@
 # Experiment Log
 
+## 2026-05-12 dformerv2_sgbr_decoder_w010_b005_run01
+
+- model: `dformerv2_sgbr_decoder`
+- method: SGBR-Lite decoder, semantic-uncertainty gated raw-depth Sobel boundary residual.
+- loss: `CE(final_logits, label) + 0.1 * CE(aux_logits, label)`
+- SGBR settings: `sgbr_aux_weight=0.1`, `sgbr_beta_init=0.05`, `sgbr_beta_max=0.2`
+- purpose: test whether decoder-side semantic-guided depth-boundary residual refinement can improve the DFormerv2 mid-fusion baseline without changing encoder or GatedFusion.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SGBRFPNDecoder`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.510159` at epoch `40`
+- last val/mIoU: `0.502075`
+- best val/loss: `1.046134` at epoch `9`
+- last val/loss: `1.279392`
+- mean val/mIoU over last 10 epochs: `0.495112`
+- final train/loss: `0.148493`
+- final train/final_loss: `0.134872`
+- final train/aux_loss: `0.136213`
+- final train/sgbr_beta: `0.075018`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison bounded class-context 5-run mean best: `0.515986`
+- comparison PMAD logit-only w0.15 5-run mean best: `0.520795`
+- delta vs clean baseline mean: `-0.007238` (`-1.477` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.012139`
+- delta vs clean baseline best single: `-0.014266`
+- delta vs bounded class-context mean: `-0.005827`
+- delta vs PMAD w0.15 mean: `-0.010636`
+- checkpoint: `checkpoints/dformerv2_sgbr_decoder_w010_b005_run01/dformerv2_sgbr_decoder-epoch=39-val_mIoU=0.5102.pt`
+- evidence: `miou_list/dformerv2_sgbr_decoder_w010_b005_run01.md`
+- conclusion: **negative result.** SGBR-Lite is clearly below the clean baseline mean and below previous decoder/KD candidates. The bounded residual did not run away (`sgbr_beta` ended at `0.075018`), so the failure mode is not instability but insufficient useful signal from the semantic-uncertainty/depth-edge residual branch.
+
 ## 2026-05-12 dformerv2_class_context_decoder_bounded_a02 run01-run05 summary
 
 - model: `dformerv2_class_context_decoder`

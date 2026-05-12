@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-12 SGBR-Lite Decoder Minimal Implementation
+
+- Added `SGBRBlock` and `SGBRFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2SGBRDecoderSegmentor` and `LitDFormerV2SGBRDecoder` in `src/models/mid_fusion.py`.
+- Registered new model name `dformerv2_sgbr_decoder` in `train.py`.
+- Added CLI args: `--sgbr_aux_weight`, `--sgbr_beta_init`, and `--sgbr_beta_max`.
+- The new model keeps `DFormerv2_S + DepthEncoder + GatedFusion` unchanged and replaces only the decoder with a semantic-guided boundary residual decoder.
+- Decoder flow: fused features -> FPN `p1` -> auxiliary logits -> prediction uncertainty -> raw-depth Sobel edge -> gated residual refinement -> final logits.
+- Residual strength is bounded as `beta = beta_max * sigmoid(raw_beta)`, with first planned setting `beta_init=0.05`, `beta_max=0.2`.
+- Training loss for the first version is `CE(final_logits, label) + sgbr_aux_weight * CE(aux_logits, label)`.
+- The first version supports only `--loss_type ce`; it does not combine with DGBF, CGPC, PMAD, teacher KD, FFT, CGCD, or feature-level contrastive losses.
+- Did not modify `DFormerV2MidFusionSegmentor.forward()`, `GatedFusion`, DFormerV2 attention, `BaseLitSeg`, PrimKD, teacher models, DGBF, CGPC, dataset, or data module.
+
 ## 2026-05-12 Class Context Decoder Bounded Alpha Update
 
 - Updated `ClassContextBlock` in `src/models/decoder.py` to use bounded residual strength for class-context refinement.
