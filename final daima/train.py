@@ -197,6 +197,7 @@ def build_trainer(args, callbacks):
         callbacks=list(callbacks),
         default_root_dir=args.checkpoint_dir,
         log_every_n_steps=10,
+        enable_progress_bar=False,
     )
 
 
