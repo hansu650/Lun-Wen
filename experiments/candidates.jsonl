@@ -1,0 +1,1 @@
+{"record_type":"schema","fields":["candidate_id","source","hypothesis","proposed_change_scope","expected_signal","risk","forbidden_change_check","evidence_or_reference","status","notes"]}

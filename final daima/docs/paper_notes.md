@@ -1,5 +1,77 @@
 # Paper Notes
 
+## 2026-05-13 TGGA Weak-C3 + C4 Boundary
+
+- `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01` completed 50 validation epochs.
+- Setting: TGGA weak c3 with `beta_init=0.01`, `beta_max=0.05`, `gate_bias_init=-3.0`, plus c4 with `beta_init=0.02`, `beta_max=0.1`, `gate_bias_init=-2.0`, aux CE weight `0.03` on both TGGA heads.
+- Best val/mIoU is `0.518253` at epoch 43; last val/mIoU is `0.514908`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- R004 TGGA c4-only best is `0.522849`.
+- Delta vs clean baseline mean is `+0.000856`, equal to `+0.175` baseline std units.
+- Delta vs baseline mean + 1 std is `-0.004045`; delta vs PMAD mean is `-0.002542`; delta vs R004 c4-only is `-0.004596`.
+- Diagnostic: final c3 gate opens substantially despite the weaker setup (`gate_c3_mean=0.293138`, `gate_c3_std=0.331622`), while c4 stays conservative (`gate_c4_mean=0.131140`, `gate_c4_std=0.012837`).
+- Interpretation: **not a useful improvement.** Weak-c3 is only barely above the clean baseline mean and is clearly worse than c4-only TGGA.
+- Paper boundary: do not cite weak-c3 TGGA as an improvement. It can be cited only as a negative TGGA diagnostic showing that reintroducing c3, even conservatively, does not recover R004's stronger signal.
+- Strategic implication: pause the TGGA branch for external review. The current durable lesson is that c4-only is the safer TGGA signal and c3 remains risky.
+
+## 2026-05-13 TGGA C4-Only Diagnostic Boundary
+
+- `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01` completed 50 validation epochs.
+- Setting: TGGA only on c4 with `beta_c4_init=0.02`, `aux_weight=0.03`, detached semantic cue, `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- Best val/mIoU is `0.522849` at epoch 42; last val/mIoU is `0.509320`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `+0.005452`, equal to `+1.112` baseline std units.
+- Delta vs clean baseline mean + 1 std is `+0.000551`; delta vs clean baseline best single is `-0.001576`.
+- Delta vs PMAD w0.15/T4 mean is `+0.002054`.
+- Diagnostic: final `gate_c4_mean=0.130742`, `gate_c4_std=0.014394`, and `tgga_beta_c4=0.022874`; the c4 gate is conservative but gradually opens.
+- Late-curve caveat remains: best epoch 42 falls to final `0.509320`, a best-to-last drop of `0.013529`.
+- Interpretation: **strong single-run diagnostic signal, not a success claim.** Removing c3 improves the TGGA diagnostic relative to recent failed loop runs and slightly exceeds baseline mean + 1 std, but it does not reach `0.53` and does not beat the best single clean baseline.
+- Paper boundary: do not cite c4-only TGGA as a stable improvement. It can be cited only as a promising diagnostic showing that c4-level semantic/geometry calibration is safer than the original c3/c4 high-resolution gate.
+- Strategic implication: the next TGGA test should be a narrow follow-up around c4-safe calibration, not a repeat of failed PMAD filtering or the R002 frequency-aware decoder.
+
+## 2026-05-13 Correct-and-Entropy-Selective PMAD Boundary
+
+- `dformerv2_primkd_correct_entropy_w015_t4_h025_run01` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, normalized teacher entropy threshold `0.25`, and KD only where `teacher_argmax == label` during training.
+- Best val/mIoU is `0.516597` at epoch 50; last val/mIoU is also `0.516597`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.000800`, equal to `-0.163` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.004198`.
+- Diagnostic: final `kd_mask_ratio` is `0.910636`, much more selective than R001's `0.998182`; final `kd_teacher_selected_acc` is `1.000000`.
+- Interpretation: **near-baseline but negative result.** The trust gate is meaningful, but it does not improve over the clean baseline or the original PMAD repeated mean.
+- Paper boundary: do not cite `dformerv2_primkd_correct_entropy` as an improvement. It can be cited only as a negative PMAD filtering ablation showing that removing teacher-wrong, high-entropy pixels does not preserve the original PMAD gain.
+- Strategic implication: stricter PMAD pixel filtering is unlikely to be the path to `>=0.53`; future PMAD work should require a different mechanism, not another small threshold variant.
+
+## 2026-05-13 Frequency-Aware FPN Decoder Boundary
+
+- `dformerv2_freqfpn_decoder_run01` completed 50 validation epochs.
+- Setting: same DFormerv2_S, DepthEncoder, and GatedFusion baseline path, but `SimpleFPNDecoder` is replaced by a frequency-aware top-down FPN decoder in this separate model entry.
+- Best val/mIoU is `0.516915` at epoch 44; last val/mIoU is `0.486524`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.000482`, equal to `-0.098` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.003880`.
+- Interpretation: **neutral/negative result.** The decoder nearly matches the baseline mean at its best checkpoint but does not improve it and has a large late drop.
+- Paper boundary: do not cite `dformerv2_freqfpn_decoder` as an improvement. It can be cited only as a neutral/negative decoder ablation showing that this FreqFusion-style top-down approximation is insufficient.
+- Strategic implication: do not repeat this exact decoder unchanged; the next loop should pivot to a different hypothesis rather than further tune this decoder without a clearer diagnostic.
+
+## 2026-05-13 PMAD Boundary/Confidence-Selective KD Boundary
+
+- `dformerv2_primkd_boundary_conf_w015_t4_run01` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, confidence threshold `0.40`, confidence power `1.5`, and semantic-boundary boost `1.0`.
+- Best val/mIoU is `0.511646` at epoch 50; last val/mIoU is also `0.511646`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- Delta vs clean baseline mean is `-0.005751`, equal to `-1.173` baseline std units.
+- Delta vs PMAD w0.15/T4 mean is `-0.009149`.
+- Diagnostic: `kd_mask_ratio` stayed near `0.998` and final `kd_mask_ratio` is `0.998182`; the threshold `0.40` did not meaningfully filter uncertain pixels.
+- Interpretation: **negative result.** This exact boundary/confidence KD setting weakens PMAD rather than stabilizing it.
+- Paper boundary: do not cite `dformerv2_primkd_boundary_conf` as an improvement. It can be cited only as a negative PMAD refinement showing that weak confidence weighting plus boundary boosting does not improve the repeated PMAD signal.
+- Strategic implication: if continuing PMAD, the next test must be genuinely selective, not a near-all-pixel mask; otherwise the loop should pivot to another high-value direction.
+
 ## 2026-05-12 TGGA No-Aux Run01 Boundary
 
 - `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01` completed 50 validation epochs.

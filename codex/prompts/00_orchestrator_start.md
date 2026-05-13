@@ -9,6 +9,7 @@ Input files:
 - `reports/EXPERIMENT_LOG.md`
 - `metrics/leaderboard.csv`
 - `metrics/runs.jsonl`
+- `experiments/candidates.jsonl`
 - `experiments/queue.jsonl`
 - `experiments/completed.jsonl`
 - `experiments/rejected.jsonl`
@@ -17,6 +18,7 @@ Input files:
 
 Output files:
 - `experiments/queue.jsonl`
+- `experiments/rejected.jsonl`
 - `reports/EXPERIMENT_LOG.md`
 
 Forbidden:
@@ -28,6 +30,7 @@ Forbidden:
 Success criteria:
 - Select exactly one next experiment for an Experimenter, or stop if `val/mIoU >= 0.53` has already been proven.
 - The selected experiment tests one main hypothesis and preserves all forbidden constraints.
+- If there are no useful candidates yet, do a short Literature/Idea pass yourself, append candidates to `experiments/candidates.jsonl`, then approve exactly one candidate. Do not stop only because the candidate file is empty.
 
 End condition:
 - Write a short decision summary and the exact queue record or state that no experiment is approved.

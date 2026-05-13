@@ -12,7 +12,7 @@ Input files:
 - Read-only `ref_codes/` when useful
 
 Output files:
-- Candidate records for `experiments/queue.jsonl`
+- Candidate records for `experiments/candidates.jsonl`
 - Optional short rationale in `reports/EXPERIMENT_LOG.md` if Orchestrator asks
 
 Forbidden:

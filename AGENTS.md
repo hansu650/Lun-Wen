@@ -167,6 +167,8 @@ Goal: raise NYUDepthV2 validation mIoU to `>= 0.53` using the active project at 
 
 Current setup phase: orchestration and file initialization only. Do not run full training during this setup phase.
 
+Required experiment environment: later training and metric extraction must use `qintian-rgbd` (`conda activate qintian-rgbd`) or the explicit Python path `D:\Anaconda\envs\qintian-rgbd\python.exe`.
+
 Hard forbidden changes unless the user explicitly changes the experiment contract:
 
 - Do not modify dataset split.
@@ -194,5 +196,5 @@ Coordination files:
 - `codex/ORCHESTRATION.md` is the shared operating manual.
 - `codex/roles/` defines role responsibilities.
 - `codex/prompts/` contains prompts to copy into separate Codex conversations.
-- `experiments/queue.jsonl`, `experiments/completed.jsonl`, and `experiments/rejected.jsonl` coordinate work.
+- `experiments/candidates.jsonl`, `experiments/queue.jsonl`, `experiments/completed.jsonl`, and `experiments/rejected.jsonl` coordinate work.
 - `reports/EXPERIMENT_LOG.md`, `metrics/runs.jsonl`, and `metrics/leaderboard.csv` are the durable result ledger.

@@ -4,6 +4,8 @@ This document defines the Goal-Driven experiment loop for the local Windows work
 
 Current phase: architecture and file initialization only. Do not train, edit model code, edit training parameters, edit data augmentation, or change evaluation behavior in this phase.
 
+For the step-by-step operating manual, see `codex/WINDOW_OPERATION_GUIDE.md`.
+
 ## Goal
 
 Raise NYUDepthV2 validation mIoU to `>= 0.53`.
@@ -93,12 +95,27 @@ Weaknesses:
 
 ## Recommendation
 
-Start with Scheme A.
+Start daily work with the one-window bootstrap flow from `codex/prompts/05_single_window_bootstrap.md`.
 
-Reason: local full training is long-running and GPU-bound. Independent worktrees/branches give the best recovery story, clearer ownership, and lower contamination risk. Scheme B can still be used inside one planning session, but the default long-running experiment loop should be Scheme A.
+Reason: several role-only windows can stop early when `experiments/candidates.jsonl` or `experiments/queue.jsonl` is empty. A single bootstrap window can perform Literature/Idea, Orchestrator, and Experimenter dry-check steps in sequence without starting training. It keeps momentum while the project is still choosing the next hypothesis.
+
+Use Scheme A when a real full train starts or when reviewer/reproducer sign-off matters. Local full training is long-running and GPU-bound, so independent worktrees/branches still give the best recovery story, clearer ownership, and lower contamination risk for actual experiment execution.
+
+Environment note for all training or metric extraction commands:
+
+```powershell
+conda activate qintian-rgbd
+```
+
+If `conda activate` is unavailable in the shell, call the environment Python directly:
+
+```powershell
+& "D:\Anaconda\envs\qintian-rgbd\python.exe" <script>.py
+```
 
 ## Shared File Contract
 
+- `experiments/candidates.jsonl`: candidate ideas proposed by Literature/Idea agents.
 - `experiments/queue.jsonl`: proposed or approved experiments waiting to run.
 - `experiments/completed.jsonl`: completed experiments after reviewer/reproducer resolution.
 - `experiments/rejected.jsonl`: ideas rejected before training or rejected after review.
@@ -108,13 +125,20 @@ Reason: local full training is long-running and GPU-bound. Independent worktrees
 
 ## Startup Order
 
-1. Orchestrator: read `AGENTS.md`, this file, `metrics/`, `experiments/`, and existing `final daima/docs/`.
-2. Literature/Idea: propose candidates into `experiments/queue.jsonl`.
-3. Orchestrator: approve exactly one next experiment.
-4. Experimenter: create a feature branch/worktree and execute one approved round.
-5. Reviewer: inspect code changes and report on the experiment branch.
-6. Reproducer: verify command, evidence paths, and metric extraction.
-7. Orchestrator: update priority and stop if `val/mIoU >= 0.53`.
+Bootstrap order:
+
+1. One main Codex window reads `codex/prompts/05_single_window_bootstrap.md`.
+2. If candidates are empty, it performs a Literature/Idea pass and writes candidates.
+3. It then acts as Orchestrator, approves exactly one next experiment, and appends it to `experiments/queue.jsonl`.
+4. It performs only an Experimenter dry-check: planned files, forbidden-change audit, branch/worktree plan, command plan, and environment check.
+5. It stops and waits for the user before any model edit or full train.
+
+Full experiment order:
+
+1. Experimenter creates a feature branch/worktree and executes one approved round.
+2. Reviewer inspects code changes and report on the experiment branch.
+3. Reproducer verifies command, evidence paths, and metric extraction.
+4. Orchestrator updates priority and stops if `val/mIoU >= 0.53`.
 
 Parallelism:
 

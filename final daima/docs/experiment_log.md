@@ -1,5 +1,199 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01
+
+- model: `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`
+- method: TGGA diagnostic with weak c3 plus c4 semantic/geometry gates.
+- purpose: test whether R004's c4-only calibration signal can be improved by reintroducing a conservative c3 detail path without the original TGGA c3/c4 instability.
+- architecture: `DFormerv2_S + TGGA(weak c3, c4) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- TGGA settings: c3 `beta_init=0.01`, `beta_max=0.05`, `gate_bias_init=-3.0`; c4 `beta_init=0.02`, `beta_max=0.1`, `gate_bias_init=-2.0`; aux CE weight `0.03` on c3 and c4; detached semantic cue.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.518253` at epoch `43`
+- last val/mIoU: `0.514908`
+- last-5 mean val/mIoU: `0.508991`
+- last-10 mean val/mIoU: `0.507070`
+- best val/loss: `1.016042` at epoch `13`
+- final train/loss: `0.150705`
+- final train/main_loss: `0.130934`
+- final train/tgga_aux_loss_c3: `0.297266`
+- final train/tgga_aux_loss_c4: `0.361774`
+- final train/tgga_beta_c3: `0.020015`
+- final train/tgga_beta_c4: `0.022356`
+- final train/tgga_gate_c3_mean: `0.293138`
+- final train/tgga_gate_c3_std: `0.331622`
+- final train/tgga_gate_c4_mean: `0.131140`
+- final train/tgga_gate_c4_std: `0.012837`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison R004 TGGA c4-only best: `0.522849`
+- delta vs clean baseline mean: `+0.000856` (`+0.175` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.004045`
+- delta vs clean baseline best single: `-0.006172`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.002542`
+- delta vs R004 TGGA c4-only: `-0.004596`
+- best-to-last delta: `-0.003345`
+- checkpoint: `checkpoints/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1-epoch=42-val_mIoU=0.5183.pt`
+- TensorBoard event: `checkpoints/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01/lightning_logs/version_0/events.out.tfevents.1778626367.Administrator.41400.0`
+- evidence: `miou_list/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`; after metric/checkpoint writing, Rich progress teardown raised a Windows GBK `UnicodeEncodeError`.
+- conclusion: **weak positive versus baseline mean, negative versus the active TGGA decision.** Weak-c3 does not improve on R004 c4-only and does not reach baseline mean + 1 std, PMAD mean, or the `0.53` goal.
+- next step: do not continue this weak-c3 variant unchanged. Treat R004 c4-only as the better TGGA diagnostic and pause for external review before selecting another branch.
+
+## 2026-05-13 dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01
+
+- model: `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
+- method: TGGA diagnostic with only the c4 semantic/geometry gate active.
+- purpose: test whether removing the c3 high-resolution TGGA gate/residual path preserves the original TGGA c3/c4 high-epoch signal while reducing late collapse risk.
+- architecture: `DFormerv2_S + TGGA(c4 only) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- TGGA settings: `beta_c4_init=0.02`, `aux_weight=0.03`, detached semantic cue, no c3 TGGA.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.522849` at epoch `42`
+- last val/mIoU: `0.509320`
+- last-5 mean val/mIoU: `0.505936`
+- last-10 mean val/mIoU: `0.510887`
+- best val/loss: `1.003732` at epoch `12`
+- final train/loss: `0.146967`
+- final train/main_loss: `0.135671`
+- final train/tgga_aux_loss_c4: `0.376528`
+- final train/tgga_beta_c4: `0.022874`
+- final train/tgga_gate_c4_mean: `0.130742`
+- final train/tgga_gate_c4_std: `0.014394`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison original TGGA c3/c4 run01 best: `0.522206`
+- comparison original TGGA c3/c4 run01-run02 mean best: `0.519822`
+- delta vs clean baseline mean: `+0.005452` (`+1.112` baseline std units)
+- delta vs clean baseline mean + 1 std: `+0.000551`
+- delta vs clean baseline best single: `-0.001576`
+- delta vs PMAD w0.15/T4 five-run mean: `+0.002054`
+- delta vs original TGGA c3/c4 run01: `+0.000643`
+- best-to-last delta: `-0.013529`
+- checkpoint: `checkpoints/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1-epoch=41-val_mIoU=0.5228.pt`
+- TensorBoard event: `checkpoints/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01/lightning_logs/version_0/events.out.tfevents.1778620555.Administrator.23676.0`
+- evidence: `miou_list/dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **strong diagnostic signal but not goal success.** C4-only TGGA is the strongest orchestration-loop run so far, crosses the clean baseline mean + 1 std threshold, and beats PMAD w0.15/T4 mean in this single run, but it remains below the `0.53` target and below the best single clean baseline run.
+- next step: do not claim success. Because c4-only TGGA is safer than the original c3/c4 gate but still drops after its best epoch, the next round should test one narrow follow-up that uses this c4 signal without repeating failed PMAD filtering or decoder frequency fusion.
+
+## 2026-05-13 dformerv2_primkd_correct_entropy_w015_t4_h025_run01
+
+- model: `dformerv2_primkd_correct_entropy`
+- method: PMAD / PrimKD logit-only KD with a correct-and-low-entropy teacher trust gate.
+- purpose: test whether filtering KD to teacher-correct, low-entropy training pixels can preserve PMAD w0.15/T4 gains while avoiding harmful teacher transfer.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`; frozen geometry-primary teacher `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`.
+- loss: `CE(student, label) + 0.15 * gated_KL(student, teacher, T=4.0)`.
+- selector settings: sanitized-label correctness `teacher_argmax == label`, normalized teacher entropy `<=0.25`, selected-pixel KL normalized by valid-pixel count.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.516597` at epoch `50`
+- last val/mIoU: `0.516597`
+- last-5 mean val/mIoU: `0.505977`
+- last-10 mean val/mIoU: `0.500502`
+- best val/loss: `1.079330` at epoch `8`
+- final train/loss: `0.207509`
+- final train/ce_loss: `0.150859`
+- final train/kd_loss: `0.377668`
+- final train/kd_mask_ratio: `0.910636`
+- final train/kd_entropy_mean: `0.047532`
+- final train/kd_entropy_selected_mean: `0.030076`
+- final train/kd_teacher_valid_acc: `0.932230`
+- final train/kd_teacher_selected_acc: `1.000000`
+- final train/kd_selected_kl: `0.414943`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- delta vs clean baseline mean: `-0.000800` (`-0.163` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.005701`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.004198`
+- checkpoint: `checkpoints/dformerv2_primkd_correct_entropy_w015_t4_h025_run01/dformerv2_primkd_correct_entropy-epoch=49-val_mIoU=0.5166.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_correct_entropy_w015_t4_h025_run01/lightning_logs/version_0/events.out.tfevents.1778613991.Administrator.34044.0`
+- evidence: `miou_list/dformerv2_primkd_correct_entropy_w015_t4_h025_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **near-baseline but negative result.** The selector is meaningfully selective compared with R001 and selected teacher pixels are label-correct, but the run still peaks below the clean baseline mean and below PMAD w0.15/T4 mean.
+- next step: do not repeat this exact correct-and-entropy gate. This weakens the idea that PMAD can be improved simply by removing teacher-wrong pixels; the next round should move away from stricter PMAD filtering unless a clearly different KD mechanism is proposed.
+
+## 2026-05-13 dformerv2_freqfpn_decoder_run01
+
+- model: `dformerv2_freqfpn_decoder`
+- method: decoder-side frequency-aware FPN top-down fusion.
+- purpose: test whether low/high-frequency correction inside the decoder top-down path can reduce boundary displacement and frequency mismatch without changing encoder, GatedFusion, loss, data, or training recipe.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + FrequencyAwareFPNDecoder`.
+- decoder change: `SimpleFPNDecoder` baseline remains unchanged; this model replaces only top-down FPN additions with `FrequencyAwareTopDownFuse`.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.516915` at epoch `44`
+- last val/mIoU: `0.486524`
+- last-5 mean val/mIoU: `0.498475`
+- last-10 mean val/mIoU: `0.504222`
+- best val/loss: `1.022916` at epoch `9`
+- final train/loss: `0.174152`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- delta vs clean baseline mean: `-0.000482` (`-0.098` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.005383`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.003880`
+- checkpoint: `checkpoints/dformerv2_freqfpn_decoder_run01/dformerv2_freqfpn_decoder-epoch=43-val_mIoU=0.5169.pt`
+- TensorBoard event: `checkpoints/dformerv2_freqfpn_decoder_run01/lightning_logs/version_0/events.out.tfevents.1778607762.Administrator.22656.0`
+- evidence: `miou_list/dformerv2_freqfpn_decoder_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`.
+- conclusion: **neutral/negative result.** Decoder-side frequency-aware top-down fusion peaks very close to the clean baseline mean but does not exceed it, does not approach the `0.53` target, and shows late instability after epoch 47.
+- next step: do not repeat this exact decoder unchanged. Prefer the next round to target a different high-value hypothesis with clearer room above the baseline mean.
+
+## 2026-05-13 dformerv2_primkd_boundary_conf_w015_t4_run01
+
+- model: `dformerv2_primkd_boundary_conf`
+- method: PMAD / PrimKD logit-only KD with deterministic confidence weighting and semantic-boundary boosting.
+- purpose: test whether boundary/confidence-selective KD can preserve the positive `dformerv2_primkd_logit_only` w0.15/T4 signal while reducing harmful teacher transfer.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`; frozen geometry-primary teacher `DFormerv2_S(rgb, real_depth) + SimpleFPNDecoder`.
+- loss: `CE(student, label) + 0.15 * selective_KL(student, teacher, T=4.0)`.
+- selective KD settings: confidence threshold `0.40`, confidence power `1.5`, boundary boost `1.0`.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.511646` at epoch `50`
+- last val/mIoU: `0.511646`
+- last-5 mean val/mIoU: `0.507105`
+- last-10 mean val/mIoU: `0.502303`
+- best val/loss: `1.059111`
+- final train/loss: `0.210573`
+- final train/ce_loss: `0.151268`
+- final train/kd_loss: `0.395367`
+- final train/kd_mask_ratio: `0.998182`
+- final train/kd_boundary_ratio: `0.061130`
+- final train/kd_conf_mean: `0.938347`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison PMAD logit-only w0.15/T4 five-run mean best: `0.520795`
+- delta vs clean baseline mean: `-0.005751` (`-1.173` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.010652`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.009149`
+- checkpoint: `checkpoints/dformerv2_primkd_boundary_conf_w015_t4_run01/dformerv2_primkd_boundary_conf-epoch=49-val_mIoU=0.5116.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_boundary_conf_w015_t4_run01/lightning_logs/version_0/events.out.tfevents.1778600707.Administrator.4516.0`
+- evidence: `miou_list/dformerv2_primkd_boundary_conf_w015_t4_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`; after metric/checkpoint writing, Rich progress teardown raised a Windows GBK `UnicodeEncodeError`.
+- conclusion: **negative result.** The run is below the clean baseline mean and below the existing PMAD w0.15/T4 repeated mean. The confidence threshold `0.40` was effectively non-selective because `kd_mask_ratio` stayed near `0.998`, so this setting mainly tested confidence-weighted and boundary-boosted KD rather than true uncertain-pixel filtering.
+- next step: do not repeat this exact setting. If PMAD is revisited, use a genuinely selective confidence threshold or entropy gate; otherwise prioritize a different high-decision-value direction such as decoder-side frequency fusion.
+
 ## 2026-05-12 dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1_run01
 
 - model: `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`

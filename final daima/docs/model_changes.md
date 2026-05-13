@@ -1,5 +1,57 @@
 # Model Changes
 
+## 2026-05-13 R001-R005 Pause Cleanup / feiqi Archive
+
+- Paused the goal-driven loop after R005 and cleaned active code back to the `main` registry/state.
+- Archived R001-R003 failed implementation snapshots under `feiqi/experiments_20260513/`:
+  - `primkd_failed_variants_r001_r003.py` for PMAD boundary/confidence KD and correct-and-entropy KD.
+  - `decoder_with_r002_freqfpn.py` and `mid_fusion_with_r002_freqfpn.py` for the frequency-aware FPN decoder path.
+  - `train_registry_r001_r005_before_cleanup.py` as the pre-cleanup registry snapshot.
+- Active `train.py`, `src/models/decoder.py`, `src/models/mid_fusion.py`, and `src/models/primkd_lit.py` were restored to the `main` code state. This keeps the clean baseline, existing TGGA diagnostics, geometry-primary teacher, and PMAD logit-only active while removing R001-R003 failed variants from the active training path.
+- No dataset, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, checkpoint artifact, dataset, pretrained weight, or TensorBoard event file was changed.
+- Result boundary: R004 c4-only remains the strongest loop signal (`0.522849`) but is below `0.53`; R005 weak-c3 (`0.518253`) does not improve R004.
+
+## 2026-05-13 R003 Correct-and-Entropy-Selective PMAD KD
+
+- Implemented `dformerv2_primkd_correct_entropy` as a separate model name.
+- Added `LitDFormerV2PrimKDCorrectEntropy` in `src/models/primkd_lit.py`; it inherits the existing PMAD student/teacher setup from `LitDFormerV2PrimKD`.
+- The student remains `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- The frozen teacher remains `DFormerV2GeometryPrimaryTeacherSegmentor`; teacher checkpoint loading and `export_state_dict()` behavior are unchanged.
+- Training loss remains `CE(student, label) + kd_weight * KL(student, teacher)`, but KL is applied only to valid training pixels where the teacher prediction equals the sanitized label and normalized teacher entropy is `<= --kd_entropy_threshold`.
+- The R003 threshold is `--kd_entropy_threshold 0.25`; selected-pixel KL is normalized by the number of valid pixels, so selecting fewer pixels reduces total KD strength rather than amplifying selected pixels.
+- Added training logs: `train/kd_mask_ratio`, `train/kd_entropy_mean`, `train/kd_entropy_selected_mean`, `train/kd_teacher_valid_acc`, `train/kd_teacher_selected_acc`, and `train/kd_selected_kl`.
+- Registered `dformerv2_primkd_correct_entropy` in `train.py` and added `--kd_entropy_threshold`; `dformerv2_primkd_logit_only` and `dformerv2_primkd_boundary_conf` remain unchanged.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py` and `src/models/primkd_lit.py`; `train.py --help` lists the model and arg; a real one-batch smoke check gave `kd_mask_ratio=0.895539`, teacher trainable params `0`, and optimizer `AdamW(lr=6e-5, weight_decay=0.01)`.
+- Result note for `dformerv2_primkd_correct_entropy_w015_t4_h025_run01`: best val/mIoU `0.516597`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this model.
+
+## 2026-05-13 R002 Frequency-Aware FPN Decoder
+
+- Implemented `dformerv2_freqfpn_decoder` as a separate model name.
+- Added `FrequencyAwareTopDownFuse` and `FrequencyAwareFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2FreqFPNDecoderSegmentor` and `LitDFormerV2FreqFPNDecoder` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_freqfpn_decoder` in `train.py`; the clean `dformerv2_mid_fusion` path and `SimpleFPNDecoder` remain unchanged.
+- The model keeps the same encoder/fusion path as the clean baseline: `DFormerV2_S + ResNet-18 DepthEncoder + GatedFusion`.
+- The only structural change is decoder top-down fusion: each top-down step uses low-frequency residual correction from 5x5 average low-pass features and high-frequency residual correction from 3x3 high-pass features.
+- Correction projections are zero-initialized, so the initial `FrequencyAwareTopDownFuse` output is exactly `hr_feat + bilinear(lr_feat)` before training.
+- This is not PMAD/KD, not an auxiliary loss, not boundary loss, not FADC, not an imported FreqFusion/CARAFE module, and not a backbone or GatedFusion change.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py`, `src/models/decoder.py`, and `src/models/mid_fusion.py`; `train.py --help` lists the model; a tensor-level fuse check showed initial identity delta `0.0`; decoder smoke output shape was `(1, 40, 480, 640)`.
+- Result note for `dformerv2_freqfpn_decoder_run01`: best val/mIoU `0.516915`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this decoder.
+
+## 2026-05-12 R001 PMAD Boundary/Confidence-Selective KD
+
+- Implemented `dformerv2_primkd_boundary_conf` as a separate model name.
+- Added `LitDFormerV2PrimKDBoundaryConf` in `src/models/primkd_lit.py`; it inherits the existing PMAD logit-only student/teacher setup from `LitDFormerV2PrimKD`.
+- The student remains `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- The frozen teacher remains `DFormerV2GeometryPrimaryTeacherSegmentor`; teacher checkpoint loading and `export_state_dict()` behavior are unchanged.
+- Training loss remains `CE(student, label) + kd_weight * KL(student, teacher)`, but the KL term is now weighted by a deterministic trust mask from teacher confidence and ground-truth semantic boundary pixels.
+- Boundary mask is computed only inside the training loss from sanitized labels; it does not change dataset split, loader behavior, augmentation, validation, test, metric, or inference.
+- Registered `dformerv2_primkd_boundary_conf` in `train.py`; `dformerv2_primkd_logit_only` remains unchanged.
+- Fixed recipe remains external to the model: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`.
+- Verification: `py_compile` passed for `train.py` and `src/models/primkd_lit.py`; a small tensor-level `selective_kl_loss` check returned finite loss and logging stats.
+- Result note for `dformerv2_primkd_boundary_conf_w015_t4_run01`: best val/mIoU `0.511646`, below the clean baseline mean `0.517397` and below PMAD w0.15/T4 mean `0.520795`; do not promote this model.
+
 ## 2026-05-12 TGGA C3/C4 No-Aux Semantic-Gradient Diagnostic
 
 - Implemented `dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1`.
