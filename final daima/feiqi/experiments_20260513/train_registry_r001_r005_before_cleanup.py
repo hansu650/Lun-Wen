@@ -29,8 +29,8 @@ from lightning.pytorch.callbacks import Callback, EarlyStopping
 
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
-from src.models.mid_fusion import LitDFormerV2MidFusion, LitMidFusion
-from src.models.primkd_lit import LitDFormerV2PrimKD
+from src.models.mid_fusion import LitDFormerV2FreqFPNDecoder, LitDFormerV2MidFusion, LitMidFusion
+from src.models.primkd_lit import LitDFormerV2PrimKD, LitDFormerV2PrimKDBoundaryConf, LitDFormerV2PrimKDCorrectEntropy
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
 from src.models.tgga_adapter import (
     LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
@@ -42,12 +42,15 @@ from src.models.tgga_adapter import (
 
 ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_freqfpn_decoder": LitDFormerV2FreqFPNDecoder,
     "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2": LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
     "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1": LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
     "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1": LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
+    "dformerv2_primkd_boundary_conf": LitDFormerV2PrimKDBoundaryConf,
+    "dformerv2_primkd_correct_entropy": LitDFormerV2PrimKDCorrectEntropy,
 }
 
 LEGACY_MODEL_REGISTRY = {
@@ -118,6 +121,7 @@ def build_parser():
     parser.add_argument("--teacher_ckpt", type=str, default=None)
     parser.add_argument("--kd_weight", type=float, default=0.2)
     parser.add_argument("--kd_temperature", type=float, default=4.0)
+    parser.add_argument("--kd_entropy_threshold", type=float, default=0.25)
     parser.add_argument("--save_student_only", action="store_true")
     return parser
 
@@ -141,7 +145,14 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_primkd_logit_only":
+    if args.model in {
+        "dformerv2_primkd_logit_only",
+        "dformerv2_primkd_boundary_conf",
+        "dformerv2_primkd_correct_entropy",
+    }:
+        kwargs = {}
+        if args.model == "dformerv2_primkd_correct_entropy":
+            kwargs["kd_entropy_threshold"] = args.kd_entropy_threshold
         return model_cls(
             num_classes=args.num_classes,
             lr=args.lr,
@@ -150,9 +161,11 @@ def build_model(args):
             kd_weight=args.kd_weight,
             kd_temperature=args.kd_temperature,
             loss_type=args.loss_type,
+            **kwargs,
         )
     if args.model in {
         "dformerv2_mid_fusion",
+        "dformerv2_freqfpn_decoder",
         "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2",
         "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",

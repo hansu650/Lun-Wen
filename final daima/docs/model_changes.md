@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-13 R001-R005 Pause Cleanup / feiqi Archive
+
+- Paused the goal-driven loop after R005 and cleaned active code back to the `main` registry/state.
+- Archived R001-R003 failed implementation snapshots under `feiqi/experiments_20260513/`:
+  - `primkd_failed_variants_r001_r003.py` for PMAD boundary/confidence KD and correct-and-entropy KD.
+  - `decoder_with_r002_freqfpn.py` and `mid_fusion_with_r002_freqfpn.py` for the frequency-aware FPN decoder path.
+  - `train_registry_r001_r005_before_cleanup.py` as the pre-cleanup registry snapshot.
+- Active `train.py`, `src/models/decoder.py`, `src/models/mid_fusion.py`, and `src/models/primkd_lit.py` were restored to the `main` code state. This keeps the clean baseline, existing TGGA diagnostics, geometry-primary teacher, and PMAD logit-only active while removing R001-R003 failed variants from the active training path.
+- No dataset, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, checkpoint artifact, dataset, pretrained weight, or TensorBoard event file was changed.
+- Result boundary: R004 c4-only remains the strongest loop signal (`0.522849`) but is below `0.53`; R005 weak-c3 (`0.518253`) does not improve R004.
+
 ## 2026-05-13 R003 Correct-and-Entropy-Selective PMAD KD
 
 - Implemented `dformerv2_primkd_correct_entropy` as a separate model name.

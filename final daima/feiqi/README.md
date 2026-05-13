@@ -13,18 +13,25 @@ Archived after cleanup:
 - FFT freq enhance / FFT HiLo: unstable.
 - Depth FFT select: negative.
 - CE+Dice / DGBF loss recipe: not active.
+- 2026-05-13 orchestration-loop failed variants are archived under `experiments_20260513/`:
+  - R001 PMAD boundary/confidence KD, best val/mIoU `0.511646`.
+  - R002 frequency-aware FPN decoder, best val/mIoU `0.516915`.
+  - R003 correct-and-entropy PMAD KD, best val/mIoU `0.516597`.
+  - R005 TGGA weak-c3 + c4, best val/mIoU `0.518253`.
 
 Current active models:
 - `dformerv2_mid_fusion`
 - `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
+- `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
+- `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`
 - `dformerv2_geometry_primary_teacher`
 - `dformerv2_primkd_logit_only`
 
 TGGA status:
-- run01 best val/mIoU `0.522206` at epoch 48.
-- run01 final val/mIoU `0.489865`.
-- promising but unstable single-run signal.
-- not yet a stable improvement claim.
+- original c3/c4 run01 best val/mIoU `0.522206` at epoch 48, final `0.489865`.
+- R004 c4-only best val/mIoU `0.522849` at epoch 42, final `0.509320`.
+- R005 weak-c3 + c4 best val/mIoU `0.518253` at epoch 43, final `0.514908`.
+- R004 is the strongest current diagnostic signal, but no TGGA variant reaches the `0.53` goal or supports a stable improvement claim.
 
 Implementation note:
 - The default `train.py` registry no longer imports archived experimental models.

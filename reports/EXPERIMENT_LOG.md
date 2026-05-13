@@ -132,6 +132,15 @@ Baseline reference:
 - Audit: code review `approved_current_diff`; reproducer/report audit `audit_passed_no_rerun`.
 - Decision: reject weak-c3 as a goal path, keep R004 c4-only as the better TGGA diagnostic, and pause the experiment loop for user/external review.
 
+### 2026-05-13 Pause Cleanup: Archive Failed Loop Code
+
+- Paused the experiment loop after R005 per user instruction; no new training is approved after this point.
+- Useful code status: TGGA diagnostic variants, including c4-only and weak-c3, already exist in the `main` active code state.
+- Archived failed R001-R003 implementation snapshots under `final daima/feiqi/experiments_20260513/`.
+- Restored active `train.py`, `src/models/decoder.py`, `src/models/mid_fusion.py`, and `src/models/primkd_lit.py` to the `main` code state so failed R001-R003 variants are no longer active registry entries on the pause branch.
+- Kept all R001-R005 reports, mIoU details, metrics, and coordination records for evidence and review.
+- Did not stage or modify checkpoint files, TensorBoard event files, datasets, or pretrained weights.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.
