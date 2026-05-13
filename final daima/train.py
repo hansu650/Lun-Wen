@@ -25,7 +25,7 @@ warnings.filterwarnings(
 
 import lightning as L
 import torch
-from lightning.pytorch.callbacks import Callback, EarlyStopping
+from lightning.pytorch.callbacks import Callback, EarlyStopping, TQDMProgressBar
 
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
@@ -186,7 +186,8 @@ def build_callbacks(args, monitor_metric: str):
         patience=args.early_stop_patience,
         mode="max",
     )
-    return checkpoint_callback, early_stop_callback
+    progress_callback = TQDMProgressBar(refresh_rate=10)
+    return checkpoint_callback, early_stop_callback, progress_callback
 
 
 def build_trainer(args, callbacks):
@@ -197,7 +198,6 @@ def build_trainer(args, callbacks):
         callbacks=list(callbacks),
         default_root_dir=args.checkpoint_dir,
         log_every_n_steps=10,
-        enable_progress_bar=False,
     )
 
 
