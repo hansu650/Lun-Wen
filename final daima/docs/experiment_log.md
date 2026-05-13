@@ -1,5 +1,49 @@
 # Experiment Log
 
+## 2026-05-13 dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01
+
+- model: `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`
+- method: TGGA diagnostic with weak c3 plus c4 semantic/geometry gates.
+- purpose: test whether R004's c4-only calibration signal can be improved by reintroducing a conservative c3 detail path without the original TGGA c3/c4 instability.
+- architecture: `DFormerv2_S + TGGA(weak c3, c4) + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder`.
+- TGGA settings: c3 `beta_init=0.01`, `beta_max=0.05`, `gate_bias_init=-3.0`; c4 `beta_init=0.02`, `beta_max=0.1`, `gate_bias_init=-2.0`; aux CE weight `0.03` on c3 and c4; detached semantic cue.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.518253` at epoch `43`
+- last val/mIoU: `0.514908`
+- last-5 mean val/mIoU: `0.508991`
+- last-10 mean val/mIoU: `0.507070`
+- best val/loss: `1.016042` at epoch `13`
+- final train/loss: `0.150705`
+- final train/main_loss: `0.130934`
+- final train/tgga_aux_loss_c3: `0.297266`
+- final train/tgga_aux_loss_c4: `0.361774`
+- final train/tgga_beta_c3: `0.020015`
+- final train/tgga_beta_c4: `0.022356`
+- final train/tgga_gate_c3_mean: `0.293138`
+- final train/tgga_gate_c3_std: `0.331622`
+- final train/tgga_gate_c4_mean: `0.131140`
+- final train/tgga_gate_c4_std: `0.012837`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison R004 TGGA c4-only best: `0.522849`
+- delta vs clean baseline mean: `+0.000856` (`+0.175` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.004045`
+- delta vs clean baseline best single: `-0.006172`
+- delta vs PMAD w0.15/T4 five-run mean: `-0.002542`
+- delta vs R004 TGGA c4-only: `-0.004596`
+- best-to-last delta: `-0.003345`
+- checkpoint: `checkpoints/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1-epoch=42-val_mIoU=0.5183.pt`
+- TensorBoard event: `checkpoints/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01/lightning_logs/version_0/events.out.tfevents.1778626367.Administrator.41400.0`
+- evidence: `miou_list/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01.md`
+- process note: `Trainer.fit` reached `max_epochs=50`; after metric/checkpoint writing, Rich progress teardown raised a Windows GBK `UnicodeEncodeError`.
+- conclusion: **weak positive versus baseline mean, negative versus the active TGGA decision.** Weak-c3 does not improve on R004 c4-only and does not reach baseline mean + 1 std, PMAD mean, or the `0.53` goal.
+- next step: do not continue this weak-c3 variant unchanged. Treat R004 c4-only as the better TGGA diagnostic and pause for external review before selecting another branch.
+
 ## 2026-05-13 dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01
 
 - model: `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`

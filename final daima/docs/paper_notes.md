@@ -1,5 +1,20 @@
 # Paper Notes
 
+## 2026-05-13 TGGA Weak-C3 + C4 Boundary
+
+- `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01` completed 50 validation epochs.
+- Setting: TGGA weak c3 with `beta_init=0.01`, `beta_max=0.05`, `gate_bias_init=-3.0`, plus c4 with `beta_init=0.02`, `beta_max=0.1`, `gate_bias_init=-2.0`, aux CE weight `0.03` on both TGGA heads.
+- Best val/mIoU is `0.518253` at epoch 43; last val/mIoU is `0.514908`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- PMAD logit-only w0.15/T4 five-run mean best remains `0.520795`.
+- R004 TGGA c4-only best is `0.522849`.
+- Delta vs clean baseline mean is `+0.000856`, equal to `+0.175` baseline std units.
+- Delta vs baseline mean + 1 std is `-0.004045`; delta vs PMAD mean is `-0.002542`; delta vs R004 c4-only is `-0.004596`.
+- Diagnostic: final c3 gate opens substantially despite the weaker setup (`gate_c3_mean=0.293138`, `gate_c3_std=0.331622`), while c4 stays conservative (`gate_c4_mean=0.131140`, `gate_c4_std=0.012837`).
+- Interpretation: **not a useful improvement.** Weak-c3 is only barely above the clean baseline mean and is clearly worse than c4-only TGGA.
+- Paper boundary: do not cite weak-c3 TGGA as an improvement. It can be cited only as a negative TGGA diagnostic showing that reintroducing c3, even conservatively, does not recover R004's stronger signal.
+- Strategic implication: pause the TGGA branch for external review. The current durable lesson is that c4-only is the safer TGGA signal and c3 remains risky.
+
 ## 2026-05-13 TGGA C4-Only Diagnostic Boundary
 
 - `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1_run01` completed 50 validation epochs.

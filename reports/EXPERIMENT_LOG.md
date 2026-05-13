@@ -108,6 +108,30 @@ Baseline reference:
 - Audit: code review `approved_on_staged_diff`; reproducer/report audit `audit_passed_no_rerun`.
 - Decision: keep as the strongest current diagnostic signal, reject it as a goal-completing method, and continue the loop with the next highest-decision-value candidate.
 
+### 2026-05-13 R005 Approval: TGGA Weak-C3 + C4 Diagnostic
+
+- Approved one experiment on branch `exp/R005-tgga-weakc3-v1`.
+- Hypothesis: TGGA weak-c3 plus c4 can retain the R004 c4-only calibration signal while reintroducing a conservative c3 detail path without the original c3/c4 high-resolution gate instability.
+- Reason: R004 is the strongest loop result so far (`0.522849`) but c4 alone is still below `0.53` and drops late; the already implemented weak-c3 variant is the narrowest follow-up that tests whether a reduced c3 gate can add detail without repeating the original c3 instability.
+- Planned model name: `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`.
+- Planned run name: `run01`; checkpoint directory `checkpoints/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01`.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- No code change is approved for this round; the model is already implemented and registered.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, TensorBoard-log, or code change is approved.
+- Status: approved for one full train after dry-check.
+
+### 2026-05-13 R005 Result: Weak Positive, Below Goal
+
+- `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01` completed 50 validation epochs.
+- best val/mIoU: `0.518253` at epoch `43`; last val/mIoU: `0.514908`.
+- Result is only `+0.000856` above the clean 10-run baseline mean `0.517397`, below baseline mean + 1 std `0.522298`, below PMAD logit-only w0.15/T4 five-run mean `0.520795`, below R004 c4-only `0.522849`, and below the `0.53` goal.
+- Evidence: `final daima/miou_list/dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01.md`.
+- Report: `reports/R005-tgga-weakc3-v1.md`.
+- Diagnostic: final c3 gate still opens substantially (`gate_c3_mean=0.293138`, `gate_c3_std=0.331622`), while c4 remains conservative (`gate_c4_mean=0.131140`, `gate_c4_std=0.012837`).
+- Process note: `Trainer.fit` reached `max_epochs=50`; after metric/checkpoint writing, Rich progress teardown raised a Windows GBK `UnicodeEncodeError`.
+- Audit: code review `approved_current_diff`; reproducer/report audit `audit_passed_no_rerun`.
+- Decision: reject weak-c3 as a goal path, keep R004 c4-only as the better TGGA diagnostic, and pause the experiment loop for user/external review.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.
