@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R024 Raw DFormerv2 + Ham Boundary
+
+- R024 completed 50 validation epochs with best val/mIoU `0.530186` at validation epoch `45`; final val/mIoU is `0.529383`.
+- It is stable and crosses `0.53`, but remains below R022 `0.534332` and the corrected R016 baseline `0.541121`.
+- Paper boundary: R024 is a structure-contract diagnostic, not a main contribution. Do not claim official-style Ham alone solves the gap to `0.56`.
+- Method implication: removing the external DepthEncoder/GatedFusion stack hurts peak mIoU relative to R016/R022, so the local fusion path contains useful signal. The remaining problem is likely fusion/depth-branch stability or initialization, not simply removing fusion.
+- Strategic implication: stop Ham micro-fixes. The next original-method experiment should target the stronger corrected mid-fusion path, preferably a single stability hypothesis such as external DepthEncoder BatchNorm eval/freeze or an identity-start residual fusion.
+
 ## 2026-05-15 R023 Corrected Teacher Gate Boundary
 
 - R023 completed 50 validation epochs with best val/mIoU `0.524498` at validation epoch `43`; final val/mIoU is `0.507023`.

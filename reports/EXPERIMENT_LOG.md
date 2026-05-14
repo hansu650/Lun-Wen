@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R023 corrected-contract teacher gate is negative; next step is raw DFormerv2-S + official Ham decoder structure isolation.
+Current phase: R024 raw DFormerv2-S + Ham is stable positive but below corrected baseline; next step is corrected mid-fusion stability.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R024 Result: Raw DFormerv2-S + Ham Stable Positive Below Corrected Baseline
+
+- `R024_geometry_primary_ham_decoder_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.530186` at validation epoch `45`; last val/mIoU: `0.529383`.
+- Last-5 mean val/mIoU: `0.521843`; last-10 mean val/mIoU: `0.522327`; best-to-last drop: `0.000803`.
+- Evidence: `final daima/miou_list/R024_geometry_primary_ham_decoder_run01.md`.
+- Checkpoint: `final daima/checkpoints/R024_geometry_primary_ham_decoder_run01/dformerv2_geometry_primary_ham_decoder-epoch=44-val_mIoU=0.5302.pt`.
+- TensorBoard event: `final daima/checkpoints/R024_geometry_primary_ham_decoder_run01/lightning_logs/version_0/events.out.tfevents.1778793121.Administrator.20368.0`.
+- Decision: stable positive diagnostic above `0.53`, but below R022 `0.534332` and R016 `0.541121`. Raw DFormerv2-S + Ham does not replace the local external-fusion path.
+- Next: stop Ham micro-fixes and test a single stability hypothesis on the stronger corrected mid-fusion path.
 
 ### 2026-05-15 R023 Result: Corrected Geometry-Primary Teacher Negative Gate
 

@@ -1,5 +1,17 @@
 # Model Changes
 
+## 2026-05-15 R024 Geometry-Primary Ham Decoder Entry
+
+- Added `DFormerV2GeometryPrimaryHamDecoderSegmentor` in `src/models/teacher_model.py`.
+- Added `LitDFormerV2GeometryPrimaryHamDecoder` in `src/models/teacher_model.py`.
+- Registered `dformerv2_geometry_primary_ham_decoder` in `train.py`.
+- The new model uses `Dformerv2_S(rgb, depth)` features directly with the existing `OfficialHamDecoder`; it does not instantiate the external ResNet-18 DepthEncoder or GatedFusion stack.
+- Existing `OfficialHamDecoder` is reused unchanged, including the R022 `Dropout2d(0.1)` classifier parity fix.
+- Verification before full train: syntax compile, `train.py --help`, registry lookup, real-batch CUDA forward/backward smoke, and static reviewer passed. Smoke confirmed no `depth_encoder`, no `fusions`, decoder `OfficialHamDecoder`, dropout `0.1`, logits `(2, 40, 480, 640)`, CE loss `3.837853`, and peak memory about `4662.6 MB`.
+- Full-train result: best val/mIoU `0.530186` at validation epoch `45`, last val/mIoU `0.529383`.
+- Decision: keep as a stable structure diagnostic, but do not promote it as the corrected baseline because it remains below R016 `0.541121` and R022 `0.534332`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, OfficialHamDecoder internals, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R022 Ham Classifier Dropout Parity Fix
 
 - Updated `OfficialHamDecoder` in `src/models/decoder.py` to add `self.dropout = nn.Dropout2d(0.1)`.

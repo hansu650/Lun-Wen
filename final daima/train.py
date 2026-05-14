@@ -40,7 +40,10 @@ from src.models.mid_fusion import (
     LitMidFusion,
 )
 from src.models.primkd_lit import LitDFormerV2PrimKD
-from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
+from src.models.teacher_model import (
+    LitDFormerV2GeometryPrimaryHamDecoder,
+    LitDFormerV2GeometryPrimaryTeacher,
+)
 from src.models.tgga_adapter import LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1
 
 
@@ -50,6 +53,7 @@ ACTIVE_MODEL_REGISTRY = {
     "dformerv2_branch_depth_adapter": LitDFormerV2BranchDepthAdapter,
     "dformerv2_branch_depth_blend_adapter": LitDFormerV2BranchDepthBlendAdapter,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
+    "dformerv2_geometry_primary_ham_decoder": LitDFormerV2GeometryPrimaryHamDecoder,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
 }
@@ -161,6 +165,7 @@ def build_model(args):
         "dformerv2_branch_depth_adapter",
         "dformerv2_branch_depth_blend_adapter",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",
+        "dformerv2_geometry_primary_ham_decoder",
         "dformerv2_geometry_primary_teacher",
     }:
         return model_cls(

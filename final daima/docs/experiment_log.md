@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R024 result: raw DFormerv2-S + Ham stable positive below corrected baseline
+
+- branch: `exp/R024-geometry-primary-ham-decoder-v1`
+- model: `dformerv2_geometry_primary_ham_decoder`
+- run: `R024_geometry_primary_ham_decoder_run01`
+- hypothesis: raw `DFormerv2_S(rgb, depth)` features may match the official Ham decoder contract better than the local post-backbone external DepthEncoder/GatedFusion stack.
+- implementation: added a model entry for `DFormerv2_S(rgb, depth) -> OfficialHamDecoder`, with no external DepthEncoder or GatedFusion.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.530186` at validation epoch `45`
+- last val/mIoU: `0.529383`
+- last-5 mean val/mIoU: `0.521843`
+- last-10 mean val/mIoU: `0.522327`
+- best-to-last drop: `0.000803`
+- best val/loss: `1.062941` at validation epoch `8`
+- final train/loss_epoch: `0.071329`
+- checkpoint: `checkpoints/R024_geometry_primary_ham_decoder_run01/dformerv2_geometry_primary_ham_decoder-epoch=44-val_mIoU=0.5302.pt`
+- TensorBoard event: `checkpoints/R024_geometry_primary_ham_decoder_run01/lightning_logs/version_0/events.out.tfevents.1778793121.Administrator.20368.0`
+- evidence: `miou_list/R024_geometry_primary_ham_decoder_run01.md`
+- comparison: R024 is above the fixed-recipe `0.53` stage threshold, but below R022 `0.534332` by `-0.004146` and below R016 `0.541121` by `-0.010935`.
+- conclusion: **stable positive structure diagnostic, not a new best.** Raw DFormerv2-S + Ham is stable and crosses `0.53`, but it does not beat the local external-fusion baseline, so the external DepthEncoder/GatedFusion path is not simply harmful.
+- next step: do not continue Ham micro-fixes. Test a targeted stability hypothesis on the stronger corrected mid-fusion path, such as external DepthEncoder BatchNorm eval/freeze during training.
+
 ## 2026-05-15 R023 result: corrected-contract geometry-primary teacher negative gate
 
 - branch: `exp/R023-corrected-contract-teacher-refresh-v1`
