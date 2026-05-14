@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-14 R016 Official Depth Normalization Contract
+
+- Added `DFORMER_DEPTH_MEAN = 0.48`, `DFORMER_DEPTH_STD = 0.28`, and `normalize_nyu_depth_to_dformer()` in `src/data_module.py`.
+- The data module now treats `depth` as an Albumentations `mask` target so RGB ImageNet Normalize does not touch it.
+- Depth is manually normalized with official DFormer modal_x semantics: `raw / 255.0`, then `(x - 0.48) / 0.28`.
+- This is an input/preprocessing contract alignment, not a model-structure innovation.
+- Did not modify model structure, DFormerv2_S, pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, label mapping, split files, validation loader behavior, checkpoint artifacts, or TensorBoard event files.
+- Verification before full train: `py_compile`, `train.py --help`, real-batch stats, and CUDA forward smoke passed. Real-batch depth range was `[-1.714286, 1.857143]`, matching the DFormer modal_x range.
+- Full-train result: retry1 best val/mIoU `0.541121` at validation epoch `49`, last val/mIoU `0.527420`, with checkpoint `checkpoints/R016_depth_norm_official_baseline_retry1/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5411.pt`.
+- Decision: keep this official depth normalization contract as the current strongest corrected baseline. Cite DFormer for this preprocessing protocol; do not claim it as a proposed method.
+
 ## 2026-05-14 R015 Official Label/Ignore Contract Reset
 
 - Added `map_nyu40_labels_to_train_ids()` in `src/data_module.py`.

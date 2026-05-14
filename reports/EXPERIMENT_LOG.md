@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R015 official label/ignore contract baseline reset.
+Current phase: R016 official label+depth contract baseline reached `0.541121`; continue toward `0.56`.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,31 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-14 R016 Result: Official Depth Normalization Raises Baseline To 0.541121
+
+- `R016_depth_norm_official_baseline_retry1` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.541121` at validation epoch `49`; last val/mIoU: `0.527420`.
+- Last-5 mean val/mIoU: `0.535500`; last-10 mean val/mIoU: `0.524063`; best-to-last drop: `0.013702`.
+- Evidence: `final daima/miou_list/R016_depth_norm_official_baseline_retry1.md`.
+- Checkpoint: `final daima/checkpoints/R016_depth_norm_official_baseline_retry1/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5411.pt`.
+- TensorBoard event: `final daima/checkpoints/R016_depth_norm_official_baseline_retry1/lightning_logs/version_0/events.out.tfevents.1778745208.Administrator.36016.0`.
+- Decision: positive official-contract alignment; this is the strongest current run and improves over R015 by `+0.003723`.
+- Claim boundary: this is not a novel method. It is DFormer official modal_x/depth preprocessing alignment and should be cited as such.
+- Process note: the first R016 launch was interrupted after 47 validation epochs by a Windows/Intel `forrtl` window-close event because the command window was closed. Retry1 is the valid full-train evidence.
+- Next: continue toward `0.56`, with `RGB/BGR` input contract as the next highest-priority contract gate unless a stronger evidence-backed candidate appears.
+
+### 2026-05-14 R016 Approval: Official Depth Normalization Contract
+
+- Branch: `exp/R016-depth-norm-contract-v1`.
+- Hypothesis: after R015 aligned the official NYU label/ignore contract, depth input should also follow the official DFormer modal_x normalization contract.
+- Planned model: `dformerv2_mid_fusion`.
+- Planned run: `R016_depth_norm_official_baseline`; checkpoint directory `checkpoints/R016_depth_norm_official_baseline`.
+- Code scope: `final daima/src/data_module.py` only.
+- Official source: DFormer normalizes `modal_x` with mean `[0.48, 0.48, 0.48]` and std `[0.28, 0.28, 0.28]`, using raw `/255.0` first.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Smoke status: `py_compile`, `train.py --help`, real-batch stats, and CUDA forward sanity passed.
+- Status: full train running; no result claim yet.
 
 ### 2026-05-14 R015 Result: Official-Label Baseline Reaches 0.53 Stage Target
 

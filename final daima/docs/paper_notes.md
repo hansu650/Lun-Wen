@@ -1,5 +1,23 @@
 # Paper Notes
 
+## 2026-05-14 R016 Official Depth Normalization Result Boundary
+
+- R016 retry1 completed 50 validation epochs with best val/mIoU `0.541121` at validation epoch `49`, improving over the R015 official-label baseline `0.537398` by `+0.003723`.
+- This is the strongest current full-train result, but it is still an official-contract baseline correction, not a new method contribution.
+- What R016 borrows from DFormer: the modal_x/depth preprocessing protocol `raw / 255.0`, then mean `[0.48, 0.48, 0.48]` and std `[0.28, 0.28, 0.28]`.
+- Paper phrasing boundary: write this as official DFormer preprocessing alignment for NYUDepthV2 and cite DFormer. Do not claim label remapping or depth normalization as a proposed method.
+- The corrected baseline is now `dformerv2_mid_fusion` with official label and depth contracts, best val/mIoU `0.541121`.
+- The remaining paper gap to `0.56` is about `0.018879`; subsequent novelty must be built on top of this corrected baseline.
+- The first R016 launch was interrupted by a Windows/Intel `forrtl` window-close event after 47 validation epochs and is not the official result.
+
+## 2026-05-14 R016 Depth Normalization Contract Boundary
+
+- R015 established the official-label baseline coordinate system with best val/mIoU `0.537398`, but late instability remains and the result is still below the final `0.56` target.
+- R016 is the next contract-alignment run: official DFormer uses modal_x/depth normalization with mean `[0.48, 0.48, 0.48]` and std `[0.28, 0.28, 0.28]`, after raw `/255.0`.
+- Local R016 changes only depth preprocessing: depth no longer receives RGB ImageNet Normalize through Albumentations; RGB normalization, label mapping, split, loader behavior, model, optimizer, scheduler, batch, epoch, lr, and evaluation remain unchanged.
+- Interpret R016 only against the R015 official-label baseline. It is not a new architecture and should not be mixed with old label-contract runs as a direct gain claim.
+- If R016 improves or stabilizes late validation, the next paper direction remains official DFormerv2-S contract alignment. If it regresses, keep R015 as the official-label baseline and investigate the next highest contract mismatch.
+
 ## 2026-05-14 R015 Official Label Contract Boundary
 
 - R014 failed to reach `0.53`, so the loop pivots away from PMAD/TGGA micro-search.

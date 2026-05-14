@@ -11,6 +11,10 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 
+DFORMER_DEPTH_MEAN = 0.48
+DFORMER_DEPTH_STD = 0.28
+
+
 def map_nyu40_labels_to_train_ids(label_tensor: torch.Tensor) -> torch.Tensor:
     label_tensor = label_tensor.long()
     ignore_mask = label_tensor == 0
@@ -18,6 +22,14 @@ def map_nyu40_labels_to_train_ids(label_tensor: torch.Tensor) -> torch.Tensor:
     label_tensor = label_tensor.masked_fill(ignore_mask, 255)
     invalid = (label_tensor < 0) | ((label_tensor >= 40) & (label_tensor != 255))
     return label_tensor.masked_fill(invalid, 255)
+
+
+def normalize_nyu_depth_to_dformer(depth_tensor: torch.Tensor) -> torch.Tensor:
+    depth_tensor = depth_tensor.float()
+    if depth_tensor.dim() == 3 and depth_tensor.shape[0] == 1:
+        depth_tensor = depth_tensor.squeeze(0)
+    depth_tensor = depth_tensor.unsqueeze(0) / 255.0
+    return (depth_tensor - DFORMER_DEPTH_MEAN) / DFORMER_DEPTH_STD
 
 
 class NYUDataset(Dataset):
@@ -85,7 +97,7 @@ def get_train_transform(image_size=(480, 640)):
         A.HorizontalFlip(p=0.5),
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
-    ], additional_targets={"depth": "image", "label": "mask"})
+    ], additional_targets={"depth": "mask", "label": "mask"})
 
 
 def get_val_transform():
@@ -93,7 +105,7 @@ def get_val_transform():
     return A.Compose([
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
-    ], additional_targets={"depth": "image", "label": "mask"})
+    ], additional_targets={"depth": "mask", "label": "mask"})
 
 
 class AlbumentationsTransform:
@@ -111,11 +123,8 @@ class AlbumentationsTransform:
         
         # albumentations 的 ToTensorV2 会将 image 转为 [C,H,W]，但 depth 和 mask 需要手动处理
         if not torch.is_tensor(depth_tensor):
-            depth_tensor = torch.from_numpy(depth_tensor).float()
-        if depth_tensor.dim() == 2:
-            depth_tensor = depth_tensor.unsqueeze(0) / 255.0
-        elif depth_tensor.dim() == 3 and depth_tensor.shape[0] == 3:
-            depth_tensor = depth_tensor[0:1, :, :] / 255.0
+            depth_tensor = torch.from_numpy(depth_tensor)
+        depth_tensor = normalize_nyu_depth_to_dformer(depth_tensor)
             
         if not torch.is_tensor(label_tensor):
             label_tensor = torch.from_numpy(label_tensor)

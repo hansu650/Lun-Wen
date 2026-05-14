@@ -1,5 +1,42 @@
 # Experiment Log
 
+## 2026-05-14 R016 result: official depth normalization improves official-contract baseline
+
+- branch: `exp/R016-depth-norm-contract-v1`
+- model: `dformerv2_mid_fusion`
+- run: `R016_depth_norm_official_baseline_retry1`
+- hypothesis: after R015 aligns the official NYU label/ignore contract, depth input should also follow the official DFormer modal_x normalization contract: `raw / 255.0`, then `(x - 0.48) / 0.28`.
+- full train status: retry1 completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.541121` at validation epoch `49`
+- last val/mIoU: `0.527420`
+- last-5 mean val/mIoU: `0.535500`
+- last-10 mean val/mIoU: `0.524063`
+- best-to-last drop: `0.013702`
+- best val/loss: `0.978448` at validation epoch `14`
+- last val/loss: `1.211359`
+- final train/loss_epoch: `0.053537`
+- checkpoint: `checkpoints/R016_depth_norm_official_baseline_retry1/dformerv2_mid_fusion-epoch=48-val_mIoU=0.5411.pt`
+- TensorBoard event: `checkpoints/R016_depth_norm_official_baseline_retry1/lightning_logs/version_0/events.out.tfevents.1778745208.Administrator.36016.0`
+- evidence: `miou_list/R016_depth_norm_official_baseline_retry1.md`
+- comparison: R015 official-label baseline best was `0.537398`; R016 retry1 improves by `+0.003723`.
+- conclusion: **positive official-contract alignment.** R016 is the strongest current full-train run and confirms that preprocessing-contract alignment is the highest-value direction so far.
+- paper boundary: this is not a novel method contribution. It should be reported as DFormer official modal_x/depth preprocessing alignment, with DFormer cited, and used as the corrected baseline for later original method work.
+- process note: the first `R016_depth_norm_official_baseline` launch was interrupted after 47 validation epochs by `forrtl error (200): program aborting due to window-CLOSE event` when the command window was closed. It is recorded only as partial process evidence; the official result is retry1.
+- next step: continue toward `0.56` from this official-label-and-depth baseline, likely with the next contract mismatch gate (`RGB/BGR` input contract) before returning to original lightweight method design.
+
+## 2026-05-14 R016 dry-check: official depth normalization contract
+
+- branch: `exp/R016-depth-norm-contract-v1`
+- model: `dformerv2_mid_fusion`
+- planned run: `R016_depth_norm_official_baseline`
+- hypothesis: after R015 aligns the official NYU label/ignore contract, depth input should also follow the official DFormer modal_x normalization contract: `raw / 255.0`, then `(x - 0.48) / 0.28`.
+- official code evidence: `ref_codes/DFormer/utils/dataloader/dataloader.py` normalizes `modal_x` with `[0.48, 0.48, 0.48]` / `[0.28, 0.28, 0.28]`; `ref_codes/DFormer/utils/transforms.py` implements normalize as `/255.0`, subtract mean, divide std.
+- implementation scope: `src/data_module.py` only. `depth` is now an Albumentations `mask` target so RGB ImageNet Normalize does not touch it, then depth is manually normalized with DFormer stats.
+- forbidden-change check: no model, decoder, backbone, split file, label mapping, metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, pretrained-loading logic, checkpoint artifact, dataset, or TensorBoard event change is approved.
+- smoke status: `py_compile`, `train.py --help`, real-batch stats, and CUDA forward sanity passed. Real-batch depth range was `[-1.714286, 1.857143]`; logits were `(2, 40, 480, 640)` with CE loss `3.711953`.
+- result status: full train running; no mIoU claim yet.
+
 ## 2026-05-14 R015 result: official-label baseline success for 0.53 stage
 
 - branch: `exp/R015-label-ignore-contract-v1`
