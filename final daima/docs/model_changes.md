@@ -1,5 +1,37 @@
 # Model Changes
 
+## 2026-05-14 Mainline Cleanup Before R014
+
+- Cleaned the active registry before the next goal-driven experiment.
+- Active `train.py` now exposes only `dformerv2_mid_fusion`, `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`, `dformerv2_geometry_primary_teacher`, `dformerv2_primkd_logit_only`, and the legacy `early` / `mid_fusion` entries.
+- Removed TGGA c3/c4, no-aux c3/c4, and weak-c3 TGGA from the active registry because R004/R005 show c4 is safer and c3 remains risky.
+- Archived the pre-cleanup TGGA c3 implementations and registry snapshot under `feiqi/failed_experiments_r001_r013_20260514/`.
+- Moved inactive frequency modules `depth_fft_select.py`, `freq_enhance.py`, and `fft_hilo_enhance.py` from `src/models/` to `feiqi/failed_experiments_r001_r013_20260514/`.
+- Kept all experiment evidence in docs, `miou_list`, reports, metrics, and experiment ledgers.
+- Merged the R010/R012/R013 evidence ledgers without promoting R013 LMLP decoder code into the active model path.
+- Fixed the active training entrypoint to pass `TQDMProgressBar` to the Trainer and to reconfigure stdout/stderr as UTF-8 on Windows; the progress bar remains enabled.
+- No dataset, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, checkpoint artifact, dataset, pretrained weight, or TensorBoard event file was changed.
+
+## 2026-05-13 R013 LMLP Decoder Head
+
+- Added `MLPProjection` and `LMLPDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2LMLPDecoderSegmentor` and `LitDFormerV2LMLPDecoder` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_lmlp_decoder` in `train.py`.
+- Motivation: test a DFormer/SegFormer-style c2-c4 MLP decoder head as a clean alternative to SimpleFPN top-down additive fusion.
+- Decoder behavior: project c2/c3/c4 fused features to `embed_dim=768`, upsample c3/c4 to c2 resolution, concatenate, apply `1x1` fuse + BN + ReLU + dropout + classifier, then upsample logits to the input image size.
+- Did not modify DFormerv2_S, pretrained loading, DepthEncoder, GatedFusion, dataset/data module, mIoU/eval logic, optimizer, scheduler, batch size, epoch count, learning rate, early stopping, PMAD, or TGGA.
+- Verification: `py_compile` passed for `train.py`, `src/models/decoder.py`, and `src/models/mid_fusion.py`; `train.py --help` lists `dformerv2_lmlp_decoder`.
+- Real-batch smoke check on NYUDepthv2 with `batch_size=2` produced logits `(2, 40, 480, 640)`, CE loss `3.821265`, and optimizer `AdamW(lr=6e-5, weight_decay=0.01)`.
+- Result note for `dformerv2_lmlp_decoder_run01`: best val/mIoU `0.517981`, only `+0.000584` above the clean baseline mean and below baseline mean + 1 std, with final val/mIoU `0.490231`; do not promote this decoder.
+
+## 2026-05-13 R010 Training Entrypoint UTF-8/TQDM Fix
+
+- No model structure was changed for R010.
+- `train.py` now reconfigures `stdout` and `stderr` to UTF-8 with replacement so Lightning/Rich/TQDM teardown does not crash after a completed Windows run because of GBK encoding.
+- `train.py` now passes the full callback list returned by `build_callbacks(...)` into the Trainer, preserving `TQDMProgressBar` while keeping the existing checkpoint and early-stop callbacks.
+- No dataset, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, checkpoint artifact, dataset, pretrained weight, or TensorBoard event file was changed.
+- Result note for `dformerv2_primkd_logit_only_w015_t4_run06_retry1`: best val/mIoU `0.527469`, below the `0.53` goal but above the prior PMAD w0.15/T4 best single `0.524028`. This is a partial positive repeat, not a model-structure change or a success claim.
+
 ## 2026-05-13 R001-R005 Pause Cleanup / feiqi Archive
 
 - Paused the goal-driven loop after R005 and cleaned active code back to the `main` registry/state.

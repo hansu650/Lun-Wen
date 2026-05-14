@@ -1,5 +1,56 @@
 # Paper Notes
 
+## 2026-05-14 Mainline Cleanup Boundary
+
+- Active mainline is now restricted to the clean baseline, PMAD logit-only, geometry-primary teacher, and TGGA c4-only reuse unit.
+- TGGA c3/c4, weak-c3 TGGA, R013 LMLP, hard filtering KD, global frequency/FFT modules, hard losses, and plain decoder swaps are archived or inactive.
+- This cleanup does not change any metric claim. It only prevents negative or unstable experiment code from being treated as active method candidates.
+- R014 remains the next controlled fixed-recipe experiment: PMAD logit-only w0.15/T4 plus TGGA c4-only. If R014 fails, the next paper-relevant direction should be DFormerv2-S official structure/geometry-prior contract alignment, not more PMAD/TGGA parameter search.
+
+## 2026-05-13 LMLP Decoder Boundary
+
+- `dformerv2_lmlp_decoder_run01` completed 50 validation epochs.
+- Setting: DFormer/SegFormer-style c2-c4 LMLP decoder head with the same DFormerv2_S, DepthEncoder, GatedFusion, CE loss, data/eval path, and fixed training recipe.
+- Best val/mIoU is `0.517981` at epoch 41; last val/mIoU is `0.490231`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- R010 PMAD run06_retry1 best is `0.527469`; R004 TGGA c4-only best is `0.522849`.
+- Delta vs clean baseline mean is `+0.000584`, equal to `+0.119` baseline std units.
+- Delta vs baseline mean + 1 std is `-0.004317`; delta vs R010 is `-0.009488`; delta vs R004 is `-0.004868`.
+- Best-to-last drop is `0.027750`, so the run has meaningful late instability.
+- Interpretation: **weak near-baseline, negative for the goal.** LMLP is not a stable improvement and should not be promoted as the main decoder.
+- Paper boundary: cite only as a decoder negative/neutral ablation. It can support the claim that simply replacing SimpleFPN with a SegFormer-style c2-c4 MLP head is insufficient under the fixed recipe.
+- Strategic implication: plain decoder-head replacement is unlikely to close the gap to `0.53` by itself. Stronger next directions likely need either a carefully bounded c4 reliability/fusion mechanism or a different teacher/distillation approach; any broader training recipe/backbone change would require explicit contract change.
+
+## 2026-05-13 PMAD Logit-Only Run07 Repeat Boundary
+
+- `dformerv2_primkd_logit_only_w015_t4_run07` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, frozen geometry-primary teacher checkpoint `dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`, and student-only checkpoint saving.
+- Best val/mIoU is `0.516967` at epoch 43; last val/mIoU is `0.508205`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Prior PMAD logit-only w0.15/T4 five-run mean best was `0.520795`; R010 run06_retry1 best was `0.527469`.
+- Delta vs clean baseline mean is `-0.000430`, equal to `-0.088` baseline std units.
+- Delta vs prior PMAD five-run mean is `-0.003828`; delta vs R010 run06_retry1 is `-0.010502`.
+- Gap to the `0.53` goal is `0.013033`.
+- Updated PMAD w0.15/T4 seven-run mean best is `0.521201` with population std `0.004148`; `5/7` runs exceed the clean baseline mean, `4/7` exceed baseline mean + 1 std, and only `1/7` exceeds the clean baseline best single.
+- Interpretation: **negative repeat.** R010 remains a real high-tail partial positive, but R012 does not reproduce that peak and falls slightly below the clean baseline mean.
+- Paper boundary: PMAD logit-only w0.15/T4 should be described as a marginal and high-variance candidate, not a stable improvement and not a goal-completing method. Do not claim the project target is met.
+- Strategic implication: stop blind repeats of the same PMAD setting. Future PMAD work needs a qualitatively different mechanism; otherwise the next experiment should pivot to a distinct decoder/head hypothesis.
+
+## 2026-05-13 PMAD Logit-Only Run06 Repeat Boundary
+
+- `dformerv2_primkd_logit_only_w015_t4_run06_retry1` completed 50 validation epochs.
+- Setting: PMAD logit-only KD with `kd_weight=0.15`, `kd_temperature=4.0`, frozen geometry-primary teacher checkpoint `dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`, and student-only checkpoint saving.
+- Best val/mIoU is `0.527469` at epoch 49; last val/mIoU is `0.526316`.
+- Clean ten-run baseline mean best is `0.517397`, std `0.004901`, mean + 1 std `0.522298`, best single `0.524425`.
+- Prior PMAD logit-only w0.15/T4 five-run mean best was `0.520795`, with prior best single `0.524028`.
+- Delta vs clean baseline mean is `+0.010072`, equal to `+2.055` baseline std units.
+- Delta vs clean baseline best single is `+0.003044`; delta vs prior PMAD five-run mean is `+0.006674`; delta vs prior PMAD best single is `+0.003441`.
+- Gap to the `0.53` goal is `0.002531`.
+- Updated PMAD w0.15/T4 six-run mean best is `0.521907` with population std `0.004073`; `5/6` runs exceed the clean baseline mean and `4/6` exceed baseline mean + 1 std.
+- Interpretation: **strong partial positive, not success.** The repeat confirms PMAD logit-only as the most durable marginal-positive direction so far, but it still does not satisfy the goal.
+- Paper boundary: PMAD logit-only can be described as a useful ablation/candidate and this run can be cited as the best single repeat, but do not claim the project target is met or that the method is stable at `>=0.53`.
+- Strategic implication: further PMAD filtering/feature-hint variants have already weakened the signal; the next experiment should pivot to a distinct training-only loss or other minimal hypothesis rather than another c4 feature KD/gate.
+
 ## 2026-05-13 TGGA Weak-C3 + C4 Boundary
 
 - `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01` completed 50 validation epochs.

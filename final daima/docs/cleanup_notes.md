@@ -4,6 +4,34 @@
 
 This cleanup narrows the active training path without changing any recorded experimental result.
 
+## 2026-05-14 cleanup/nyu056-mainline
+
+This cleanup keeps only the useful R014-ready paths in the active registry before the next full train.
+
+## What Was Moved Or Archived
+
+- `src/models/depth_fft_select.py`, `src/models/freq_enhance.py`, and `src/models/fft_hilo_enhance.py` were moved to `feiqi/failed_experiments_r001_r013_20260514/`.
+- The pre-cleanup TGGA c3/c4 and weak-c3 implementation snapshot was archived as `feiqi/failed_experiments_r001_r013_20260514/tgga_adapter_c3_variants_pre_cleanup.py`.
+- The pre-cleanup registry snapshot was archived as `feiqi/failed_experiments_r001_r013_20260514/train_registry_pre_cleanup.py`.
+
+## Active Registry After This Cleanup
+
+- `dformerv2_mid_fusion`
+- `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
+- `dformerv2_geometry_primary_teacher`
+- `dformerv2_primkd_logit_only`
+- legacy `early` and `mid_fusion`
+
+## Disconnected From Active Training
+
+- TGGA c3/c4 and weak-c3 variants
+- R013 LMLP decoder
+- R011 Lovasz and other hard-loss directions
+- PMAD hard filters and feature-hint variants
+- global frequency/FFT/HiLo/depth FFT paths
+
+No checkpoint, mIoU record, TensorBoard log, report, metrics row, or experiment summary was deleted.
+
 ## What Was Fully Moved
 
 - TGGA active code was moved out of `src/models/mid_fusion.py` into `src/models/tgga_adapter.py`.

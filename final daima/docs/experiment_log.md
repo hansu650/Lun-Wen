@@ -1,5 +1,128 @@
 # Experiment Log
 
+## 2026-05-14 cleanup/nyu056-mainline
+
+- purpose: clean active code and branch state before R014 and the longer `0.56` goal loop.
+- action: merged R010/R012/R013 evidence ledgers into the cleanup branch while keeping failed model code out of the active training path.
+- active models after cleanup: `dformerv2_mid_fusion`, `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`, `dformerv2_geometry_primary_teacher`, `dformerv2_primkd_logit_only`, plus legacy `early` and `mid_fusion`.
+- archived code: TGGA c3/c4 and weak-c3 snapshot, pre-cleanup registry snapshot, depth FFT select, FFT frequency enhance, and FFT HiLo under `feiqi/failed_experiments_r001_r013_20260514/`.
+- kept evidence: no `docs`, `miou_list`, `reports`, `metrics`, or experiment ledger evidence was deleted.
+- training entrypoint: fixed the callback wiring so `TQDMProgressBar` remains active and added UTF-8 stdout/stderr reconfigure for Windows/Rich output.
+- forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint artifact, dataset, pretrained-weight, or TensorBoard-log change was made.
+- next step: create `exp/R014-pmad-tgga-c4-v1` from the cleaned mainline and run one fixed-recipe PMAD logit-only + TGGA c4-only full train.
+
+## 2026-05-13 dformerv2_lmlp_decoder_run01
+
+- model: `dformerv2_lmlp_decoder`
+- method: DFormer/SegFormer-style c2-c4 LMLP decoder head.
+- purpose: test whether SimpleFPN top-down additive fusion is limiting the fused DFormerv2 RGB-D features.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + LMLPDecoder`.
+- decoder: c2/c3/c4 MLP projections to `embed_dim=768`, upsample c3/c4 to c2, concatenate, `1x1` fuse + BN + ReLU + dropout + classifier, then upsample logits to input size.
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.517981` at epoch `41`
+- last val/mIoU: `0.490231`
+- last-5 mean val/mIoU: `0.505172`
+- last-10 mean val/mIoU: `0.508065`
+- best val/loss: `1.018381` at epoch `4`
+- final train/loss: `0.208969`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison R010 PMAD run06_retry1 best: `0.527469`
+- comparison R004 TGGA c4-only best: `0.522849`
+- delta vs clean baseline mean: `+0.000584` (`+0.119` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.004317`
+- delta vs clean baseline best single: `-0.006444`
+- delta vs R010 run06_retry1: `-0.009488`
+- delta vs R004 TGGA c4-only: `-0.004868`
+- best-to-last delta: `-0.027750`
+- gap to `0.53` goal: `-0.012019`
+- checkpoint: `checkpoints/dformerv2_lmlp_decoder_run01/dformerv2_lmlp_decoder-epoch=40-val_mIoU=0.5180.pt`
+- TensorBoard event: `checkpoints/dformerv2_lmlp_decoder_run01/lightning_logs/version_0/events.out.tfevents.1778682038.Administrator.26812.0`
+- evidence: `miou_list/dformerv2_lmlp_decoder_run01.md`
+- conclusion: **weak near-baseline result, negative for the goal.** LMLP slightly exceeds the baseline mean at its best epoch but remains below baseline mean + 1 std, below stronger partial-positive branches, and far below `0.53`.
+- next step: pause per user request. Decoder replacement alone is not the obvious path; discuss whether to pursue safer c4-only reliability calibration, stronger-but-careful KD, or a broader model/recipe change that would require changing the experiment contract.
+
+## 2026-05-13 dformerv2_primkd_logit_only_w015_t4_run07
+
+- model: `dformerv2_primkd_logit_only`
+- method: PMAD/PrimKD-style logit-only KD repeat at the strongest prior setting.
+- purpose: test whether R010's high-tail `kd_weight=0.15`, `kd_temperature=4.0` result can reproduce or reach the `0.53` goal as run07.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder` student, frozen geometry-primary DFormerv2 teacher.
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only, no feature KD, `--save_student_only`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.516967` at epoch `43`
+- last val/mIoU: `0.508205`
+- last-5 mean val/mIoU: `0.496441`
+- last-10 mean val/mIoU: `0.503120`
+- best val/loss: `1.039913` at epoch `8`
+- final train/loss: `0.216768`
+- final train/ce_loss: `0.153825`
+- final train/kd_loss: `0.419615`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison prior PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison R010 PMAD run06_retry1 best: `0.527469`
+- delta vs clean baseline mean: `-0.000430` (`-0.088` baseline std units)
+- delta vs clean baseline mean + 1 std: `-0.005331`
+- delta vs clean baseline best single: `-0.007458`
+- delta vs prior PMAD five-run mean: `-0.003828`
+- delta vs R010 run06_retry1: `-0.010502`
+- gap to `0.53` goal: `-0.013033`
+- updated PMAD w0.15/T4 seven-run mean best: `0.521201`
+- updated PMAD w0.15/T4 seven-run population std: `0.004148`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run07/dformerv2_primkd_logit_only-epoch=42-val_mIoU=0.5170.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run07/lightning_logs/version_0/events.out.tfevents.1778675198.Administrator.22916.0`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run07.md`
+- process note: launched through a hidden `cmd.exe /c` script with UTF-8 Python environment variables. Training completed with exit code `0` and no Windows/Rich teardown crash.
+- conclusion: **negative repeat.** R012 is below the clean baseline mean, below the prior PMAD mean, far below R010's high-tail result, and below the `0.53` success criterion.
+- next step: stop blind PMAD w0.15/T4 repeats. If the loop continues, choose a distinct hypothesis with higher decision value, currently gated around an LMLP/SegFormer-style decoder-head test rather than another PMAD threshold or feature-hint variant.
+
+## 2026-05-13 dformerv2_primkd_logit_only_w015_t4_run06_retry1
+
+- model: `dformerv2_primkd_logit_only`
+- method: PMAD/PrimKD-style logit-only KD repeat at the strongest prior setting.
+- purpose: test whether the repeat-backed `kd_weight=0.15`, `kd_temperature=4.0` setting can produce a high-tail run near the `0.53` goal while adding a sixth stability sample.
+- architecture: `DFormerv2_S + ResNet-18 DepthEncoder + GatedFusion + SimpleFPNDecoder` student, frozen geometry-primary DFormerv2 teacher.
+- teacher checkpoint: `checkpoints/dformerv2_geometry_primary_teacher_run01/dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`
+- settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
+- KD settings: `kd_weight=0.15`, `kd_temperature=4.0`, logit-only, no feature KD, `--save_student_only`
+- recorded validation epochs: `50`
+- best val/mIoU: `0.527469` at epoch `49`
+- last val/mIoU: `0.526316`
+- last-5 mean val/mIoU: `0.519330`
+- last-10 mean val/mIoU: `0.516229`
+- best val/loss: `1.064507` at epoch `7`
+- final train/loss: `0.209408`
+- final train/ce_loss: `0.149212`
+- final train/kd_loss: `0.401306`
+- comparison clean 10-run RGB-D baseline mean best: `0.517397`
+- comparison clean 10-run RGB-D baseline std: `0.004901`
+- comparison clean 10-run RGB-D baseline mean + 1 std: `0.522298`
+- comparison clean 10-run RGB-D baseline best single: `0.524425`
+- comparison prior PMAD w0.15/T4 five-run mean: `0.520795`
+- comparison prior PMAD w0.15/T4 best single: `0.524028`
+- delta vs clean baseline mean: `+0.010072` (`+2.055` baseline std units)
+- delta vs clean baseline mean + 1 std: `+0.005171`
+- delta vs clean baseline best single: `+0.003044`
+- delta vs prior PMAD five-run mean: `+0.006674`
+- delta vs prior PMAD best single: `+0.003441`
+- gap to `0.53` goal: `-0.002531`
+- updated PMAD w0.15/T4 six-run mean best: `0.521907`
+- updated PMAD w0.15/T4 six-run population std: `0.004073`
+- checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run06_retry1/dformerv2_primkd_logit_only-epoch=48-val_mIoU=0.5275.pt`
+- TensorBoard event: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run06_retry1/lightning_logs/version_0/events.out.tfevents.1778662831.Administrator.24204.0`
+- evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run06_retry1.md`
+- process note: first launch `dformerv2_primkd_logit_only_w015_t4_run06` stopped during epoch 0 with Windows `forrtl error (200): program aborting due to window-CLOSE event` and no `val/mIoU`; it is excluded from results.
+- conclusion: **partial positive, below goal.** R010 is the best single PMAD repeat so far and raises the six-run PMAD mean, but it still misses the `0.53` success criterion.
+- next step: do not claim success. Continue with a new single-hypothesis candidate; based on subagent review, the next highest decision-value direction is a training-only IoU-surrogate loss such as a small-weight Lovasz-Softmax term.
+
 ## 2026-05-13 dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1_run01
 
 - model: `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`

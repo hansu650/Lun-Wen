@@ -1,13 +1,10 @@
 """Training entry point for active RGB-D segmentation experiments."""
 import argparse
 import os
-import sys
 import warnings
 
 os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
 os.environ.setdefault("ALBUMENTATIONS_DISABLE_VERSION_CHECK", "1")
-sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 warnings.filterwarnings(
     "ignore",
     message=r"`isinstance\(treespec, LeafSpec\)` is deprecated.*",
@@ -35,12 +32,20 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import LitDFormerV2MidFusion, LitMidFusion
 from src.models.primkd_lit import LitDFormerV2PrimKD
 from src.models.teacher_model import LitDFormerV2GeometryPrimaryTeacher
-from src.models.tgga_adapter import LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1
+from src.models.tgga_adapter import (
+    LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
+    LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1,
+    LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
+    LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
+)
 
 
 ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2": LitDFormerV2TGGAC34Beta002Aux003DetachSemSimpleFPNV2,
+    "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1": LitDFormerV2TGGAC34NoAuxSemGradBeta002SimpleFPNV1,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
+    "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1": LitDFormerV2TGGAC34WeakC3Beta001C4Beta002Aux003DetachSemV1,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
     "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
 }
@@ -148,7 +153,10 @@ def build_model(args):
         )
     if args.model in {
         "dformerv2_mid_fusion",
+        "dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2",
+        "dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",
+        "dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1",
         "dformerv2_geometry_primary_teacher",
     }:
         return model_cls(
@@ -199,8 +207,8 @@ def main():
     monitor_metric = "val/mIoU"
     datamodule = build_datamodule(args)
     model = build_model(args)
-    checkpoint_callback, early_stop_callback, progress_callback = build_callbacks(args, monitor_metric)
-    trainer = build_trainer(args, callbacks=[checkpoint_callback, early_stop_callback, progress_callback])
+    checkpoint_callback, early_stop_callback = build_callbacks(args, monitor_metric)
+    trainer = build_trainer(args, callbacks=[checkpoint_callback, early_stop_callback])
     print(f"Starting training model: {args.model}")
     trainer.fit(model, datamodule=datamodule)
     best_score = checkpoint_callback.best_model_score

@@ -18,12 +18,15 @@ Archived after cleanup:
   - R002 frequency-aware FPN decoder, best val/mIoU `0.516915`.
   - R003 correct-and-entropy PMAD KD, best val/mIoU `0.516597`.
   - R005 TGGA weak-c3 + c4, best val/mIoU `0.518253`.
+- 2026-05-14 mainline cleanup snapshots are archived under `failed_experiments_r001_r013_20260514/`:
+  - TGGA c3/c4, no-aux, and weak-c3 implementation snapshot.
+  - pre-cleanup `train.py` registry snapshot.
+  - depth FFT select, FFT frequency enhance, and FFT HiLo modules.
+  - R013 LMLP remains a documented negative experiment and is not part of the active registry.
 
 Current active models:
 - `dformerv2_mid_fusion`
-- `dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2`
 - `dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1`
-- `dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1`
 - `dformerv2_geometry_primary_teacher`
 - `dformerv2_primkd_logit_only`
 
@@ -34,6 +37,6 @@ TGGA status:
 - R004 is the strongest current diagnostic signal, but no TGGA variant reaches the `0.53` goal or supports a stable improvement claim.
 
 Implementation note:
-- The default `train.py` registry no longer imports archived experimental models.
+- The default `train.py` registry no longer imports archived experimental models, including TGGA c3/weak-c3 variants.
 - Archived decoder blocks moved to `feiqi/models/archived_decoders.py`.
 - Some archived loss implementations remain in `src/losses/` for historical compatibility, but default `train.py` exposes only `--loss_type ce`.

@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: active experiment loop. R002 has completed one full train and did not reach the target.
+Current phase: cleanup before R014. R013 completed one full train and did not reach the target; active code is being cleaned before the PMAD+TGGA c4-only controlled experiment.
 
 Goal: `val/mIoU >= 0.53`.
 
@@ -15,6 +15,16 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-14 Cleanup: nyu056 Mainline
+
+- Branch: `cleanup/nyu056-mainline`.
+- Purpose: merge useful R010/R012/R013 evidence into the mainline while removing failed experiment code from active training choices.
+- Active code kept: clean baseline, PMAD logit-only, geometry-primary teacher, and TGGA c4-only reuse unit.
+- Archived code: TGGA c3/c4 and weak-c3 snapshot, pre-cleanup registry snapshot, depth FFT select, FFT frequency enhance, and FFT HiLo under `final daima/feiqi/failed_experiments_r001_r013_20260514/`.
+- Evidence retained: experiment docs, `miou_list`, reports, metrics, and experiment ledgers.
+- Entry point fix: keep `TQDMProgressBar` enabled and configure stdout/stderr to UTF-8 for Windows/Rich output.
+- Next experiment: `R014_pmad_logit015_t4_tgga_c4only` on `exp/R014-pmad-tgga-c4-v1`.
 
 ### 2026-05-12 R001 Approval: Boundary/Confidence-Selective PMAD KD
 
@@ -140,6 +150,75 @@ Baseline reference:
 - Restored active `train.py`, `src/models/decoder.py`, `src/models/mid_fusion.py`, and `src/models/primkd_lit.py` to the `main` code state so failed R001-R003 variants are no longer active registry entries on the pause branch.
 - Kept all R001-R005 reports, mIoU details, metrics, and coordination records for evidence and review.
 - Did not stage or modify checkpoint files, TensorBoard event files, datasets, or pretrained weights.
+
+### 2026-05-13 R010 Approval: PMAD Logit-Only w0.15/T4 Repeat
+
+- Approved one repeat experiment on branch `exp/R010-primkd-logit-w015-repeat-v1`.
+- Hypothesis: PMAD logit-only w0.15/T4 remains the strongest repeat-backed positive KD direction and may produce a high-tail run while adding one more stability sample.
+- Reason: prior PMAD logit-only w0.15/T4 five-run mean best was `0.520795`, stronger than recent R001-R005 refinements except the single R004 TGGA diagnostic.
+- Planned model name: `dformerv2_primkd_logit_only`.
+- Planned run name: `w015_t4_run06`; completed evidence uses retry checkpoint directory `checkpoints/dformerv2_primkd_logit_only_w015_t4_run06_retry1` because the first launch failed before validation.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, TensorBoard-log, backbone, or encoder change is approved.
+
+### 2026-05-13 R010 Result: Partial Positive, Below Goal
+
+- `dformerv2_primkd_logit_only_w015_t4_run06_retry1` completed 50 validation epochs.
+- best val/mIoU: `0.527469` at epoch `49`; last val/mIoU: `0.526316`.
+- Result is above the clean 10-run baseline mean `0.517397`, above baseline mean + 1 std `0.522298`, above the clean baseline best single `0.524425`, and above the prior PMAD w0.15/T4 best single `0.524028`, but below the `0.53` goal.
+- Evidence: `final daima/miou_list/dformerv2_primkd_logit_only_w015_t4_run06_retry1.md`.
+- Report: `reports/R010-primkd-logit-w015-repeat-v1.md`.
+- Diagnostic: updated PMAD w0.15/T4 six-run mean best is `0.521907`; this supports PMAD as a durable marginal-positive direction, not a solved result.
+- Process note: first non-retry launch stopped during epoch 0 with `forrtl error (200): program aborting due to window-CLOSE event`; no `val/mIoU` was recorded and it is excluded.
+- Audit: static code review `approved_current_diff`; evidence/report audit `PASS`; reproducer audit `audit_passed_no_rerun`.
+- Decision: keep as partial positive evidence, reject as goal-completing method, and continue the loop with a distinct next hypothesis.
+
+### 2026-05-13 R012 Approval: PMAD Logit-Only w0.15/T4 Repeat Run07
+
+- Approved one repeat experiment on branch `exp/R012-primkd-logit-w015-repeat-v2`.
+- Hypothesis: a second fixed-recipe PMAD logit-only w0.15/T4 repeat can test whether the R010 high-tail result is reproducible and may reach the `>=0.53` target without changing model structure or the training recipe.
+- Reason: R010 reached best val/mIoU `0.527469`, the closest current evidence-backed result to the target; the updated six-run PMAD w0.15/T4 mean best is `0.521907`.
+- Planned model name: `dformerv2_primkd_logit_only`.
+- Planned run name: `w015_t4_run07`; checkpoint directory `checkpoints/dformerv2_primkd_logit_only_w015_t4_run07`.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- No code change is approved for this round; the model is already implemented and registered.
+- Launch note: use a hidden `cmd.exe /c` script so the Lightning/TQDM progress stream remains in stdout while avoiding the previous Windows `forrtl error (200): program aborting due to window-CLOSE event`.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, TensorBoard-log, backbone, encoder, or model-code change is approved.
+
+### 2026-05-13 R012 Result: Negative
+
+- `dformerv2_primkd_logit_only_w015_t4_run07` completed 50 validation epochs.
+- best val/mIoU: `0.516967` at epoch `43`; last val/mIoU: `0.508205`.
+- Result is slightly below the clean 10-run baseline mean `0.517397`, below baseline mean + 1 std `0.522298`, below the prior PMAD w0.15/T4 five-run mean `0.520795`, far below R010 run06_retry1 `0.527469`, and below the `0.53` goal.
+- Evidence: `final daima/miou_list/dformerv2_primkd_logit_only_w015_t4_run07.md`.
+- Report: `reports/R012-primkd-logit-w015-repeat-v2.md`.
+- Diagnostic: updated PMAD w0.15/T4 seven-run mean best is `0.521201` with population std `0.004148`; only `1/7` runs exceed the clean baseline best single.
+- Process note: the hidden `cmd.exe /c` launch completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`; no Windows/Rich teardown crash occurred.
+- Audit: static review `PASS`; evidence/report audit `PASS`; reproducer audit `audit_passed_no_rerun`.
+- Decision: reject this repeat as a goal path. Stop blind PMAD w0.15/T4 repeats and pivot to a distinct high-decision-value hypothesis if the loop continues.
+
+### 2026-05-13 R013 Approval: LMLP Decoder Head
+
+- Approved one experiment on branch `exp/R013-lmlp-decoder-v1`.
+- Hypothesis: a DFormer/SegFormer-style c2-c4 LMLP decoder head can test whether SimpleFPN top-down additive fusion is limiting the current DFormerv2 RGB-D fused features.
+- Paper/code evidence: SegFormer All-MLP decoder (`https://arxiv.org/abs/2105.15203`, `https://github.com/NVlabs/SegFormer`) and DFormer local reference `ref_codes/DFormer/models/decoders/LMLPDecoder.py`.
+- Planned model name: `dformerv2_lmlp_decoder`.
+- Planned run name: `run01`; checkpoint directory `checkpoints/dformerv2_lmlp_decoder_run01`.
+- Planned minimal change: add c2/c3/c4 MLP projections, upsample to c2, concatenate, `1x1` fuse + BN + ReLU + dropout + classifier, then upsample logits to input size.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Forbidden-change check: no dataset split, dataloader, augmentation, validation, metric, mIoU, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, TensorBoard-log, backbone, or encoder change is approved.
+
+### 2026-05-13 R013 Result: Weak Near-Baseline, Below Goal
+
+- `dformerv2_lmlp_decoder_run01` completed 50 validation epochs.
+- best val/mIoU: `0.517981` at epoch `41`; last val/mIoU: `0.490231`.
+- Result is only `+0.000584` above the clean 10-run baseline mean `0.517397`, below baseline mean + 1 std `0.522298`, below the clean baseline best single `0.524425`, below R004 c4-only TGGA `0.522849`, below R010 PMAD run06_retry1 `0.527469`, and below the `0.53` goal.
+- Evidence: `final daima/miou_list/dformerv2_lmlp_decoder_run01.md`.
+- Report: `reports/R013-lmlp-decoder-v1.md`.
+- Late-curve caveat: best-to-last drop is `0.027750`.
+- Process note: training completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- Audit: static review `PASS`; evidence/report audit `PASS`; reproducer audit `audit_passed_no_rerun`.
+- Decision: reject this exact LMLP decoder as a goal path. Pause after R013 per user request; do not launch a next full train.
 
 ### 2026-05-12 Orchestrator Candidate Check
 

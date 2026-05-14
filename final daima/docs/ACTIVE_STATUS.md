@@ -8,60 +8,34 @@
 - Result: clean 10-run mean best mIoU `0.517397`, std `0.004901`, best single `0.524425`.
 - Claim: main comparison baseline.
 
-### dformerv2_tgga_c34_beta002_aux003_detachsem_simplefpn_v2
-
-- Status: active but unstable; pending diagnostic rather than blind repeat.
-- Run01 result: best val/mIoU `0.522206` at epoch 48; last val/mIoU `0.489865`.
-- Run02 result: best val/mIoU `0.517437` at epoch 49; last val/mIoU `0.486566`.
-- Two-run mean best val/mIoU: `0.519822`; mean last val/mIoU `0.488215`.
-- Interpretation: weak positive best-mIoU signal but severe late instability.
-- Claim: do not claim stable improvement. Prioritize no-aux TGGA diagnostic before any blind run03.
-
-### dformerv2_tgga_c34_noaux_semgrad_beta002_simplefpn_v1
-
-- Status: negative diagnostic.
-- Purpose: test whether TGGA late collapse is caused by auxiliary CE conflict or by TGGA gate/residual dynamics.
-- Difference from original TGGA: removes auxiliary CE from total loss and uses semantic-gradient gating instead of detached semantic cue, because a detached cue would be untrained without aux CE.
-- Run01 result: best val/mIoU `0.512152` at epoch 48; last val/mIoU `0.492633`.
-- Interpretation: removing aux CE lowers the peak and does not remove late instability.
-- Claim: do not claim as improvement; diagnostic-only negative evidence.
-
 ### dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1
 
-- Status: implemented diagnostic variant / pending run.
-- Purpose: test whether TGGA late collapse is mainly caused by c3 high-resolution residual/gate noise.
-- Claim: no mIoU claim until run result is recorded.
-
-### dformerv2_tgga_c34_weakc3_beta001_c4beta002_aux003_detachsem_v1
-
-- Status: implemented diagnostic variant / pending run.
-- Purpose: keep possible c3 benefit while reducing c3 gate strength.
-- Claim: no mIoU claim until run result is recorded.
+- Status: active only as the c4-safe TGGA unit needed for the controlled R014 PMAD+TGGA experiment.
+- Result: R004 c4-only best val/mIoU `0.522849` at epoch 42, last `0.509320`.
+- Claim: promising diagnostic signal, not a stable improvement and not a goal-completing method.
 
 ### dformerv2_geometry_primary_teacher
 
-- Status: active because PMAD depends on it.
-- Claim: teacher baseline, not a strong standalone result.
+- Status: active because PMAD/R014 depends on it.
+- Result: teacher checkpoint `dformerv2_geometry_primary_teacher-epoch=37-val_mIoU=0.5168.pt`.
+- Claim: teacher dependency, not a standalone paper improvement.
 
 ### dformerv2_primkd_logit_only
 
-- Status: active.
-- Result: PMAD logit-only w0.15 T4 five-run mean around `0.520795`.
-- Claim: marginal positive repeat signal, not strong improvement.
+- Status: active PMAD logit-only branch.
+- Result: R010 best `0.527469`, last `0.526316`; R012 repeat best `0.516967`, last `0.508205`.
+- Claim: strongest partial-positive branch so far, but high variance and still below `0.53`.
 
 ## Archived / Deprecated
 
-- DGBF: negative.
-- CGPC: negative; loss decreases but mIoU does not improve.
-- SGBR-Lite: negative.
-- CGCD / ClassContext: seed-sensitive, five-run mean below baseline.
-- FFT / HiLo / depth FFT: unstable or negative.
-- Context decoder / PPM: archived.
-- CE+Dice / DGBF loss recipe: not active.
+- TGGA c3/c4 and weak-c3 variants: archived after R004/R005 because c3 remained unsafe.
+- R013 LMLP decoder: archived after best `0.517981`, last `0.490231`.
+- R011 Lovasz, hard-pixel losses, boundary/confidence KD, correct/entropy KD, feature hint, global FreqFPN, LightHam/CMX, FFT/HiLo/depth FFT, DGBF, CGPC, SGBR-Lite, CGCD/ClassContext, context decoder/PPM, and CE+Dice: negative, unstable, or not part of the active mainline.
+- Archived code snapshots live under `feiqi/`; recorded evidence remains in `docs/`, `miou_list/`, `reports/`, `metrics/`, and `experiments/`.
 
 ## Registry Policy
 
 - Default `train.py` registry exposes only active models and small legacy teaching baselines.
-- Archived modules live under `feiqi/` or git history and are not imported by `train.py`.
+- Failed experimental code must not be imported by `train.py` unless a future reproduction branch explicitly restores it.
 - Do not cite archived modules as active baselines.
-- Do not claim TGGA is stable until repeat runs are complete.
+- Do not claim a method reaches the goal without a full-train TensorBoard/log/checkpoint-backed best val/mIoU.
