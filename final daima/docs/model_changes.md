@@ -1,5 +1,19 @@
 # Model Changes
 
+## 2026-05-14 R019 Branch-Specific Depth Adapter
+
+- Added `DFormerV2BranchDepthAdapterSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2BranchDepthAdapter` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_branch_depth_adapter` in `train.py`.
+- The DFormerv2 geometry branch remains unchanged and receives R016 official normalized depth.
+- The external DepthEncoder branch receives `torch.clamp(depth * 0.28 + 0.48, min=0.0, max=1.0)` inside the model.
+- `dformerv2_mid_fusion` default behavior remains unchanged.
+- Parameter size remains effectively unchanged at `41.0 M`; no new trainable adapter layers were added.
+- Verification: `compileall`, `train.py --help`, and CUDA forward smoke passed. Smoke confirmed DFormer depth range `[-1.714286, 1.857143]`, DepthEncoder adapter range `[0.000000, 1.000000]`, and logits `(2, 40, 480, 640)`.
+- Full-train result: best val/mIoU `0.532539` at validation epoch `46`, but last val/mIoU `0.495229`, below R016 `0.541121` and unstable.
+- Decision: keep as an active partial-positive research variant for follow-up design, but do not promote it as the corrected baseline or main result.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder architecture, GatedFusion, SimpleFPNDecoder, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-14 R018 DropPath 0.25 Contract Negative Archive
 
 - Temporarily added `drop_path_rate` passthrough to `DFormerV2MidFusionSegmentor` in `src/models/mid_fusion.py`.

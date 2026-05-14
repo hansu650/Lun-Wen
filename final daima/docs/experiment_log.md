@@ -1,5 +1,29 @@
 # Experiment Log
 
+## 2026-05-14 R019 result: branch-specific depth adapter partial positive, unstable
+
+- branch: `exp/R019-branch-depth-adapter-v1`
+- model: `dformerv2_branch_depth_adapter`
+- run: `R019_branch_depth_adapter_run01`
+- hypothesis: R016 official depth normalization helps the DFormerv2 geometry branch, but the external ResNet-18 DepthEncoder may need a branch-specific `[0,1]` depth representation reconstructed inside the model.
+- implementation: DFormerv2 receives the original R016 normalized depth; DepthEncoder receives `torch.clamp(depth * 0.28 + 0.48, 0, 1)`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.532539` at validation epoch `46`
+- last val/mIoU: `0.495229`
+- last-5 mean val/mIoU: `0.509575`
+- last-10 mean val/mIoU: `0.518038`
+- best-to-last drop: `0.037311`
+- best val/loss: `0.958302` at validation epoch `8`
+- final train/loss_epoch: `0.067030`
+- checkpoint: `checkpoints/R019_branch_depth_adapter_run01/dformerv2_branch_depth_adapter-epoch=45-val_mIoU=0.5325.pt`
+- TensorBoard event: `checkpoints/R019_branch_depth_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778765914.Administrator.27112.0`
+- evidence: `miou_list/R019_branch_depth_adapter_run01.md`
+- comparison: R019 is above the fixed-recipe 0.53 threshold, but below the current R016 corrected baseline `0.541121` by `-0.008582`.
+- comparison: R019 is above R018 `0.526282` by `+0.006257`, but the late collapse is much worse.
+- conclusion: **partial-positive original-method signal, not a new best.** Branch-specific depth representation can create a high peak, but the simple `[0,1]` reconstruction is unstable.
+- next step: do not claim R019 as the main result. If continuing this line, stabilize the adapter instead of repeating blindly; otherwise run official Ham parity audit to quantify the remaining DFormer reference-structure gap.
+
 ## 2026-05-14 R018 result: official drop_path_rate 0.25 negative
 
 - branch: `exp/R018-droppath025-contract-v1`

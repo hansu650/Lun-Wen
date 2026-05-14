@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R018 official drop_path_rate 0.25 contract result recorded.
+Current phase: R019 branch-specific depth adapter result recorded.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-14 R019 Result: Branch-Specific Depth Adapter Partial Positive, Unstable
+
+- `R019_branch_depth_adapter_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.532539` at validation epoch `46`; last val/mIoU: `0.495229`.
+- Last-5 mean val/mIoU: `0.509575`; last-10 mean val/mIoU: `0.518038`; best-to-last drop: `0.037311`.
+- Evidence: `final daima/miou_list/R019_branch_depth_adapter_run01.md`.
+- Checkpoint: `final daima/checkpoints/R019_branch_depth_adapter_run01/dformerv2_branch_depth_adapter-epoch=45-val_mIoU=0.5325.pt`.
+- TensorBoard event: `final daima/checkpoints/R019_branch_depth_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778765914.Administrator.27112.0`.
+- Decision: keep as partial-positive original-method evidence, not as a new corrected baseline. It is below R016 `0.541121` and has severe late collapse.
+- Next: stabilize the branch-specific depth path or run official Ham parity audit; do not blindly repeat the exact R019 setting.
 
 ### 2026-05-14 R018 Result: Official DropPath 0.25 Contract Negative
 

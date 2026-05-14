@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-14 R019 Branch-Specific Depth Adapter Boundary
+
+- R019 completed 50 validation epochs with best val/mIoU `0.532539` at validation epoch `46`, but final val/mIoU dropped to `0.495229`.
+- It is above the fixed-recipe `0.53` threshold, but below the current corrected baseline R016 `0.541121` by `-0.008582`.
+- Unlike R015/R016/R017/R018, R019 is an original method direction: it separates the depth representation used by DFormerv2 geometry attention from the representation used by the external ResNet-18 DepthEncoder.
+- Paper boundary: do not claim R019 as the best result or as a stable improvement. It can be described as an exploratory partial-positive signal showing that branch-specific depth representation matters, but the simple `[0,1]` reconstruction is not stable enough.
+- The current corrected baseline remains R016: official label + official depth normalization + local RGB input + local drop path default, best val/mIoU `0.541121`.
+- Strategic implication: future original-method work should stabilize the branch-specific depth path or design a learned/lightweight adapter; blind repeats of the same R019 are low value because the best-to-last drop is `0.037311`.
+
 ## 2026-05-14 R018 DropPath 0.25 Contract Negative Boundary
 
 - R018 retry1 completed 50 validation epochs with best val/mIoU `0.526282` at validation epoch `46`, below the R016 corrected baseline `0.541121` by `-0.014839`.
