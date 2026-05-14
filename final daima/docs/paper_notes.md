@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R023 Corrected Teacher Gate Boundary
+
+- R023 completed 50 validation epochs with best val/mIoU `0.524498` at validation epoch `43`; final val/mIoU is `0.507023`.
+- It is below the corrected R016 baseline `0.541121` by `-0.016623` and below the `0.53` PMAD-teacher gate, with best-to-last drop `0.017475`.
+- Paper boundary: R023 is a teacher-quality gate, not a proposed method or improvement claim. Do not cite it as evidence that the geometry-primary teacher improves the pipeline.
+- Method implication: corrected-contract PMAD should not be run from this teacher checkpoint; a weak teacher would likely anchor the student below R016.
+- Strategic implication: pivot from KD to structure-contract isolation. The next highest-value experiment is raw `DFormerv2_S + OfficialHamDecoder` without the external DepthEncoder/GatedFusion stack, to test whether the local post-backbone fusion is breaking the official feature contract.
+
 ## 2026-05-15 R022 Ham Dropout Parity Boundary
 
 - R022 completed 50 validation epochs with best val/mIoU `0.534332` at validation epoch `50`; final val/mIoU is also `0.534332`.

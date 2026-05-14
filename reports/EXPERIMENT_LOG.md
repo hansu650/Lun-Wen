@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R022 Ham dropout parity result recorded; next step is corrected-contract geometry-primary teacher refresh.
+Current phase: R023 corrected-contract teacher gate is negative; next step is raw DFormerv2-S + official Ham decoder structure isolation.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R023 Result: Corrected Geometry-Primary Teacher Negative Gate
+
+- `R023_geometry_primary_teacher_corrected_contract_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.524498` at validation epoch `43`; last val/mIoU: `0.507023`.
+- Last-5 mean val/mIoU: `0.510467`; last-10 mean val/mIoU: `0.512531`; best-to-last drop: `0.017475`.
+- Evidence: `final daima/miou_list/R023_geometry_primary_teacher_corrected_contract_run01.md`.
+- Checkpoint: `final daima/checkpoints/R023_geometry_primary_teacher_corrected_contract_run01/dformerv2_geometry_primary_teacher-epoch=42-val_mIoU=0.5245.pt`.
+- TensorBoard event: `final daima/checkpoints/R023_geometry_primary_teacher_corrected_contract_run01/lightning_logs/version_0/events.out.tfevents.1778787920.Administrator.37368.0`.
+- Decision: negative teacher gate. The refreshed teacher is below R016 `0.541121` and below `0.53`, so corrected PMAD from this checkpoint is low value.
+- Next: run raw `DFormerv2_S + OfficialHamDecoder` without external DepthEncoder/GatedFusion to isolate the remaining structure-contract gap.
 
 ### 2026-05-15 R022 Result: Ham Dropout Parity Partial Positive
 

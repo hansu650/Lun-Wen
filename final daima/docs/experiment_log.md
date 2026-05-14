@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R023 result: corrected-contract geometry-primary teacher negative gate
+
+- branch: `exp/R023-corrected-contract-teacher-refresh-v1`
+- model: `dformerv2_geometry_primary_teacher`
+- run: `R023_geometry_primary_teacher_corrected_contract_run01`
+- hypothesis: refreshing the geometry-primary teacher under the corrected R015/R016 label/depth contract can decide whether corrected-contract PMAD/KD deserves another student experiment.
+- implementation: no model-code change; existing `DFormerV2GeometryPrimaryTeacherSegmentor` was trained under the current corrected data contract.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.524498` at validation epoch `43`
+- last val/mIoU: `0.507023`
+- last-5 mean val/mIoU: `0.510467`
+- last-10 mean val/mIoU: `0.512531`
+- best-to-last drop: `0.017475`
+- best val/loss: `0.988437` at validation epoch `10`
+- final train/loss_epoch: `0.092329`
+- checkpoint: `checkpoints/R023_geometry_primary_teacher_corrected_contract_run01/dformerv2_geometry_primary_teacher-epoch=42-val_mIoU=0.5245.pt`
+- TensorBoard event: `checkpoints/R023_geometry_primary_teacher_corrected_contract_run01/lightning_logs/version_0/events.out.tfevents.1778787920.Administrator.37368.0`
+- evidence: `miou_list/R023_geometry_primary_teacher_corrected_contract_run01.md`
+- comparison: R023 is below R016 `0.541121` by `-0.016623`, below R022 `0.534332` by `-0.009834`, and below the `0.53` teacher gate.
+- conclusion: **negative teacher gate.** The corrected-contract geometry-primary teacher is still too weak and unstable to justify a corrected PMAD student run from this checkpoint.
+- next step: skip corrected PMAD for now and run a non-KD structure isolation experiment: raw `DFormerv2_S(rgb, depth) -> OfficialHamDecoder`, with no external DepthEncoder or GatedFusion.
+
 ## 2026-05-15 R022 result: Ham dropout parity fix partial positive, still below R016
 
 - branch: `exp/R022-ham-dropout-parity-v1`
