@@ -8,6 +8,8 @@
 - This changes label/ignore semantics and therefore resets the baseline coordinate system. It is not a direct model improvement claim.
 - Did not modify model structure, DFormerv2_S, pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, data augmentation, split files, or validation loader behavior.
 - Verification before full train: `py_compile`, `train.py --help`, label unit mapping, and real-batch forward smoke passed. The real batch preserved class `39` and mapped ignore pixels to `255`.
+- Full-train result: best val/mIoU `0.537398` at validation epoch `45`, last val/mIoU `0.499418`, with checkpoint `checkpoints/R015_label_ignore_official_baseline/dformerv2_mid_fusion-epoch=44-val_mIoU=0.5374.pt`.
+- Decision: keep this label/ignore contract reset as the new official-label baseline. It is a data-label contract correction, not a model-structure change.
 
 ## 2026-05-14 Mainline Cleanup Before R014
 

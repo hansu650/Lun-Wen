@@ -1,5 +1,29 @@
 # Experiment Log
 
+## 2026-05-14 R015 result: official-label baseline success for 0.53 stage
+
+- branch: `exp/R015-label-ignore-contract-v1`
+- model: `dformerv2_mid_fusion`
+- run: `R015_label_ignore_official_baseline`
+- hypothesis: official DFormer NYU label mapping `0 -> 255 ignore`, `1..40 -> 0..39` is required before judging the gap to official DFormerv2-S results.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.537398` at validation epoch `45`
+- last val/mIoU: `0.499418`
+- last-5 mean val/mIoU: `0.520010`
+- last-10 mean val/mIoU: `0.520691`
+- best-to-last drop: `0.037981`
+- best val/loss: `0.969897` at validation epoch `10`
+- last val/loss: `1.291720`
+- final train/loss_epoch: `0.093611`
+- checkpoint: `checkpoints/R015_label_ignore_official_baseline/dformerv2_mid_fusion-epoch=44-val_mIoU=0.5374.pt`
+- TensorBoard event: `checkpoints/R015_label_ignore_official_baseline/lightning_logs/version_0/events.out.tfevents.1778734783.Administrator.15996.0`
+- evidence: `miou_list/R015_label_ignore_official_baseline.md`
+- conclusion: **fixed-recipe 0.53 stage success, new official-label baseline.** R015 crosses `0.53` without changing model structure, split, loader, augmentation, optimizer, scheduler, epoch, batch, lr, worker, early stopping, DFormerv2-S level, or pretrained loading.
+- contract boundary: because R015 changes label/ignore semantics, it is not a direct old-contract gain claim over the previous `0.517397` baseline. Later runs should compare against R015 under the official-label contract.
+- caveat: late instability remains; the best-to-last drop is `0.037981`, so this is not yet a stable `0.56` solution.
+- next step: continue from this official-label baseline and test official depth normalization contract alignment as a single fixed-recipe hypothesis.
+
 ## 2026-05-14 R015 implementation dry-check
 
 - branch: `exp/R015-label-ignore-contract-v1`

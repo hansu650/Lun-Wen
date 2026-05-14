@@ -40,9 +40,36 @@ $env:PYTHONIOENCODING="utf-8"
   --checkpoint_dir ".\checkpoints\R015_label_ignore_official_baseline"
 ```
 
+## Result
+
+R015 completed the fixed-recipe full train with exit code `0`.
+
+- Recorded validation epochs: `50`
+- Best val/mIoU: `0.537398` at validation epoch `45`
+- Last val/mIoU: `0.499418`
+- Last-5 mean val/mIoU: `0.520010`
+- Last-10 mean val/mIoU: `0.520691`
+- Best-to-last drop: `0.037981`
+- Best val/loss: `0.969897` at validation epoch `10`
+- Last val/loss: `1.291720`
+- Final train/loss_epoch: `0.093611`
+- TensorBoard event: `final daima/checkpoints/R015_label_ignore_official_baseline/lightning_logs/version_0/events.out.tfevents.1778734783.Administrator.15996.0`
+- Best checkpoint: `final daima/checkpoints/R015_label_ignore_official_baseline/dformerv2_mid_fusion-epoch=44-val_mIoU=0.5374.pt`
+- mIoU details: `final daima/miou_list/R015_label_ignore_official_baseline.md`
+
+## Interpretation
+
+R015 satisfies the fixed-recipe `0.53` stage target with real TensorBoard and checkpoint evidence. The useful discovery is not PMAD/TGGA stacking; it is that the project needed an official NYU label/ignore contract reset before judging the DFormerv2-S gap.
+
+This run still has late instability: best-to-last drop is `0.037981`, and the last epoch falls to `0.499418`. Therefore R015 should be treated as the new official-label baseline and a strong contract-alignment signal, not as a final stable `0.56` solution.
+
+## Next Direction
+
+Continue on the official-label baseline. The next highest decision-value fixed-recipe candidate is official depth normalization contract alignment, tested as one isolated hypothesis. Do not return to PMAD/TGGA threshold or c3 gate micro-search.
+
 ## Status
 
-Smoke tests passed; full train pending.
+Full train complete; post-run audit pending.
 
 ## Smoke Status
 

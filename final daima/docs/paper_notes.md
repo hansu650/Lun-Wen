@@ -4,8 +4,10 @@
 
 - R014 failed to reach `0.53`, so the loop pivots away from PMAD/TGGA micro-search.
 - The next experiment is a contract-reset baseline, not a new architecture: official DFormer NYU label mapping `0 -> 255 ignore`, `1..40 -> 0..39`.
-- This changes label/ignore semantics and historical mIoU comparability. Any R015 result must be reported as the first official-label baseline, not as a direct improvement over the old `0.517397` baseline.
-- If R015 produces a different mIoU scale, later experiments should compare against R015 and not mix old-contract and official-contract numbers in one leaderboard claim.
+- R015 completed 50 validation epochs with best val/mIoU `0.537398` at validation epoch `45` and last val/mIoU `0.499418`.
+- This satisfies the fixed-recipe `0.53` stage target with TensorBoard/checkpoint evidence, but it changes label/ignore semantics and historical mIoU comparability. Report it as the first official-label baseline, not as a direct improvement over the old `0.517397` baseline.
+- Because the best-to-last drop is `0.037981`, R015 is not a final stable `0.56` result. The paper direction should continue from official contract alignment: first depth normalization, then RGB/BGR channel contract, before revisiting architecture.
+- Later experiments should compare against R015 and not mix old-contract and official-contract numbers in one leaderboard claim.
 
 ## 2026-05-14 Mainline Cleanup Boundary
 

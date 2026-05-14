@@ -18,6 +18,17 @@ Baseline reference:
 
 ## Entries
 
+### 2026-05-14 R015 Result: Official-Label Baseline Reaches 0.53 Stage Target
+
+- `R015_label_ignore_official_baseline` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.537398` at validation epoch `45`; last val/mIoU: `0.499418`.
+- Last-5 mean val/mIoU: `0.520010`; last-10 mean val/mIoU: `0.520691`; best-to-last drop: `0.037981`.
+- Evidence: `final daima/miou_list/R015_label_ignore_official_baseline.md`.
+- Checkpoint: `final daima/checkpoints/R015_label_ignore_official_baseline/dformerv2_mid_fusion-epoch=44-val_mIoU=0.5374.pt`.
+- TensorBoard event: `final daima/checkpoints/R015_label_ignore_official_baseline/lightning_logs/version_0/events.out.tfevents.1778734783.Administrator.15996.0`.
+- Decision: the fixed-recipe `0.53` stage target is met under the official-label contract. This becomes the new baseline coordinate system; do not mix it as a direct improvement claim against old-contract results.
+- Next: continue toward `0.56` with official contract alignment, starting with depth normalization as a single isolated hypothesis.
+
 ### 2026-05-14 Cleanup: nyu056 Mainline
 
 - Branch: `cleanup/nyu056-mainline`.
