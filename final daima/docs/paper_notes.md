@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R022 Ham Dropout Parity Boundary
+
+- R022 completed 50 validation epochs with best val/mIoU `0.534332` at validation epoch `50`; final val/mIoU is also `0.534332`.
+- It improves R021 no-dropout Ham by `+0.006979` and R020 by `+0.001408`, but it remains below the corrected R016 baseline `0.541121` by `-0.006790`.
+- Paper boundary: the official classifier dropout is a useful parity fix, not a novel contribution by itself. Do not claim Ham decoder parity beats the corrected baseline.
+- Method implication: a c2-c4 Ham decoder with classifier dropout is a viable partial-positive architecture variant, but it does not solve the 0.56 target under the fixed recipe.
+- Strategic implication: stop Ham micro-fixes for now. The next paper-relevant step should refresh the geometry-primary teacher under the corrected R015/R016 contract, then use that result to decide whether corrected PMAD is still alive.
+
 ## 2026-05-15 R021 LightHam-Like Decoder Boundary
 
 - R021 completed 50 validation epochs with best val/mIoU `0.527353` at validation epoch `39`, and final val/mIoU `0.501377`.

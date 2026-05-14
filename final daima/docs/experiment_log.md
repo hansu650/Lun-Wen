@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R022 result: Ham dropout parity fix partial positive, still below R016
+
+- branch: `exp/R022-ham-dropout-parity-v1`
+- model: `dformerv2_ham_decoder`
+- run: `R022_ham_dropout_parity_run01`
+- hypothesis: R021 may underperform because it omitted official `BaseDecodeHead.cls_seg()` `Dropout2d(0.1)`; add only that dropout before the Ham classifier.
+- implementation: `OfficialHamDecoder` now applies `Dropout2d(0.1)` before `classifier`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.534332` at validation epoch `50`
+- last val/mIoU: `0.534332`
+- last-5 mean val/mIoU: `0.527687`
+- last-10 mean val/mIoU: `0.512629`
+- best-to-last drop: `0.000000`
+- best val/loss: `1.106345` at validation epoch `21`
+- final train/loss_epoch: `0.059158`
+- checkpoint: `checkpoints/R022_ham_dropout_parity_run01/dformerv2_ham_decoder-epoch=49-val_mIoU=0.5343.pt`
+- TensorBoard event: `checkpoints/R022_ham_dropout_parity_run01/lightning_logs/version_0/events.out.tfevents.1778782418.Administrator.36360.0`
+- evidence: `miou_list/R022_ham_dropout_parity_run01.md`
+- comparison: R022 improves R021 `0.527353` by `+0.006979`, improves R020 `0.532924` by `+0.001408`, but remains below R016 `0.541121` by `-0.006790`.
+- conclusion: **partial-positive parity fix, not a new corrected baseline.** Official classifier dropout matters, and the Ham decoder path is now the strongest retained method variant, but it still does not beat the corrected baseline.
+- next step: stop Ham decoder micro-fixes for now. Run corrected-contract geometry-primary teacher refresh, then decide whether corrected PMAD student is worth running.
+
 ## 2026-05-15 R021 result: LightHam-like decoder negative below R016
 
 - branch: `exp/R021-official-ham-decoder-parity-v1`

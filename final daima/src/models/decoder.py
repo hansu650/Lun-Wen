@@ -124,6 +124,7 @@ class OfficialHamDecoder(nn.Module):
         self.squeeze = ConvBNReLU(ham_in_channels, channels, 1)
         self.hamburger = Hamburger(channels)
         self.align = ConvBNReLU(channels, channels, 1)
+        self.dropout = nn.Dropout2d(0.1)
         self.classifier = nn.Conv2d(channels, num_classes, 1)
         self._init_weights()
 
@@ -148,5 +149,5 @@ class OfficialHamDecoder(nn.Module):
         x = self.squeeze(x)
         x = self.hamburger(x)
         x = self.align(x)
-        x = self.classifier(x)
+        x = self.classifier(self.dropout(x))
         return F.interpolate(x, size=input_size, mode="bilinear", align_corners=False)

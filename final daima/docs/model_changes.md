@@ -1,5 +1,14 @@
 # Model Changes
 
+## 2026-05-15 R022 Ham Classifier Dropout Parity Fix
+
+- Updated `OfficialHamDecoder` in `src/models/decoder.py` to add `self.dropout = nn.Dropout2d(0.1)`.
+- The classifier now uses `self.classifier(self.dropout(x))`, matching the official `BaseDecodeHead.cls_seg()` dropout behavior.
+- No registry, model entry, encoder, DFormerv2-S level, pretrained loading, DepthEncoder, GatedFusion, label mapping, depth normalization, dataset split, loader, augmentation, eval metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, checkpoint artifact, or TensorBoard event file changed.
+- Verification before full train: `compileall`, `train.py --help`, real-batch CUDA forward/backward smoke, and static reviewer passed. Smoke confirmed `Dropout2d(p=0.1)` and logits `(2, 40, 480, 640)`.
+- Full-train result: best val/mIoU `0.534332` at validation epoch `50`, above R021 `0.527353` but below R016 `0.541121`.
+- Decision: keep as a partial-positive Ham parity variant, but do not promote it as the corrected baseline. Further Ham micro-fixes are lower value than corrected-contract PMAD teacher refresh.
+
 ## 2026-05-15 R021 LightHam-Like Decoder
 
 - Added `OfficialHamDecoder`, `NMF2D`, `Hamburger`, and `ConvBNReLU` in `src/models/decoder.py`.

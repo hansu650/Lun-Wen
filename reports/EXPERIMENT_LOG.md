@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R021 LightHam-like decoder result recorded; R022 dropout parity fix is the next short diagnostic.
+Current phase: R022 Ham dropout parity result recorded; next step is corrected-contract geometry-primary teacher refresh.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R022 Result: Ham Dropout Parity Partial Positive
+
+- `R022_ham_dropout_parity_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.534332` at validation epoch `50`; last val/mIoU: `0.534332`.
+- Last-5 mean val/mIoU: `0.527687`; last-10 mean val/mIoU: `0.512629`; best-to-last drop: `0.000000`.
+- Evidence: `final daima/miou_list/R022_ham_dropout_parity_run01.md`.
+- Checkpoint: `final daima/checkpoints/R022_ham_dropout_parity_run01/dformerv2_ham_decoder-epoch=49-val_mIoU=0.5343.pt`.
+- TensorBoard event: `final daima/checkpoints/R022_ham_dropout_parity_run01/lightning_logs/version_0/events.out.tfevents.1778782418.Administrator.36360.0`.
+- Decision: partial-positive parity fix. It improves R021 and R020 but remains below R016 `0.541121`; do not claim it as the corrected baseline.
+- Next: run corrected-contract geometry-primary teacher refresh before any further PMAD student experiment.
 
 ### 2026-05-15 R021 Result: LightHam-Like Decoder Negative
 
