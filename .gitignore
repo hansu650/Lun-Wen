@@ -1,6 +1,9 @@
 .idea/
 
 data/
+pretrained/
+ref_codes/
+agent_workspace/
 
 **/__pycache__/
 *.pyc
@@ -9,9 +12,11 @@ framework_download/checkpoints/
 framework_download/visualizations/
 framework_download/lightning_logs/
 framework_download/src.zip
-dformer_work/checkpoints/*/
+dformer_work/checkpoints/
 teacher's daima/checkpoints/
 final daima/checkpoints/
+**/lightning_logs/
+**/events.out.tfevents.*
 
 *.ckpt
 *.pth
