@@ -1,5 +1,14 @@
 # Model Changes
 
+## 2026-05-14 R015 Official Label/Ignore Contract Reset
+
+- Added `map_nyu40_labels_to_train_ids()` in `src/data_module.py`.
+- The data module now maps NYUDepthV2 raw labels using official DFormer semantics: raw `0` becomes `255` ignore, raw `1..40` becomes train ids `0..39`.
+- Updated `src/utils/metrics.py` so `sanitize_labels()` no longer applies the old dynamic `min>=1` decrement. It now expects train-id labels and masks invalid values while preserving `255` ignore.
+- This changes label/ignore semantics and therefore resets the baseline coordinate system. It is not a direct model improvement claim.
+- Did not modify model structure, DFormerv2_S, pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, data augmentation, split files, or validation loader behavior.
+- Verification before full train: `py_compile`, `train.py --help`, label unit mapping, and real-batch forward smoke passed. The real batch preserved class `39` and mapped ignore pixels to `255`.
+
 ## 2026-05-14 Mainline Cleanup Before R014
 
 - Cleaned the active registry before the next goal-driven experiment.

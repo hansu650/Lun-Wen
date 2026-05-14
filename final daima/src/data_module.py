@@ -11,6 +11,15 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 
+def map_nyu40_labels_to_train_ids(label_tensor: torch.Tensor) -> torch.Tensor:
+    label_tensor = label_tensor.long()
+    ignore_mask = label_tensor == 0
+    label_tensor = label_tensor - 1
+    label_tensor = label_tensor.masked_fill(ignore_mask, 255)
+    invalid = (label_tensor < 0) | ((label_tensor >= 40) & (label_tensor != 255))
+    return label_tensor.masked_fill(invalid, 255)
+
+
 class NYUDataset(Dataset):
     """NYU Depth V2 Dataset for RGB-D Semantic Segmentation"""
     
@@ -112,7 +121,7 @@ class AlbumentationsTransform:
             label_tensor = torch.from_numpy(label_tensor)
         if label_tensor.dim() == 3 and label_tensor.shape[0] == 1:
             label_tensor = label_tensor.squeeze(0)
-        label_tensor = label_tensor.long()
+        label_tensor = map_nyu40_labels_to_train_ids(label_tensor)
         
         return rgb_tensor, depth_tensor, label_tensor
 

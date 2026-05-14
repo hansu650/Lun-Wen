@@ -1,5 +1,12 @@
 # Paper Notes
 
+## 2026-05-14 R015 Official Label Contract Boundary
+
+- R014 failed to reach `0.53`, so the loop pivots away from PMAD/TGGA micro-search.
+- The next experiment is a contract-reset baseline, not a new architecture: official DFormer NYU label mapping `0 -> 255 ignore`, `1..40 -> 0..39`.
+- This changes label/ignore semantics and historical mIoU comparability. Any R015 result must be reported as the first official-label baseline, not as a direct improvement over the old `0.517397` baseline.
+- If R015 produces a different mIoU scale, later experiments should compare against R015 and not mix old-contract and official-contract numbers in one leaderboard claim.
+
 ## 2026-05-14 Mainline Cleanup Boundary
 
 - Active mainline is now restricted to the clean baseline, PMAD logit-only, geometry-primary teacher, and TGGA c4-only reuse unit.

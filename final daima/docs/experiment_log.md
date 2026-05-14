@@ -1,5 +1,17 @@
 # Experiment Log
 
+## 2026-05-14 R015 implementation dry-check
+
+- branch: `exp/R015-label-ignore-contract-v1`
+- planned model: `dformerv2_mid_fusion`
+- planned run: `R015_label_ignore_official_baseline`
+- hypothesis: official DFormer NYU label mapping `0 -> 255 ignore`, `1..40 -> 0..39` is required before judging the gap to official DFormerv2-S results.
+- implementation scope: map labels in `src/data_module.py`; simplify `src/utils/metrics.py` to expect train-id labels plus `255` ignore.
+- contract boundary: this changes label/ignore semantics and must be treated as a new official-label baseline. It is not directly comparable to old runs as a simple improvement claim.
+- forbidden-change check: no dataset split file, sample list, validation/test loader behavior, data augmentation, optimizer, scheduler, epoch, batch, lr, worker, checkpoint artifact, dataset, pretrained weight, TensorBoard log, backbone, encoder, decoder, or model structure change is approved.
+- smoke status: `py_compile`, `train.py --help`, label unit mapping, and real-batch forward smoke passed. Real-batch labels were canonical `0..39/255`, class `39` was present, and the model produced logits `(2, 40, 480, 640)` with CE loss `3.827293`.
+- result status: full train pending; no mIoU claim yet.
+
 ## 2026-05-14 cleanup/nyu056-mainline
 
 - purpose: clean active code and branch state before R014 and the longer `0.56` goal loop.

@@ -2,9 +2,11 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: cleanup before R014. R013 completed one full train and did not reach the target; active code is being cleaned before the PMAD+TGGA c4-only controlled experiment.
+Current phase: R015 official label/ignore contract baseline reset.
 
-Goal: `val/mIoU >= 0.53`.
+Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
+
+Final goal: `val/mIoU >= 0.56`.
 
 Baseline reference:
 
@@ -25,6 +27,18 @@ Baseline reference:
 - Evidence retained: experiment docs, `miou_list`, reports, metrics, and experiment ledgers.
 - Entry point fix: keep `TQDMProgressBar` enabled and configure stdout/stderr to UTF-8 for Windows/Rich output.
 - Next experiment: `R014_pmad_logit015_t4_tgga_c4only` on `exp/R014-pmad-tgga-c4-v1`.
+
+### 2026-05-14 R015 Approval: Label/Ignore Official Contract Baseline Reset
+
+- Branch: `exp/R015-label-ignore-contract-v1`.
+- Hypothesis: official DFormer NYU label mapping `0 -> 255 ignore`, `1..40 -> 0..39` is required before judging the gap to official DFormerv2-S results.
+- Planned model: `dformerv2_mid_fusion`.
+- Planned run: `R015_label_ignore_official_baseline`; checkpoint directory `checkpoints/R015_label_ignore_official_baseline`.
+- Code scope: `final daima/src/data_module.py` and `final daima/src/utils/metrics.py`.
+- Contract boundary: this is a baseline reset, not a direct old-baseline improvement claim.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Forbidden-change check: no split-file, augmentation, loader-size, model, optimizer, scheduler, epoch, batch, lr, worker, checkpoint-artifact, dataset, pretrained-weight, or TensorBoard-log change is approved.
+- Status: approved for smoke test and one full train after reviewer/reproducer checks.
 
 ### 2026-05-12 R001 Approval: Boundary/Confidence-Selective PMAD KD
 

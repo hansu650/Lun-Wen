@@ -4,12 +4,7 @@ import torch
 
 def sanitize_labels(target, num_classes=40, ignore_index=255):
     target = target.long()
-    if target.numel() > 0:
-        tmin = int(target.min().item())
-        tmax = int(target.max().item())
-        if tmin >= 1 and tmax <= num_classes:
-            target = target - 1
-    invalid = (target < 0) | (target >= num_classes)
+    invalid = (target < 0) | ((target >= num_classes) & (target != ignore_index))
     if invalid.any():
         target = target.masked_fill(invalid, ignore_index)
     return target
