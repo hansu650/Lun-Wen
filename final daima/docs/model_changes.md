@@ -1,5 +1,13 @@
 # Model Changes
 
+## 2026-05-14 R017 RGB/BGR Contract Negative Archive
+
+- Temporarily removed `cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)` in `src/data_module.py` to test the official DFormer NYUDepthV2 BGR input contract.
+- Full-train result: best val/mIoU `0.529090` at validation epoch `38`, below the R016 corrected baseline `0.541121`.
+- Decision: do not keep this active code change. `src/data_module.py` is restored to the R016 RGB input path.
+- Archived the failed code diff under `feiqi/failed_experiments_r014_plus_20260514/R017_rgb_bgr_contract.md`.
+- No model structure, DFormerv2_S, pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, label mapping, depth normalization, split files, validation loader behavior, checkpoint artifacts, or TensorBoard event files were changed in the retained mainline.
+
 ## 2026-05-14 R016 Official Depth Normalization Contract
 
 - Added `DFORMER_DEPTH_MEAN = 0.48`, `DFORMER_DEPTH_STD = 0.28`, and `normalize_nyu_depth_to_dformer()` in `src/data_module.py`.

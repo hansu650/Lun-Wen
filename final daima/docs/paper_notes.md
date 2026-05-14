@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-14 R017 RGB/BGR Contract Negative Boundary
+
+- R017 completed 50 validation epochs with best val/mIoU `0.529090` at validation epoch `38`, below the R016 corrected baseline `0.541121` by `-0.012031`.
+- The tested change was official DFormer NYUDepthV2 BGR input behavior. It is a baseline-contract gate, not a method contribution.
+- Result interpretation: despite official DFormer using BGR for NYUDepthV2, the current local DFormerv2 + DepthEncoder + GatedFusion + SimpleFPN adaptation performs better with the R016 RGB input path.
+- Paper boundary: do not report BGR as part of the corrected baseline and do not claim it as a proposed method. It can be mentioned only as an attempted contract check that failed.
+- Current corrected baseline remains R016: official label + official depth normalization + local RGB input, best val/mIoU `0.541121`.
+- Next baseline-contract gate should be DFormerv2-S `drop_path_rate=0.25`; after that, freeze the corrected baseline and move to original fusion/stability innovations if still below `0.56`.
+
 ## 2026-05-14 R016 Official Depth Normalization Result Boundary
 
 - R016 retry1 completed 50 validation epochs with best val/mIoU `0.541121` at validation epoch `49`, improving over the R015 official-label baseline `0.537398` by `+0.003723`.

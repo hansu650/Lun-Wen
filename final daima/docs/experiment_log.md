@@ -1,5 +1,40 @@
 # Experiment Log
 
+## 2026-05-14 R017 result: official RGB/BGR channel contract negative
+
+- branch: `exp/R017-rgb-bgr-contract-v1`
+- model: `dformerv2_mid_fusion`
+- run: `R017_rgb_bgr_official_contract`
+- hypothesis: after R015/R016 align official NYU label and depth contracts, RGB channel order might also need to match official DFormer NYUDepthV2 BGR input behavior.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.529090` at validation epoch `38`
+- last val/mIoU: `0.523078`
+- last-5 mean val/mIoU: `0.494251`
+- last-10 mean val/mIoU: `0.506949`
+- best-to-last drop: `0.006011`
+- best val/loss: `0.973518` at validation epoch `9`
+- last val/loss: `1.228286`
+- final train/loss_epoch: `0.063107`
+- checkpoint: `checkpoints/R017_rgb_bgr_official_contract/dformerv2_mid_fusion-epoch=37-val_mIoU=0.5291.pt`
+- TensorBoard event: `checkpoints/R017_rgb_bgr_official_contract/lightning_logs/version_0/events.out.tfevents.1778750750.Administrator.38244.0`
+- evidence: `miou_list/R017_rgb_bgr_official_contract.md`
+- comparison: R016 official-label-and-depth baseline best was `0.541121`; R017 is lower by `-0.012031`.
+- conclusion: **negative official-contract gate.** Although DFormer official NYUDepthV2 keeps BGR input, this local adaptation performs better with the R016 RGB input path. Do not merge active BGR code into main.
+- archive: failed active-code diff recorded in `feiqi/failed_experiments_r014_plus_20260514/R017_rgb_bgr_contract.md`; `src/data_module.py` is restored to the R016 RGB path.
+- next step: keep R016 as corrected baseline and test the next official baseline-contract gate, DFormerv2-S `drop_path_rate=0.25`.
+
+## 2026-05-14 R017 dry-check: official RGB/BGR channel contract
+
+- branch: `exp/R017-rgb-bgr-contract-v1`
+- model: `dformerv2_mid_fusion`
+- planned run: `R017_rgb_bgr_official_contract`
+- hypothesis: after R015/R016 align the official NYU label and depth contracts, RGB channel order should match the official DFormer NYUDepthV2 input contract. Official DFormer keeps OpenCV BGR for non-SUNRGBD datasets, while the local data module converted BGR to RGB.
+- official code evidence: `ref_codes/DFormer/utils/dataloader/RGBXDataset.py` sets `rgb_mode = "BGR"` for non-SUNRGBD datasets and `_open_image(..., "BGR")` returns `cv2.imread(...)` without `BGR2RGB`.
+- implementation scope: `src/data_module.py` only. Remove `cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)` and keep R015 label mapping plus R016 depth normalization unchanged.
+- forbidden-change check: no model, decoder, backbone, split file, label mapping, depth normalization, metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, pretrained-loading logic, checkpoint artifact, dataset, or TensorBoard event change is approved.
+- result status: smoke and full train pending; no mIoU claim yet.
+
 ## 2026-05-14 R016 result: official depth normalization improves official-contract baseline
 
 - branch: `exp/R016-depth-norm-contract-v1`

@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R016 official label+depth contract baseline reached `0.541121`; continue toward `0.56`.
+Current phase: R017 official RGB/BGR channel contract run.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,30 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-14 R017 Result: Official RGB/BGR Contract Negative
+
+- `R017_rgb_bgr_official_contract` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.529090` at validation epoch `38`; last val/mIoU: `0.523078`.
+- Last-5 mean val/mIoU: `0.494251`; last-10 mean val/mIoU: `0.506949`; best-to-last drop: `0.006011`.
+- Evidence: `final daima/miou_list/R017_rgb_bgr_official_contract.md`.
+- Checkpoint: `final daima/checkpoints/R017_rgb_bgr_official_contract/dformerv2_mid_fusion-epoch=37-val_mIoU=0.5291.pt`.
+- TensorBoard event: `final daima/checkpoints/R017_rgb_bgr_official_contract/lightning_logs/version_0/events.out.tfevents.1778750750.Administrator.38244.0`.
+- Decision: reject the BGR input contract for this local adaptation. It is `-0.012031` below R016 `0.541121`.
+- Code handling: the failed active `BGR2RGB` removal was archived under `final daima/feiqi/failed_experiments_r014_plus_20260514/R017_rgb_bgr_contract.md`, and `src/data_module.py` is restored to the R016 RGB path.
+- Next: keep R016 as corrected baseline and test DFormerv2-S official `drop_path_rate=0.25`.
+
+### 2026-05-14 R017 Approval: Official RGB/BGR Channel Contract
+
+- Branch: `exp/R017-rgb-bgr-contract-v1`.
+- Hypothesis: after official label and depth contracts, RGB channel order should match official DFormer NYUDepthV2 input behavior.
+- Planned model: `dformerv2_mid_fusion`.
+- Planned run: `R017_rgb_bgr_official_contract`; checkpoint directory `checkpoints/R017_rgb_bgr_official_contract`.
+- Code scope: `final daima/src/data_module.py` only.
+- Official source: DFormer `RGBXDataset.py` uses `rgb_mode = "BGR"` for non-SUNRGBD datasets and does not convert BGR to RGB in that mode.
+- Fixed recipe remains `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`, no scheduler.
+- Claim boundary: this is official input-contract alignment, not a novel method.
+- Status: approved for smoke test and one full train.
 
 ### 2026-05-14 R016 Result: Official Depth Normalization Raises Baseline To 0.541121
 
