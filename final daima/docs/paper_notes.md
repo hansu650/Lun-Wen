@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-15 R021 LightHam-Like Decoder Boundary
+
+- R021 completed 50 validation epochs with best val/mIoU `0.527353` at validation epoch `39`, and final val/mIoU `0.501377`.
+- It is below the corrected R016 baseline `0.541121` by `-0.013768` and below R020 `0.532924` by `-0.005571`.
+- The implementation tests a self-contained c2-c4 LightHam-like decoder on top of the local DFormerv2 + DepthEncoder + GatedFusion fused features.
+- Audit boundary: R021 is not strict official Ham parity because it omits official `BaseDecodeHead.cls_seg()` `Dropout2d(0.1)`. Do not claim it as an exact reproduction of DFormer Ham.
+- Paper boundary: do not claim Ham decoder improves the corrected baseline. This result instead supports that simply replacing SimpleFPN with a heavier Ham-like c2-c4 decoder is not sufficient and may overfit the local fused features.
+- Strategic implication: run one minimal R022 dropout parity fix to close the identified implementation gap. If R022 still fails to beat R016/R020, stop Ham decoder work and pivot to corrected-contract PMAD teacher refresh.
+
 ## 2026-05-15 R020 Branch-Specific Depth Blend Adapter Boundary
 
 - R020 completed 50 validation epochs with best val/mIoU `0.532924` at validation epoch `41`, but final val/mIoU dropped to `0.503238`.

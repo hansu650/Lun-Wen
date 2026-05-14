@@ -1,5 +1,29 @@
 # Experiment Log
 
+## 2026-05-15 R021 result: LightHam-like decoder negative below R016
+
+- branch: `exp/R021-official-ham-decoder-parity-v1`
+- model: `dformerv2_ham_decoder`
+- run: `R021_official_ham_decoder_parity_run01`
+- hypothesis: after R015/R016 align label and depth contracts, the remaining gap to DFormerv2-S reference performance may come from the decoder/head contract; test a self-contained c2-c4 LightHam-like decoder instead of `SimpleFPNDecoder`.
+- implementation: c2/c3/c4 fused features are upsampled to c2, concatenated, passed through `squeeze -> NMF Hamburger -> align -> classifier`, and upsampled to input resolution.
+- audit caveat: this implementation omits official `BaseDecodeHead.cls_seg()` `Dropout2d(0.1)`, so R021 should be described as LightHam-like rather than strict official Ham parity.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.527353` at validation epoch `39`
+- last val/mIoU: `0.501377`
+- last-5 mean val/mIoU: `0.503158`
+- last-10 mean val/mIoU: `0.506140`
+- best-to-last drop: `0.025976`
+- best val/loss: `1.121119` at validation epoch `7`
+- final train/loss_epoch: `0.177592`
+- checkpoint: `checkpoints/R021_official_ham_decoder_parity_run01/dformerv2_ham_decoder-epoch=38-val_mIoU=0.5274.pt`
+- TensorBoard event: `checkpoints/R021_official_ham_decoder_parity_run01/lightning_logs/version_0/events.out.tfevents.1778777116.Administrator.12456.0`
+- evidence: `miou_list/R021_official_ham_decoder_parity_run01.md`
+- comparison: R021 is below R016 `0.541121` by `-0.013768`, below R020 `0.532924` by `-0.005571`, and barely below R010 `0.527469` by `-0.000116`.
+- conclusion: **negative decoder result.** The current LightHam-like decoder does not improve the corrected pipeline and shows late instability.
+- next step: run one minimal R022 Ham parity fix by adding official `Dropout2d(0.1)` before the classifier. If it remains below R016/R020, stop Ham decoder work and move to corrected-contract PMAD teacher refresh.
+
 ## 2026-05-15 R020 result: branch-specific depth blend adapter improves stability but remains below R016
 
 - branch: `exp/R020-depth-blend-adapter-v1`

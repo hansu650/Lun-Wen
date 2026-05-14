@@ -1,5 +1,17 @@
 # Model Changes
 
+## 2026-05-15 R021 LightHam-Like Decoder
+
+- Added `OfficialHamDecoder`, `NMF2D`, `Hamburger`, and `ConvBNReLU` in `src/models/decoder.py`.
+- Added `DFormerV2HamDecoderSegmentor` and `LitDFormerV2HamDecoder` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_ham_decoder` in `train.py`.
+- The new model keeps DFormerv2-S, pretrained loading, external ResNet-18 DepthEncoder, GatedFusion, label mapping, depth normalization, data/eval path, optimizer, scheduler, batch size, epoch count, learning rate, worker count, and early stopping unchanged.
+- The decoder uses the official DFormer Ham input pattern, c2/c3/c4, with NMF defaults equivalent to `MD_S=1`, `MD_R=64`, `TRAIN_STEPS=6`, and `EVAL_STEPS=7`.
+- Audit caveat: R021 omits official `BaseDecodeHead.cls_seg()` `Dropout2d(0.1)`, so this code is LightHam-like and not strict official Ham parity.
+- Verification before full train: `compileall`, `train.py --help`, real-batch CUDA forward/backward smoke, and static reviewer passed. Smoke produced logits `(2, 40, 480, 640)`, CE loss `4.244293`, and peak memory about `5035.6 MB`.
+- Full-train result: best val/mIoU `0.527353` at validation epoch `39`, last val/mIoU `0.501377`, below R016 `0.541121`.
+- Decision: do not promote this no-dropout Ham decoder as a successful method. A single R022 dropout parity fix is justified; if it fails, archive the Ham decoder branch and move on.
+
 ## 2026-05-15 R020 Branch-Specific Depth Blend Adapter
 
 - Added `DFormerV2BranchDepthBlendAdapterSegmentor` in `src/models/mid_fusion.py`.

@@ -35,6 +35,7 @@ from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
     LitDFormerV2BranchDepthAdapter,
     LitDFormerV2BranchDepthBlendAdapter,
+    LitDFormerV2HamDecoder,
     LitDFormerV2MidFusion,
     LitMidFusion,
 )
@@ -45,6 +46,7 @@ from src.models.tgga_adapter import LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSem
 
 ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
+    "dformerv2_ham_decoder": LitDFormerV2HamDecoder,
     "dformerv2_branch_depth_adapter": LitDFormerV2BranchDepthAdapter,
     "dformerv2_branch_depth_blend_adapter": LitDFormerV2BranchDepthBlendAdapter,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
@@ -155,6 +157,7 @@ def build_model(args):
         )
     if args.model in {
         "dformerv2_mid_fusion",
+        "dformerv2_ham_decoder",
         "dformerv2_branch_depth_adapter",
         "dformerv2_branch_depth_blend_adapter",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",

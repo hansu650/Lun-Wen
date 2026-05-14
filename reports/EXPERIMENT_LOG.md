@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R020 branch-specific depth blend adapter result recorded.
+Current phase: R021 LightHam-like decoder result recorded; R022 dropout parity fix is the next short diagnostic.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R021 Result: LightHam-Like Decoder Negative
+
+- `R021_official_ham_decoder_parity_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.527353` at validation epoch `39`; last val/mIoU: `0.501377`.
+- Last-5 mean val/mIoU: `0.503158`; last-10 mean val/mIoU: `0.506140`; best-to-last drop: `0.025976`.
+- Evidence: `final daima/miou_list/R021_official_ham_decoder_parity_run01.md`.
+- Checkpoint: `final daima/checkpoints/R021_official_ham_decoder_parity_run01/dformerv2_ham_decoder-epoch=38-val_mIoU=0.5274.pt`.
+- TensorBoard event: `final daima/checkpoints/R021_official_ham_decoder_parity_run01/lightning_logs/version_0/events.out.tfevents.1778777116.Administrator.12456.0`.
+- Decision: negative relative to R016 `0.541121`. The implementation is LightHam-like, not strict official Ham parity, because it omits official `Dropout2d(0.1)` before classification.
+- Next: run one minimal R022 dropout parity fix; if it remains below R016/R020, stop Ham decoder work and move to corrected-contract PMAD teacher refresh.
 
 ### 2026-05-15 R020 Result: Branch-Specific Depth Blend Adapter Stabilization Signal
 
