@@ -1,9 +1,0 @@
-batch_size: 2
-data_root: C:\Users\qintian\Desktop\qintian\data\NYUDepthv2
-dformerv2_pretrained: C:\Users\qintian\Desktop\qintian\dformer_work\checkpoints\pretrained\DFormerv2_Small_pretrained.pth
-image_size: !!python/tuple
-- 480
-- 640
-lr: 6.0e-05
-num_classes: 40
-num_workers: 4
