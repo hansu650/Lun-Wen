@@ -1,5 +1,30 @@
 # Experiment Log
 
+## 2026-05-14 R018 result: official drop_path_rate 0.25 negative
+
+- branch: `exp/R018-droppath025-contract-v1`
+- model tested: `dformerv2_mid_fusion_dpr025`
+- official result run: `R018_dformerv2_mid_fusion_dpr025_retry1`
+- hypothesis: official DFormerv2-S NYUDepthV2 uses `drop_path_rate=0.25`; testing that value after R015/R016 corrected label and depth contracts might close part of the gap to the DFormerv2-S reference result.
+- full train status: retry1 completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.526282` at validation epoch `46`
+- last val/mIoU: `0.522893`
+- last-5 mean val/mIoU: `0.512694`
+- last-10 mean val/mIoU: `0.513363`
+- best-to-last drop: `0.003389`
+- best val/loss: `0.948631` at validation epoch `10`
+- final train/loss_epoch: `0.078764`
+- checkpoint: `checkpoints/R018_dformerv2_mid_fusion_dpr025_retry1/dformerv2_mid_fusion_dpr025-epoch=45-val_mIoU=0.5263.pt`
+- TensorBoard event: `checkpoints/R018_dformerv2_mid_fusion_dpr025_retry1/lightning_logs/version_0/events.out.tfevents.1778760450.Administrator.7836.0`
+- evidence: `miou_list/R018_dformerv2_mid_fusion_dpr025_retry1.md`
+- comparison: R016 corrected baseline best was `0.541121`; R018 is lower by `-0.014839`.
+- comparison: R010 PMAD logit-only best was `0.527469`; R018 is lower by `-0.001187`.
+- conclusion: **negative official-contract gate.** `drop_path_rate=0.25` should not be promoted for this local DFormerv2 + DepthEncoder + GatedFusion + SimpleFPN pipeline.
+- process note: the first foreground launch reached 42 validation epochs and then stopped progressing after the command wrapper timed out and the stdout/progress pipe became unhealthy. It is partial process evidence only and is excluded from the result.
+- archive: failed active-code diff recorded in `feiqi/failed_experiments_r014_plus_20260514/R018_droppath025_contract.md`; `src/models/mid_fusion.py` and `train.py` are restored to the R017/R016 mainline state.
+- next step: keep R016 as the corrected baseline. If continuing below `0.56`, stop baseline-contract micro-gates unless a new mismatch is found; next highest-value candidates are official Ham parity audit, corrected-contract PMAD teacher refresh, or a branch-specific depth input adapter.
+
 ## 2026-05-14 R017 result: official RGB/BGR channel contract negative
 
 - branch: `exp/R017-rgb-bgr-contract-v1`

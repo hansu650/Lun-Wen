@@ -1,5 +1,15 @@
 # Model Changes
 
+## 2026-05-14 R018 DropPath 0.25 Contract Negative Archive
+
+- Temporarily added `drop_path_rate` passthrough to `DFormerV2MidFusionSegmentor` in `src/models/mid_fusion.py`.
+- Temporarily registered `dformerv2_mid_fusion_dpr025` in `train.py`, with `drop_path_rate=0.25`, while preserving the default `dformerv2_mid_fusion` path.
+- Smoke checks passed: `compileall`, `train.py --help`, real-batch CUDA forward, and DropPath inspection (`29` DropPath modules, max/last `0.25`).
+- Full-train retry1 result: best val/mIoU `0.526282` at validation epoch `46`, below the R016 corrected baseline `0.541121`.
+- Decision: do not keep this active code change. `src/models/mid_fusion.py` and `train.py` are restored to the R017/R016 mainline state.
+- Archived the failed code diff under `feiqi/failed_experiments_r014_plus_20260514/R018_droppath025_contract.md`.
+- No retained model structure, DFormerv2-S level, pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, data preprocessing, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, split files, validation loader behavior, checkpoint artifacts, or TensorBoard event files were changed in the mainline.
+
 ## 2026-05-14 R017 RGB/BGR Contract Negative Archive
 
 - Temporarily removed `cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)` in `src/data_module.py` to test the official DFormer NYUDepthV2 BGR input contract.

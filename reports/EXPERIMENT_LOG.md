@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R017 official RGB/BGR channel contract run.
+Current phase: R018 official drop_path_rate 0.25 contract result recorded.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,19 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-14 R018 Result: Official DropPath 0.25 Contract Negative
+
+- `R018_dformerv2_mid_fusion_dpr025_retry1` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.526282` at validation epoch `46`; last val/mIoU: `0.522893`.
+- Last-5 mean val/mIoU: `0.512694`; last-10 mean val/mIoU: `0.513363`; best-to-last drop: `0.003389`.
+- Evidence: `final daima/miou_list/R018_dformerv2_mid_fusion_dpr025_retry1.md`.
+- Checkpoint: `final daima/checkpoints/R018_dformerv2_mid_fusion_dpr025_retry1/dformerv2_mid_fusion_dpr025-epoch=45-val_mIoU=0.5263.pt`.
+- TensorBoard event: `final daima/checkpoints/R018_dformerv2_mid_fusion_dpr025_retry1/lightning_logs/version_0/events.out.tfevents.1778760450.Administrator.7836.0`.
+- Decision: reject the `drop_path_rate=0.25` contract gate for the local mid-fusion adaptation. It is `-0.014839` below R016 `0.541121`.
+- Code handling: the failed active model-entry diff was archived under `final daima/feiqi/failed_experiments_r014_plus_20260514/R018_droppath025_contract.md`, and `src/models/mid_fusion.py` / `train.py` are restored to the corrected mainline state.
+- Process note: the first foreground launch reached 42 validation epochs but hung after stdout/progress pipe timeout; retry1 is the valid full-train evidence.
+- Next: keep R016 as corrected baseline. If still pursuing `0.56`, choose between official Ham parity audit, corrected-contract PMAD teacher refresh, or branch-specific depth input adaptation.
 
 ### 2026-05-14 R017 Result: Official RGB/BGR Contract Negative
 

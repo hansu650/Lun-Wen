@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-14 R018 DropPath 0.25 Contract Negative Boundary
+
+- R018 retry1 completed 50 validation epochs with best val/mIoU `0.526282` at validation epoch `46`, below the R016 corrected baseline `0.541121` by `-0.014839`.
+- The tested change was official DFormerv2-S NYUDepthV2 `drop_path_rate=0.25`; it is a baseline-contract gate, not a method contribution.
+- Result interpretation: unlike R015 label mapping and R016 depth normalization, raising the local DFormerv2-S drop path rate from `0.1` to `0.25` does not help this mid-fusion adaptation.
+- Paper boundary: do not report `drop_path_rate=0.25` as part of the corrected local baseline and do not claim it as a proposed method. It can be mentioned only as an attempted official-contract check that failed.
+- Current corrected baseline remains R016: official label + official depth normalization + local RGB input + local DFormerv2-S drop path default, best val/mIoU `0.541121`.
+- Strategic implication: the remaining gap to `0.56` is unlikely to be solved by more small official-contract gates unless another concrete mismatch is found. The next paper-relevant step should either quantify official Ham decoder parity or start an original corrected-contract method such as refreshed PMAD teacher/student or branch-specific depth input adaptation.
+
 ## 2026-05-14 R017 RGB/BGR Contract Negative Boundary
 
 - R017 completed 50 validation epochs with best val/mIoU `0.529090` at validation epoch `38`, below the R016 corrected baseline `0.541121` by `-0.012031`.
