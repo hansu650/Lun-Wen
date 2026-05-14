@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R019 branch-specific depth adapter result recorded.
+Current phase: R020 branch-specific depth blend adapter result recorded.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,18 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R020 Result: Branch-Specific Depth Blend Adapter Stabilization Signal
+
+- `R020_branch_depth_blend_adapter_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.532924` at validation epoch `41`; last val/mIoU: `0.503238`.
+- Last-5 mean val/mIoU: `0.520456`; last-10 mean val/mIoU: `0.516804`; best-to-last drop: `0.029686`.
+- Alpha first/last: `0.050022` / `0.051455`.
+- Evidence: `final daima/miou_list/R020_branch_depth_blend_adapter_run01.md`.
+- Checkpoint: `final daima/checkpoints/R020_branch_depth_blend_adapter_run01/dformerv2_branch_depth_blend_adapter-epoch=40-val_mIoU=0.5329.pt`.
+- TensorBoard event: `final daima/checkpoints/R020_branch_depth_blend_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778771221.Administrator.41764.0`.
+- Decision: keep as partial-positive stabilization evidence, not as a new corrected baseline. It is below R016 `0.541121`.
+- Next: target late stability directly, use a richer branch-specific adapter, or run official Ham parity audit for reference-gap diagnosis.
 
 ### 2026-05-14 R019 Result: Branch-Specific Depth Adapter Partial Positive, Unstable
 

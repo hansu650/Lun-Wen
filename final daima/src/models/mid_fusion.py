@@ -113,6 +113,21 @@ class DFormerV2BranchDepthAdapterSegmentor(DFormerV2MidFusionSegmentor):
         return dformer_feats, aligned_depth, fused_feats
 
 
+class DFormerV2BranchDepthBlendAdapterSegmentor(DFormerV2BranchDepthAdapterSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.depth_blend_logit = nn.Parameter(torch.tensor(-2.944439))
+
+    @property
+    def depth_blend_alpha(self):
+        return torch.sigmoid(self.depth_blend_logit)
+
+    def depth_for_depth_encoder(self, depth):
+        depth01 = torch.clamp(depth * 0.28 + 0.48, min=0.0, max=1.0)
+        alpha = self.depth_blend_alpha.to(device=depth.device, dtype=depth.dtype)
+        return (1.0 - alpha) * depth + alpha * depth01
+
+
 class LitDFormerV2MidFusion(BaseLitSeg):
     def __init__(
         self,
@@ -156,6 +171,35 @@ class LitDFormerV2BranchDepthAdapter(BaseLitSeg):
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2BranchDepthBlendAdapter(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2BranchDepthBlendAdapterSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def training_step(self, batch, batch_idx):
+        loss = super().training_step(batch, batch_idx)
+        self.log("train/depth_blend_alpha", self.model.depth_blend_alpha.detach(), prog_bar=False, on_step=False, on_epoch=True)
+        return loss
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)

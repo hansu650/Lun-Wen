@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-15 R020 Branch-Specific Depth Blend Adapter Boundary
+
+- R020 completed 50 validation epochs with best val/mIoU `0.532924` at validation epoch `41`, but final val/mIoU dropped to `0.503238`.
+- It slightly improves the R019 peak (`0.532539`) and has a better late-window profile than R019, but it is still below the current corrected baseline R016 `0.541121` by `-0.008197`.
+- The learned global alpha stays near the initialization (`0.050022` to `0.051455`), so the model did not move strongly toward the hard `[0,1]` DepthEncoder branch.
+- Paper boundary: do not claim R020 as a new main result or stable improvement. It supports the narrative that branch-specific depth representation has a real but unstable signal; the simple global blend is not enough to close the gap to `0.56`.
+- Current corrected baseline remains R016, best val/mIoU `0.541121`.
+- Strategic implication: future work should avoid blind repeats of R019/R020. The next method should target late stability or use a richer per-stage/per-pixel depth adapter; official Ham parity remains useful only if the aim is reference-gap diagnosis rather than originality.
+
 ## 2026-05-14 R019 Branch-Specific Depth Adapter Boundary
 
 - R019 completed 50 validation epochs with best val/mIoU `0.532539` at validation epoch `46`, but final val/mIoU dropped to `0.495229`.

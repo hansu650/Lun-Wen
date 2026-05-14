@@ -1,5 +1,19 @@
 # Model Changes
 
+## 2026-05-15 R020 Branch-Specific Depth Blend Adapter
+
+- Added `DFormerV2BranchDepthBlendAdapterSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2BranchDepthBlendAdapter` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_branch_depth_blend_adapter` in `train.py`.
+- The DFormerv2 geometry branch remains unchanged and receives R016 official normalized depth.
+- The external DepthEncoder branch receives `(1-alpha)*depth + alpha*depth01`, where `depth01 = clamp(depth * 0.28 + 0.48, 0, 1)`.
+- `alpha = sigmoid(depth_blend_logit)` is a single learnable scalar initialized to about `0.05`, and `train/depth_blend_alpha` is logged for audit.
+- `dformerv2_mid_fusion` and `dformerv2_branch_depth_adapter` remain unchanged.
+- Verification: `compileall`, `train.py --help`, and CUDA forward smoke passed. Smoke confirmed initial alpha `0.050000`, blended DepthEncoder input range `[-1.628571, 1.814286]`, and logits `(2, 40, 480, 640)`.
+- Full-train result: best val/mIoU `0.532924` at validation epoch `41`, last val/mIoU `0.503238`, alpha last `0.051455`.
+- Decision: keep as a partial-positive stabilization variant, but do not promote it as the corrected baseline because it remains below R016 `0.541121`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder architecture, GatedFusion, SimpleFPNDecoder, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-14 R019 Branch-Specific Depth Adapter
 
 - Added `DFormerV2BranchDepthAdapterSegmentor` in `src/models/mid_fusion.py`.

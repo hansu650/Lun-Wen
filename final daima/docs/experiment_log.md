@@ -1,5 +1,29 @@
 # Experiment Log
 
+## 2026-05-15 R020 result: branch-specific depth blend adapter improves stability but remains below R016
+
+- branch: `exp/R020-depth-blend-adapter-v1`
+- model: `dformerv2_branch_depth_blend_adapter`
+- run: `R020_branch_depth_blend_adapter_run01`
+- hypothesis: R019's hard DepthEncoder input switch can be stabilized by a learnable global convex blend between R016 official-normalized depth and reconstructed `[0,1]` depth.
+- implementation: DFormerv2 receives the original R016 normalized depth; DepthEncoder receives `(1-alpha)*depth + alpha*depth01`, where `depth01 = clamp(depth * 0.28 + 0.48, 0, 1)` and `alpha` is initialized near `0.05`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.532924` at validation epoch `41`
+- last val/mIoU: `0.503238`
+- last-5 mean val/mIoU: `0.520456`
+- last-10 mean val/mIoU: `0.516804`
+- best-to-last drop: `0.029686`
+- best val/loss: `0.979484` at validation epoch `8`
+- final train/loss_epoch: `0.089993`
+- alpha first/last: `0.050022` / `0.051455`
+- checkpoint: `checkpoints/R020_branch_depth_blend_adapter_run01/dformerv2_branch_depth_blend_adapter-epoch=40-val_mIoU=0.5329.pt`
+- TensorBoard event: `checkpoints/R020_branch_depth_blend_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778771221.Administrator.41764.0`
+- evidence: `miou_list/R020_branch_depth_blend_adapter_run01.md`
+- comparison: R020 is slightly above R019 `0.532539` by `+0.000385`, but below R016 `0.541121` by `-0.008197`.
+- conclusion: **partial-positive stabilization signal, not a new best.** R020 improves R019 stability through late epochs but still drops at the final validation epoch and does not beat the corrected baseline.
+- next step: do not blindly repeat global alpha blend. Either target late stability directly or test a richer branch-specific adapter; if the goal is reference-gap diagnosis, run official Ham parity audit.
+
 ## 2026-05-14 R019 result: branch-specific depth adapter partial positive, unstable
 
 - branch: `exp/R019-branch-depth-adapter-v1`
