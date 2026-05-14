@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R025 result: DepthEncoder BN eval peak positive but unstable
+
+- branch: `exp/R025-depth-encoder-bn-eval-v1`
+- model: `dformerv2_depth_encoder_bn_eval`
+- run: `R025_depth_encoder_bn_eval_run01`
+- hypothesis: small-batch BatchNorm drift inside the external ResNet-18 DepthEncoder may destabilize the corrected mid-fusion path.
+- implementation: added a model entry that keeps only DepthEncoder `BatchNorm2d` modules in eval mode during training; BN affine parameters remain trainable.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.532572` at validation epoch `47`
+- last val/mIoU: `0.496030`
+- last-5 mean val/mIoU: `0.520333`
+- last-10 mean val/mIoU: `0.517969`
+- best-to-last drop: `0.036541`
+- best val/loss: `0.961156` at validation epoch `9`
+- final train/loss_epoch: `0.095029`
+- checkpoint: `checkpoints/R025_depth_encoder_bn_eval_run01/dformerv2_depth_encoder_bn_eval-epoch=46-val_mIoU=0.5326.pt`
+- TensorBoard event: `checkpoints/R025_depth_encoder_bn_eval_run01/lightning_logs/version_0/events.out.tfevents.1778798018.Administrator.26772.0`
+- evidence: `miou_list/R025_depth_encoder_bn_eval_run01.md`
+- comparison: R025 is above R024 `0.530186` by `+0.002386`, but below R022 `0.534332` by `-0.001760` and below R016 `0.541121` by `-0.008549`.
+- conclusion: **partial-positive peak, stability negative.** DepthEncoder BN eval did not fix late collapse and should not become the next base.
+- next step: do not build on BN eval. Test official-style initialization of only local random modules (`GatedFusion` + `SimpleFPNDecoder`) while leaving pretrained DFormerv2 and DepthEncoder untouched.
+
 ## 2026-05-15 R024 result: raw DFormerv2-S + Ham stable positive below corrected baseline
 
 - branch: `exp/R024-geometry-primary-ham-decoder-v1`

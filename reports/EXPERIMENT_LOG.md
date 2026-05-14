@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R024 raw DFormerv2-S + Ham is stable positive but below corrected baseline; next step is corrected mid-fusion stability.
+Current phase: R025 DepthEncoder BN eval is unstable; next step is local random-module initialization.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R025 Result: DepthEncoder BN Eval Peak Positive, Stability Negative
+
+- `R025_depth_encoder_bn_eval_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.532572` at validation epoch `47`; last val/mIoU: `0.496030`.
+- Last-5 mean val/mIoU: `0.520333`; last-10 mean val/mIoU: `0.517969`; best-to-last drop: `0.036541`.
+- Evidence: `final daima/miou_list/R025_depth_encoder_bn_eval_run01.md`.
+- Checkpoint: `final daima/checkpoints/R025_depth_encoder_bn_eval_run01/dformerv2_depth_encoder_bn_eval-epoch=46-val_mIoU=0.5326.pt`.
+- TensorBoard event: `final daima/checkpoints/R025_depth_encoder_bn_eval_run01/lightning_logs/version_0/events.out.tfevents.1778798018.Administrator.26772.0`.
+- Decision: partial-positive peak but unstable. Do not use BN eval as the next base.
+- Next: test official-style initialization of only local random modules (`GatedFusion` + `SimpleFPNDecoder`).
 
 ### 2026-05-15 R024 Result: Raw DFormerv2-S + Ham Stable Positive Below Corrected Baseline
 

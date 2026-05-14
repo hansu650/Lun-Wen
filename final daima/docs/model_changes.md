@@ -1,5 +1,17 @@
 # Model Changes
 
+## 2026-05-15 R025 DepthEncoder BN Eval
+
+- Added `DFormerV2DepthEncoderBNEvalSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2DepthEncoderBNEval` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_depth_encoder_bn_eval` in `train.py`.
+- The new segmentor subclasses the corrected mid-fusion model and overrides `train(mode=True)` to call `super().train(mode)`, then set only `self.depth_encoder` `nn.BatchNorm2d` modules to eval mode.
+- DepthEncoder BN affine parameters remain trainable; no parameters are frozen and optimizer construction is unchanged.
+- Verification before full train: syntax compile, `train.py --help`, real-batch CUDA forward/backward smoke, and read-only planner review passed. Smoke confirmed 20 DepthEncoder BN modules in eval mode, 8 fusion BN modules still in train mode, DepthEncoder BN affine gradients present, logits `(2, 40, 480, 640)`, CE loss `3.640506`, and peak memory about `5724.2 MB`.
+- Full-train result: best val/mIoU `0.532572` at validation epoch `47`, last val/mIoU `0.496030`.
+- Decision: do not promote BN eval as a stable base because late collapse remains severe and the peak is below R016/R022.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder architecture, GatedFusion equations, SimpleFPNDecoder, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R024 Geometry-Primary Ham Decoder Entry
 
 - Added `DFormerV2GeometryPrimaryHamDecoderSegmentor` in `src/models/teacher_model.py`.

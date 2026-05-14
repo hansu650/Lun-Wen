@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R025 DepthEncoder BN Eval Boundary
+
+- R025 completed 50 validation epochs with best val/mIoU `0.532572` at validation epoch `47`; final val/mIoU dropped to `0.496030`.
+- It is slightly above R024 `0.530186`, but below R022 `0.534332` and below the corrected R016 baseline `0.541121`.
+- The best-to-last drop is `0.036541`, so the original late-instability problem is not solved.
+- Paper boundary: do not claim DepthEncoder BN eval as a stable improvement. It can be cited only as a negative/partial diagnostic showing that small-batch BN drift is not the main cause of the corrected pipeline gap.
+- Strategic implication: do not build R026 on BN eval. The next fixed-recipe experiment should target initialization of local random modules or another single structural stability issue.
+
 ## 2026-05-15 R024 Raw DFormerv2 + Ham Boundary
 
 - R024 completed 50 validation epochs with best val/mIoU `0.530186` at validation epoch `45`; final val/mIoU is `0.529383`.

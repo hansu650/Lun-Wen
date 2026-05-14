@@ -138,6 +138,16 @@ class DFormerV2BranchDepthBlendAdapterSegmentor(DFormerV2BranchDepthAdapterSegme
         return (1.0 - alpha) * depth + alpha * depth01
 
 
+class DFormerV2DepthEncoderBNEvalSegmentor(DFormerV2MidFusionSegmentor):
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if mode:
+            for module in self.depth_encoder.modules():
+                if isinstance(module, nn.BatchNorm2d):
+                    module.eval()
+        return self
+
+
 class LitDFormerV2MidFusion(BaseLitSeg):
     def __init__(
         self,
@@ -234,6 +244,30 @@ class LitDFormerV2BranchDepthBlendAdapter(BaseLitSeg):
         loss = super().training_step(batch, batch_idx)
         self.log("train/depth_blend_alpha", self.model.depth_blend_alpha.detach(), prog_bar=False, on_step=False, on_epoch=True)
         return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2DepthEncoderBNEval(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2DepthEncoderBNEvalSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
