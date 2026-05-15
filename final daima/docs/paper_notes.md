@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R032 SimpleFPN C1 Detail Gate Boundary
+
+- R032 completed 50 validation epochs with best val/mIoU `0.536603` at validation epoch `50`; final val/mIoU is also `0.536603`.
+- It crosses `0.53` and is near R027/R030, but remains below the corrected R016 baseline `0.541121` by `-0.004518`.
+- The c1 detail alpha barely changes from `0.998994` to `0.998770`, so the near-baseline c1 strength parameter is not an active explanatory mechanism in this run.
+- Paper boundary: do not claim c1 detail gating as an improvement over the corrected baseline. It can be described as a partial-positive decoder-detail diagnostic.
+- Strategic implication: stop c1-gate tuning. The next hypothesis should test head-level complementarity between SimpleFPN detail and Ham semantic context.
+
 ## 2026-05-15 R031 SimpleFPN Classifier Dropout Boundary
 
 - R031 completed 50 validation epochs with best val/mIoU `0.531544` at validation epoch `40`; final val/mIoU is `0.525760`.

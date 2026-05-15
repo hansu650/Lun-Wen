@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R032 SimpleFPN C1 Detail Gate
+
+- Added `SimpleFPNDecoderC1DetailGate` in `src/models/decoder.py`.
+- Added `DFormerV2SimpleFPNC1DetailGateSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2SimpleFPNC1DetailGate` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_simplefpn_c1_detail_gate` in `train.py`.
+- The new decoder keeps the SimpleFPN topology but computes `p1 = alpha * lateral1(c1) + upsample(p2)`, with `alpha = sigmoid(c1_detail_logit)`.
+- `c1_detail_logit` is initialized to `6.906755`, giving initial `alpha` about `0.999`.
+- Logged `train/c1_detail_alpha` for audit without changing loss or optimizer behavior.
+- The corrected baseline `dformerv2_mid_fusion` remains unchanged.
+- Smoke verification confirmed decoder type `SimpleFPNDecoderC1DetailGate`, initial alpha `0.999000`, logits `(2, 40, 480, 640)`, CE loss `3.659918`, nonzero `c1_detail_logit` gradient, classifier gradient sum `75.462433`, and peak memory about `5739.9 MB`.
+- Full-train result: best val/mIoU `0.536603` at validation epoch `50`, last val/mIoU `0.536603`, alpha first/last `0.998994` / `0.998770`.
+- Decision: keep as partial-positive evidence but do not promote; alpha barely moved and the peak remains below R016 `0.541121`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, GatedFusion equations, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R031 SimpleFPN Classifier Dropout
 
 - Added `SimpleFPNDecoderWithClassifierDropout` in `src/models/decoder.py`.

@@ -1,5 +1,29 @@
 # Experiment Log
 
+## 2026-05-15 R032 result: SimpleFPN c1 detail gate partial positive below R016
+
+- branch: `exp/R032-simplefpn-c1-detail-gate-v1`
+- model: `dformerv2_simplefpn_c1_detail_gate`
+- run: `R032_simplefpn_c1_detail_gate_run01`
+- hypothesis: the strongest corrected SimpleFPN path may be limited by noisy high-resolution `c1` detail, so a learnable c1 detail strength initialized near baseline-equivalent 1.0 may improve stability or peak mIoU.
+- implementation: added a separate `SimpleFPNDecoderC1DetailGate` entry with `p1 = alpha * lateral1(c1) + upsample(p2)` and logged `train/c1_detail_alpha`; the baseline `dformerv2_mid_fusion` entry remains unchanged.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.536603` at validation epoch `50`
+- last val/mIoU: `0.536603`
+- last-5 mean val/mIoU: `0.505390`
+- last-10 mean val/mIoU: `0.509657`
+- best-to-last drop: `0.000000`
+- best val/loss: `0.965559` at validation epoch `9`
+- final train/loss_epoch: `0.061732`
+- c1 detail alpha first/last: `0.998994` / `0.998770`
+- checkpoint: `checkpoints/R032_simplefpn_c1_detail_gate_run01/dformerv2_simplefpn_c1_detail_gate-epoch=49-val_mIoU=0.5366.pt`
+- TensorBoard event: `checkpoints/R032_simplefpn_c1_detail_gate_run01/lightning_logs/version_0/events.out.tfevents.1778824352.Administrator.34648.0`
+- evidence: `miou_list/R032_simplefpn_c1_detail_gate_run01.md`
+- comparison: R032 crosses `0.53`, but is below R016 `0.541121` by `-0.004518`, below R027 `0.536739` by `-0.000136`, and far below the final `0.56` goal.
+- conclusion: **partial-positive below corrected baseline.** The last-epoch spike is useful evidence, but alpha barely moved, so this exact c1 detail gate is not enough.
+- next step: do not tune the c1 gate. Run R033, a distinct SimpleFPN + Ham logit fusion experiment, to test whether Ham semantic context complements the SimpleFPN head.
+
 ## 2026-05-15 R031 result: SimpleFPN classifier dropout negative
 
 - branch: `exp/R031-simplefpn-classifier-dropout-v1`

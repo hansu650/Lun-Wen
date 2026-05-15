@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R031 SimpleFPN classifier dropout is negative relative to R016; next step is SimpleFPN c1 detail gate.
+Current phase: R032 SimpleFPN c1 detail gate is partial-positive but below R016; next step is SimpleFPN + Ham logit fusion.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,18 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R032 Result: SimpleFPN C1 Detail Gate Partial Positive Below R016
+
+- `R032_simplefpn_c1_detail_gate_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.536603` at validation epoch `50`; last val/mIoU: `0.536603`.
+- Last-5 mean val/mIoU: `0.505390`; last-10 mean val/mIoU: `0.509657`; best-to-last drop: `0.000000`.
+- C1 detail alpha first/last: `0.998994` / `0.998770`.
+- Evidence: `final daima/miou_list/R032_simplefpn_c1_detail_gate_run01.md`.
+- Checkpoint: `final daima/checkpoints/R032_simplefpn_c1_detail_gate_run01/dformerv2_simplefpn_c1_detail_gate-epoch=49-val_mIoU=0.5366.pt`.
+- TensorBoard event: `final daima/checkpoints/R032_simplefpn_c1_detail_gate_run01/lightning_logs/version_0/events.out.tfevents.1778824352.Administrator.34648.0`.
+- Decision: partial-positive below R016. It crosses `0.53` but does not beat the corrected baseline and alpha barely moves.
+- Next: test SimpleFPN + Ham logit fusion instead of more c1 gate tuning.
 
 ### 2026-05-15 R031 Result: SimpleFPN Classifier Dropout Negative
 

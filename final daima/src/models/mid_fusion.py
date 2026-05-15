@@ -4,7 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
-from .decoder import OfficialHamDecoder, SimpleFPNDecoder, SimpleFPNDecoderWithClassifierDropout
+from .decoder import (
+    OfficialHamDecoder,
+    SimpleFPNDecoder,
+    SimpleFPNDecoderC1DetailGate,
+    SimpleFPNDecoderWithClassifierDropout,
+)
 from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .encoder import DepthEncoder, RGBEncoder
 
@@ -227,6 +232,15 @@ class DFormerV2SimpleFPNClassifierDropoutSegmentor(DFormerV2MidFusionSegmentor):
         )
 
 
+class DFormerV2SimpleFPNC1DetailGateSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.decoder = SimpleFPNDecoderC1DetailGate(
+            self.rgb_encoder.out_channels,
+            num_classes=num_classes,
+        )
+
+
 class DFormerV2GatedFusionResidualTopSegmentor(DFormerV2MidFusionSegmentor):
     def __init__(self, num_classes=40, dformerv2_pretrained=None):
         super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
@@ -428,6 +442,35 @@ class LitDFormerV2SimpleFPNClassifierDropout(BaseLitSeg):
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2SimpleFPNC1DetailGate(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2SimpleFPNC1DetailGateSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def training_step(self, batch, batch_idx):
+        loss = super().training_step(batch, batch_idx)
+        self.log("train/c1_detail_alpha", self.model.decoder.c1_detail_alpha.detach(), prog_bar=False, on_step=False, on_epoch=True)
+        return loss
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
