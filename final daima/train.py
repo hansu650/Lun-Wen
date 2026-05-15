@@ -41,6 +41,7 @@ from src.models.mid_fusion import (
     LitDFormerV2MidFusion,
     LitDFormerV2OfficialInitLocalModules,
     LitDFormerV2PrimaryResidualDepthInjection,
+    LitDFormerV2SimpleFPNClassifierDropout,
     LitMidFusion,
 )
 from src.models.primkd_lit import LitDFormerV2PrimKD
@@ -60,6 +61,7 @@ ACTIVE_MODEL_REGISTRY = {
     "dformerv2_official_init_local_modules": LitDFormerV2OfficialInitLocalModules,
     "dformerv2_primary_residual_depth": LitDFormerV2PrimaryResidualDepthInjection,
     "dformerv2_gated_fusion_residual_top": LitDFormerV2GatedFusionResidualTop,
+    "dformerv2_simplefpn_classifier_dropout": LitDFormerV2SimpleFPNClassifierDropout,
     "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
     "dformerv2_geometry_primary_ham_decoder": LitDFormerV2GeometryPrimaryHamDecoder,
     "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
@@ -176,6 +178,7 @@ def build_model(args):
         "dformerv2_official_init_local_modules",
         "dformerv2_primary_residual_depth",
         "dformerv2_gated_fusion_residual_top",
+        "dformerv2_simplefpn_classifier_dropout",
         "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",
         "dformerv2_geometry_primary_ham_decoder",
         "dformerv2_geometry_primary_teacher",

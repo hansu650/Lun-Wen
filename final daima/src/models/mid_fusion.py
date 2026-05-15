@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .base_lit import BaseLitSeg
-from .decoder import OfficialHamDecoder, SimpleFPNDecoder
+from .decoder import OfficialHamDecoder, SimpleFPNDecoder, SimpleFPNDecoderWithClassifierDropout
 from .dformerv2_encoder import DFormerv2_S, load_dformerv2_pretrained
 from .encoder import DepthEncoder, RGBEncoder
 
@@ -217,6 +217,16 @@ class DFormerV2PrimaryResidualDepthInjectionSegmentor(DFormerV2MidFusionSegmento
         ])
 
 
+class DFormerV2SimpleFPNClassifierDropoutSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.decoder = SimpleFPNDecoderWithClassifierDropout(
+            self.rgb_encoder.out_channels,
+            num_classes=num_classes,
+            dropout_p=0.1,
+        )
+
+
 class DFormerV2GatedFusionResidualTopSegmentor(DFormerV2MidFusionSegmentor):
     def __init__(self, num_classes=40, dformerv2_pretrained=None):
         super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
@@ -391,6 +401,30 @@ class LitDFormerV2PrimaryResidualDepthInjection(BaseLitSeg):
             dice_weight=dice_weight,
         )
         self.model = DFormerV2PrimaryResidualDepthInjectionSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2SimpleFPNClassifierDropout(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2SimpleFPNClassifierDropoutSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )

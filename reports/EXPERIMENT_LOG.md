@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R030 GatedFusion residual-top is partial-positive but below R016; next step is SimpleFPN classifier dropout.
+Current phase: R031 SimpleFPN classifier dropout is negative relative to R016; next step is SimpleFPN c1 detail gate.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R031 Result: SimpleFPN Classifier Dropout Negative
+
+- `R031_simplefpn_classifier_dropout_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.531544` at validation epoch `40`; last val/mIoU: `0.525760`.
+- Last-5 mean val/mIoU: `0.508009`; last-10 mean val/mIoU: `0.507366`; best-to-last drop: `0.005784`.
+- Evidence: `final daima/miou_list/R031_simplefpn_classifier_dropout_run01.md`.
+- Checkpoint: `final daima/checkpoints/R031_simplefpn_classifier_dropout_run01/dformerv2_simplefpn_classifier_dropout-epoch=39-val_mIoU=0.5315.pt`.
+- TensorBoard event: `final daima/checkpoints/R031_simplefpn_classifier_dropout_run01/lightning_logs/version_0/events.out.tfevents.1778819244.Administrator.21360.0`.
+- Decision: negative relative to R016. SimpleFPN classifier dropout does not reproduce the R022 Ham dropout benefit.
+- Next: test a separate SimpleFPN c1 detail-gate entry.
 
 ### 2026-05-15 R030 Result: GatedFusion Residual-Top Partial Positive Below R016
 

@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R031 result: SimpleFPN classifier dropout negative
+
+- branch: `exp/R031-simplefpn-classifier-dropout-v1`
+- model: `dformerv2_simplefpn_classifier_dropout`
+- run: `R031_simplefpn_classifier_dropout_run01`
+- hypothesis: the strongest corrected R016 SimpleFPN path may benefit from the same small classifier regularizer that helped R022 Ham dropout parity.
+- implementation: added a separate `SimpleFPNDecoderWithClassifierDropout` entry that applies `Dropout2d(0.1)` immediately before the SimpleFPN classifier; the baseline `dformerv2_mid_fusion` entry remains unchanged.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.531544` at validation epoch `40`
+- last val/mIoU: `0.525760`
+- last-5 mean val/mIoU: `0.508009`
+- last-10 mean val/mIoU: `0.507366`
+- best-to-last drop: `0.005784`
+- best val/loss: `0.971063` at validation epoch `11`
+- final train/loss_epoch: `0.064540`
+- checkpoint: `checkpoints/R031_simplefpn_classifier_dropout_run01/dformerv2_simplefpn_classifier_dropout-epoch=39-val_mIoU=0.5315.pt`
+- TensorBoard event: `checkpoints/R031_simplefpn_classifier_dropout_run01/lightning_logs/version_0/events.out.tfevents.1778819244.Administrator.21360.0`
+- evidence: `miou_list/R031_simplefpn_classifier_dropout_run01.md`
+- comparison: R031 crosses `0.53`, but is below R016 `0.541121` by `-0.009577`, below R027 `0.536739`, below R030 `0.536454`, and below R022 `0.534332`.
+- conclusion: **negative relative to corrected baseline.** Classifier dropout helps the Ham decoder path, but does not transfer to the SimpleFPN baseline.
+- next step: stop SimpleFPN dropout variants. Run R032, a separate SimpleFPN c1 detail-gate entry, to test whether high-resolution c1 detail noise is limiting the strongest path.
+
 ## 2026-05-15 R030 result: GatedFusion residual-top partial positive below R016
 
 - branch: `exp/R030-gated-fusion-residual-top-v1`

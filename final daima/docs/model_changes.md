@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-15 R031 SimpleFPN Classifier Dropout
+
+- Added `SimpleFPNDecoderWithClassifierDropout` in `src/models/decoder.py`.
+- Added `DFormerV2SimpleFPNClassifierDropoutSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2SimpleFPNClassifierDropout` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_simplefpn_classifier_dropout` in `train.py`.
+- The new decoder subclasses the existing SimpleFPN behavior and applies `Dropout2d(0.1)` immediately before `classifier`.
+- The corrected baseline `dformerv2_mid_fusion` remains unchanged.
+- Smoke verification confirmed decoder type `SimpleFPNDecoderWithClassifierDropout`, dropout `p=0.1`, logits `(2, 40, 480, 640)`, CE loss `3.702577`, classifier gradient sum `76.829285`, and peak memory about `5720.9 MB`.
+- Full-train result: best val/mIoU `0.531544` at validation epoch `40`, last val/mIoU `0.525760`.
+- Decision: reject classifier dropout on the SimpleFPN path as a main direction because it remains below R016 `0.541121`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, GatedFusion equations, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R030 GatedFusion Residual-Top
 
 - Added `GatedFusionResidualTop` in `src/models/mid_fusion.py`.

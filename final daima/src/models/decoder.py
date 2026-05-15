@@ -34,6 +34,24 @@ class SimpleFPNDecoder(nn.Module):
         return self.classifier(p1)
 
 
+class SimpleFPNDecoderWithClassifierDropout(SimpleFPNDecoder):
+    def __init__(self, in_channels, out_channels=128, num_classes=40, dropout_p=0.1):
+        super().__init__(in_channels, out_channels=out_channels, num_classes=num_classes)
+        self.dropout = nn.Dropout2d(dropout_p)
+
+    def forward(self, features, input_size):
+        c1, c2, c3, c4 = features
+
+        p4 = self.lateral4(c4)
+        p3 = self.lateral3(c3) + F.interpolate(p4, size=c3.shape[-2:], mode="bilinear", align_corners=False)
+        p2 = self.lateral2(c2) + F.interpolate(p3, size=c2.shape[-2:], mode="bilinear", align_corners=False)
+        p1 = self.lateral1(c1) + F.interpolate(p2, size=c1.shape[-2:], mode="bilinear", align_corners=False)
+
+        p1 = self.smooth(p1)
+        p1 = F.interpolate(p1, size=input_size, mode="bilinear", align_corners=False)
+        return self.classifier(self.dropout(p1))
+
+
 class ConvBNReLU(nn.Sequential):
     def __init__(self, in_channels, out_channels, kernel_size=1, padding=0, use_relu=True):
         layers = [

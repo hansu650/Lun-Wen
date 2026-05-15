@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R031 SimpleFPN Classifier Dropout Boundary
+
+- R031 completed 50 validation epochs with best val/mIoU `0.531544` at validation epoch `40`; final val/mIoU is `0.525760`.
+- It crosses `0.53`, but is below the corrected R016 baseline `0.541121`, R027 `0.536739`, R030 `0.536454`, and R022 `0.534332`.
+- Paper boundary: do not claim SimpleFPN classifier dropout as a method improvement or as a useful transfer of the Ham dropout parity fix.
+- Method implication: the R022 gain was specific to the Ham classifier/head path; the current SimpleFPN bottleneck is not solved by generic classifier dropout.
+- Strategic implication: move to a different SimpleFPN-specific mechanism, especially controlling high-resolution `c1` detail contribution, rather than tuning dropout rate.
+
 ## 2026-05-15 R030 GatedFusion Residual-Top Boundary
 
 - R030 completed 50 validation epochs with best val/mIoU `0.536454` at validation epoch `42`; final val/mIoU is `0.529803`.
