@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R033 SimpleFPN Ham Logit Fusion Boundary
+
+- R033 completed 50 validation epochs with best val/mIoU `0.533020` at validation epoch `49`; final val/mIoU is `0.528883`.
+- It crosses `0.53`, but remains below the corrected R016 baseline `0.541121` by `-0.008101` and below R027/R032/R030.
+- Ham logit alpha increased from `0.050669` to `0.090593`, so the auxiliary Ham logit branch was used, but logits-level residual fusion did not improve the SimpleFPN peak.
+- Paper boundary: do not claim SimpleFPN+Ham logit fusion as an improvement over the corrected baseline. It is a partial-positive diagnostic showing Ham context alone is not sufficient when injected only at logits.
+- Strategic implication: avoid scalar Ham-logit tuning. If using Ham again, it should be a more mechanistic feature-level question; otherwise prioritize high-stage residual or stability-contract diagnostics.
+
 ## 2026-05-15 R032 SimpleFPN C1 Detail Gate Boundary
 
 - R032 completed 50 validation epochs with best val/mIoU `0.536603` at validation epoch `50`; final val/mIoU is also `0.536603`.

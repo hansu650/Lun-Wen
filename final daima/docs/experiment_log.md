@@ -1,5 +1,30 @@
 # Experiment Log
 
+## 2026-05-15 R033 result: SimpleFPN Ham logit fusion below corrected baseline
+
+- branch: `exp/R033-simplefpn-ham-logit-fusion-v1`
+- model: `dformerv2_simplefpn_ham_logit_fusion`
+- run: `R033_simplefpn_ham_logit_fusion_run01`
+- hypothesis: SimpleFPN has the strongest corrected peak while Ham variants provide contextual logits, so a small learnable Ham logit residual may complement the R016 SimpleFPN path.
+- implementation: added a separate `SimpleFPNHamLogitFusionDecoder` that computes `simple_fpn_logits + alpha * ham_logits`, with `alpha = sigmoid(ham_logit_logit)` initialized near `0.05`; the baseline `dformerv2_mid_fusion` entry remains unchanged.
+- smoke status: syntax compile, `train.py --help`, and real-batch CUDA forward/backward smoke passed. Smoke confirmed decoder type `SimpleFPNHamLogitFusionDecoder`, initial alpha `0.050000`, logits `(2, 40, 480, 640)`, CE loss `3.807222`, nonzero alpha gradient, nonzero SimpleFPN/Ham classifier gradients, and peak memory about `5775.9 MB`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.533020` at validation epoch `49`
+- last val/mIoU: `0.528883`
+- last-5 mean val/mIoU: `0.527628`
+- last-10 mean val/mIoU: `0.519951`
+- best-to-last drop: `0.004137`
+- best val/loss: `0.977882` at validation epoch `9`
+- final train/loss_epoch: `0.052197`
+- ham logit alpha first/last: `0.050669` / `0.090593`
+- checkpoint: `checkpoints/R033_simplefpn_ham_logit_fusion_run01/dformerv2_simplefpn_ham_logit_fusion-epoch=48-val_mIoU=0.5330.pt`
+- TensorBoard event: `checkpoints/R033_simplefpn_ham_logit_fusion_run01/lightning_logs/version_0/events.out.tfevents.1778829755.Administrator.10268.0`
+- evidence: `miou_list/R033_simplefpn_ham_logit_fusion_run01.md`
+- comparison: R033 crosses `0.53`, but is below R016 `0.541121` by `-0.008101`, below R015 `0.537398`, below R027 `0.536739`, below R032 `0.536603`, below R030 `0.536454`, and below the final `0.56` goal.
+- conclusion: **partial-positive but not mainline.** The Ham residual branch was learned open, but logits-level Ham complementarity is weaker than the corrected SimpleFPN baseline.
+- next step: pause for discussion as requested. If continuing fixed-recipe search, avoid more Ham-logit scalar tuning and consider a cleaner high-stage-only residual-top diagnostic or a broader stability/contract review.
+
 ## 2026-05-15 R032 result: SimpleFPN c1 detail gate partial positive below R016
 
 - branch: `exp/R032-simplefpn-c1-detail-gate-v1`

@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R033 SimpleFPN Ham Logit Fusion
+
+- Added `SimpleFPNHamLogitFusionDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2SimpleFPNHamLogitFusionSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2SimpleFPNHamLogitFusion` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_simplefpn_ham_logit_fusion` in `train.py`.
+- The new decoder keeps the corrected R016 fusion/base path and computes `simple_fpn_logits + alpha * ham_logits`, where `alpha = sigmoid(ham_logit_logit)`.
+- `ham_logit_logit` is initialized to `-2.944439`, giving initial `alpha` about `0.05`.
+- Logged `train/ham_logit_alpha` for audit without changing loss or optimizer behavior.
+- The corrected baseline `dformerv2_mid_fusion` remains unchanged.
+- Smoke verification confirmed decoder type `SimpleFPNHamLogitFusionDecoder`, initial alpha `0.050000`, logits `(2, 40, 480, 640)`, CE loss `3.807222`, alpha gradient `0.010959`, Ham classifier gradient sum `15.861186`, SimpleFPN classifier gradient sum `76.114777`, and peak memory about `5775.9 MB`.
+- Full-train result: best val/mIoU `0.533020` at validation epoch `49`, last val/mIoU `0.528883`, ham logit alpha first/last `0.050669` / `0.090593`.
+- Decision: reject as an active mainline improvement because it remains below R016 `0.541121`; archive or keep only as partial-positive Ham-complementarity evidence.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, GatedFusion equations, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R032 SimpleFPN C1 Detail Gate
 
 - Added `SimpleFPNDecoderC1DetailGate` in `src/models/decoder.py`.
