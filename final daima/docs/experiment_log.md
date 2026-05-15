@@ -1,5 +1,30 @@
 # Experiment Log
 
+## 2026-05-15 R034 result: MASG gate-only depth stop-gradient negative unstable
+
+- branch: `exp/R034-masg-gated-fusion-v1`
+- model: `dformerv2_masg_fusion`
+- run: `R034_masg_gated_fusion_run01`
+- hypothesis: detach only the depth projection used by the `GatedFusion` gate to test whether depth-to-gate gradient coupling causes R016 late instability, while preserving the RGB gate path and depth value-path gradients.
+- implementation: added a separate `GatedFusionGateStopGrad` module and `DFormerV2MASGFusionSegmentor`; the baseline `dformerv2_mid_fusion`, `DepthEncoder`, `SimpleFPNDecoder`, data pipeline, metric, loss, optimizer, scheduler, batch size, epoch count, learning rate, workers, early stopping, DFormerv2-S level, and pretrained loading remain unchanged.
+- smoke status: syntax compile, `train.py --help`, registry lookup, small CUDA forward/backward, and real NYU batch CUDA forward/backward passed. Smoke confirmed logits `(1, 40, 480, 640)`, CE loss `3.733857`, nonzero `depth_proj` gradient, nonzero gate gradient, and DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.539322` at validation epoch `40`
+- last val/mIoU: `0.518738`
+- last-5 mean val/mIoU: `0.504633`
+- last-10 mean val/mIoU: `0.512033`
+- best-to-last drop: `0.020584`
+- best val/loss: `0.966439` at validation epoch `8`
+- last val/loss: `1.230551`
+- final train/loss_epoch: `0.059559`
+- checkpoint: `checkpoints/R034_masg_gated_fusion_run01/dformerv2_masg_fusion-epoch=39-val_mIoU=0.5393.pt`
+- TensorBoard event: `checkpoints/R034_masg_gated_fusion_run01/lightning_logs/version_0/events.out.tfevents.1778839940.Administrator.26056.0`
+- evidence: `miou_list/R034_masg_gated_fusion_run01.md`
+- comparison: R034 is below R016 `0.541121` by `-0.001799` and has a larger best-to-last drop than R016 (`0.020584` vs `0.013702`).
+- conclusion: **negative/unstable relative to corrected baseline.** Depth-only gate stop-gradient does not solve the R016 late-instability problem and should not be promoted to active mainline.
+- next step: stop MASG detach micro-search; choose a distinct next hypothesis such as modality-balance regularization or bounded high-stage depth residual.
+
 ## 2026-05-15 Post-R033 cleanup checkpoint
 
 - purpose: pause the experiment loop after R033, summarize all `0.53+` runs, and clean active code before the next discussion.

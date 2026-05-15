@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R034 MASG Gate-Only Depth Stop-Gradient
+
+- Added `GatedFusionGateStopGrad` in `src/models/mid_fusion.py`.
+- Added `DFormerV2MASGFusionSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2MASGFusion` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_masg_fusion` in `train.py`.
+- The new fusion module preserves the existing `GatedFusion` topology but computes the gate from `torch.cat([rgb_feat, d.detach()], dim=1)`, where `d = depth_proj(depth_feat)`.
+- The depth projection and depth encoder still receive gradients through the fused value path `g * rgb_feat + (1 - g) * d`; only the depth projection's gate-input route is detached.
+- The baseline `dformerv2_mid_fusion` entry and original `GatedFusion` class remain unchanged.
+- Smoke verification confirmed real-batch logits `(1, 40, 480, 640)`, CE loss `3.733857`, nonzero `depth_proj` gradient, nonzero gate gradient, and successful DFormerv2 pretrained loading.
+- Full-train result: best val/mIoU `0.539322` at validation epoch `40`, last val/mIoU `0.518738`, best-to-last drop `0.020584`.
+- Decision: reject as active mainline because it remains below R016 `0.541121` and worsens late instability.
+- Cleanup: removed `dformerv2_masg_fusion` from the active registry after recording evidence; archived the implementation snippet under `feiqi/failed_experiments_r034_20260515/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder structure, SimpleFPNDecoder, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 Post-R033 Mainline Cleanup
 
 - Removed non-mainline R019/R020/R025/R026/R027/R030/R031/R032/R033 entries from the active `train.py` registry.

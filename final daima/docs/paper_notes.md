@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-15 R034 MASG Boundary
+
+- R034 completed 50 validation epochs with best val/mIoU `0.539322` at validation epoch `40`; final val/mIoU is `0.518738`.
+- It crosses `0.53`, but remains below the corrected R016 baseline `0.541121` by `-0.001799`.
+- The best-to-last drop is `0.020584`, worse than R016's `0.013702`, so gate-only depth stop-gradient does not fix late instability.
+- Paper boundary: do not claim MASG/gate-only depth stop-gradient as an improvement over the corrected baseline. It is a negative diagnostic showing that detaching only the depth projection in gate computation is insufficient.
+- Literature boundary: MASG was motivated by adjacent multimodal gradient-decoupling and modality-balance evidence, but this local result does not support continuing detach micro-search.
+- Strategic implication: pivot to a distinct next hypothesis, preferably modality-balance regularization or a bounded high-stage depth residual, rather than more gate-detach variants.
+
 ## 2026-05-15 R033 SimpleFPN Ham Logit Fusion Boundary
 
 - R033 completed 50 validation epochs with best val/mIoU `0.533020` at validation epoch `49`; final val/mIoU is `0.528883`.

@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R033 SimpleFPN + Ham logit fusion completed below R016; pause for summary, branch/code cleanup, and next-direction discussion.
+Current phase: R034 MASG gate-only depth stop-gradient completed below R016 with worse late instability; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R034 Result: MASG Gate-Only Depth Stop-Gradient Negative Unstable
+
+- `R034_masg_gated_fusion_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.539322` at validation epoch `40`; last val/mIoU: `0.518738`.
+- Last-5 mean val/mIoU: `0.504633`; last-10 mean val/mIoU: `0.512033`; best-to-last drop: `0.020584`.
+- Evidence: `final daima/miou_list/R034_masg_gated_fusion_run01.md`.
+- Checkpoint: `final daima/checkpoints/R034_masg_gated_fusion_run01/dformerv2_masg_fusion-epoch=39-val_mIoU=0.5393.pt`.
+- TensorBoard event: `final daima/checkpoints/R034_masg_gated_fusion_run01/lightning_logs/version_0/events.out.tfevents.1778839940.Administrator.26056.0`.
+- Decision: negative/unstable relative to R016. The run is below R016 `0.541121` by `-0.001799` and has worse late instability, so do not promote MASG to active mainline.
+- Next: stop MASG detach micro-search and pivot to a distinct direction such as modality-balance regularization or bounded high-stage depth residual.
 
 ### 2026-05-15 Post-R033 Mainline Cleanup
 
