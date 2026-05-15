@@ -1,5 +1,36 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R039 result: MIIM-lite c4 global-local residual negative below R016
+
+- branch: `exp/R039-miim-c4-lite-v1`
+- model: `dformerv2_miim_c4_lite`
+- run: `R039_miim_c4_lite_run01`
+- hypothesis: HDBFormer/MIIM-style global-local interaction at c4 may provide a better high-level RGB-depth update than R038 sparse sampling, while preserving c1-c3 original `GatedFusion`, `SimpleFPNDecoder`, CE loss, and the fixed training recipe.
+- implementation: added a separate model entry with original c1-c3 `GatedFusion`; c4 first computes the normal R016 `GatedFusion` base and then adds a tiny bounded MIIM-lite residual `base + alpha * global_gate * local_update`.
+- literature/code evidence: read HDBFormer paper/repo (`arXiv:2504.13579`, `github.com/Weishuobin/HDBFormer`) and the official `models/MIIM.py`; ported only the minimal global pooling + local depthwise-conv interaction idea, not the full HDBFormer framework.
+- smoke status: syntax compile, `train.py --help`, registry lookup, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 `MIIMC4LiteFusion`, logits `(1, 40, 480, 640)`, finite CE `3.816422`, nonzero c4 MIIM/global/local/alpha gradients, and unchanged DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.534131` at validation epoch `41`
+- last val/mIoU: `0.509767`
+- last-5 mean val/mIoU: `0.511286`
+- last-10 mean val/mIoU: `0.513125`
+- best-to-last drop: `0.024364`
+- best val/loss: `0.960918` at validation epoch `9`
+- last val/loss: `1.160239`
+- final train/loss_epoch: `0.126658`
+- MIIM c4 alpha first/last: `0.002511` / `0.003592`
+- MIIM c4 gate_mean first/last: `0.507850` / `0.895789`
+- MIIM c4 gate_std first/last: `0.094741` / `0.298645`
+- MIIM c4 update_abs first/last: `0.303729` / `0.392390`
+- checkpoint: `checkpoints/R039_miim_c4_lite_run01/dformerv2_miim_c4_lite-epoch=40-val_mIoU=0.5341.pt`
+- TensorBoard event: `checkpoints/R039_miim_c4_lite_run01/lightning_logs/version_0/events.out.tfevents.1778869284.Administrator.3304.0`
+- saved command: `checkpoints/R039_miim_c4_lite_run01/run_r039.cmd`
+- evidence: `miou_list/R039_miim_c4_lite_run01.md`
+- comparison: R039 is below R016 `0.541121` by `-0.006990`, below R036 `0.539790`, and slightly below R037 `0.534656`.
+- conclusion: **negative below corrected baseline with late collapse.** MIIM-lite c4 opens and produces a late peak above `0.53`, but the high gate mean and large best-to-last drop show that this minimal global-local residual does not stabilize or improve the current pipeline.
+- next step: do not tune MIIM alpha/channel. Pivot to a distinct 2025/2026 hypothesis such as low-rank prompt-style depth guidance or a differential cue module, with the same fixed recipe.
+
 ## 2026-05-16 R038 result: DSCF-lite c4-only negative below R016
 
 - branch: `exp/R038-dscf-c4-lite-v1`

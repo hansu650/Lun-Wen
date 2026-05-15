@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R038 DSCF-lite c4-only completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R039 MIIM-lite c4 global-local residual completed below R016 with late collapse; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,19 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R039 Result: MIIM-lite c4 Global-Local Residual Negative Below R016
+
+- `R039_miim_c4_lite_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.534131` at validation epoch `41`; last val/mIoU: `0.509767`.
+- Last-5 mean val/mIoU: `0.511286`; last-10 mean val/mIoU: `0.513125`; best-to-last drop: `0.024364`.
+- MIIM c4 alpha first/last: `0.002511` / `0.003592`; gate_mean first/last: `0.507850` / `0.895789`; update_abs first/last: `0.303729` / `0.392390`.
+- Evidence: `final daima/miou_list/R039_miim_c4_lite_run01.md`.
+- Checkpoint: `final daima/checkpoints/R039_miim_c4_lite_run01/dformerv2_miim_c4_lite-epoch=40-val_mIoU=0.5341.pt`.
+- TensorBoard event: `final daima/checkpoints/R039_miim_c4_lite_run01/lightning_logs/version_0/events.out.tfevents.1778869284.Administrator.3304.0`.
+- Saved command: `final daima/checkpoints/R039_miim_c4_lite_run01/run_r039.cmd`.
+- Decision: negative below corrected baseline with late collapse. The branch is active but below R016 by `-0.006990`; do not tune MIIM alpha/channel.
+- Next: pivot to a distinct low-rank prompt or differential-cue hypothesis, not another c4 fusion operator micro-variant.
 
 ### 2026-05-16 R038 Result: DSCF-lite c4-only Negative Below R016
 

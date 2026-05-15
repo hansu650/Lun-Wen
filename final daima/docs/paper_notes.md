@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R039 MIIM-lite Boundary
+
+- R039 completed 50 validation epochs with best val/mIoU `0.534131` at validation epoch `41`; final val/mIoU is `0.509767`.
+- It crosses `0.53`, but remains below the corrected R016 baseline `0.541121` by `-0.006990` and below R036 `0.539790`.
+- The best-to-last drop is `0.024364`, so the HDBFormer/MIIM-lite c4 residual worsens late collapse rather than stabilizing the R016 path.
+- MIIM diagnostics show the path is active: c4 alpha moves `0.002511 -> 0.003592`, gate_mean moves `0.507850 -> 0.895789`, and update_abs moves `0.303729 -> 0.392390`.
+- Paper boundary: do not claim MIIM-lite c4-only global-local interaction as an improvement. It is a negative diagnostic showing that a minimal HDBFormer-style c4 residual is active but not sufficient under this fixed recipe.
+- Literature boundary: HDBFormer motivates global-local modality interaction, but this local minimal extraction does not reproduce a useful gain over the corrected DFormerv2 mid-fusion baseline.
+- Strategic implication: stop MIIM alpha/channel micro-search. The next experiment should use a distinct hypothesis, such as MixPrompt-style low-rank depth prompting or DiffPixelFormer-style differential cue, rather than another c4 fusion operator tweak.
+
 ## 2026-05-16 R038 DSCF-lite Boundary
 
 - R038 completed 50 validation epochs with best val/mIoU `0.530810` at validation epoch `38`; final val/mIoU is `0.530308`.

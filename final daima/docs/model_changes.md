@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-16 R039 MIIM-lite c4 Global-Local Residual
+
+- Added `MIIMC4LiteFusion` in `src/models/mid_fusion.py` for the experiment branch.
+- Added `DFormerV2MIIMC4LiteSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2MIIMC4Lite` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_miim_c4_lite` in `train.py`.
+- The experiment preserved c1-c3 original `GatedFusion` and replaced only c4 with a base `GatedFusion` plus tiny MIIM-lite residual.
+- The MIIM-lite residual used a global channel gate from pooled `[rgb, depth_proj, abs(rgb-depth_proj), base]` and a local `1x1 -> depthwise 7x7 -> 1x1` update.
+- Fixed `alpha_max=0.05`; the initial effective alpha was about `0.0025`; no CLI sweep knob was added.
+- Logged `train/miim_c4_alpha`, `train/miim_c4_gate_mean`, `train/miim_c4_gate_std`, and `train/miim_c4_update_abs`.
+- Smoke verification confirmed c1-c3 original `GatedFusion`, c4 `MIIMC4LiteFusion`, finite real-batch CE, nonzero MIIM gradients, and unchanged DFormerv2 pretrained load stats.
+- Full-train result: best val/mIoU `0.534131` at validation epoch `41`, last val/mIoU `0.509767`, best-to-last drop `0.024364`.
+- Decision: reject as active mainline because it remains below R016 `0.541121` and worsens late collapse.
+- Cleanup: remove `dformerv2_miim_c4_lite` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r039_20260516/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-16 R038 DSCF-lite c4-only Fusion
 
 - Added `DSCFC4LiteFusion` in `src/models/mid_fusion.py`.
