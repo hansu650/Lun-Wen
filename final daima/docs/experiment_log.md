@@ -1,5 +1,36 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R040 result: c4 low-rank depth prompt negative below R016
+
+- branch: `exp/R040-c4-lowrank-depth-prompt-v1`
+- model: `dformerv2_c4_lowrank_depth_prompt`
+- run: `R040_c4_lowrank_depth_prompt_run01`
+- hypothesis: MixPrompt-style low-rank c4 depth prompt can condition the DFormerv2 c4 primary feature before the original `GatedFusion`, testing whether depth is more useful as fusion-before prompt conditioning than as output-side residual correction.
+- implementation: added a separate model entry with original c1-c3 `GatedFusion`; c4 projects depth, builds a low-rank prompt from `[depth_proj, abs(rgb-depth_proj)]`, adds the zero-init projected prompt to c4 RGB/DFormerv2 features, then runs the original gate/refine fusion logic.
+- literature/code evidence: read MixPrompt (`NeurIPS 2025`, official repo `github.com/xiaoshideta/MixPrompt`) and the official `ADA` low-rank prompt code; ported only the minimal c4 prompt-conditioning idea, not the full MixPrompt framework.
+- smoke status: syntax compile, `train.py --help`, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 `C4LowRankDepthPromptFusion`, logits `(2, 40, 480, 640)`, finite CE `3.753238`, nonzero prompt/depth/gate/refine gradients, and unchanged DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.527946` at validation epoch `37`
+- last val/mIoU: `0.524679`
+- last-5 mean val/mIoU: `0.509687`
+- last-10 mean val/mIoU: `0.508256`
+- best-to-last drop: `0.003267`
+- best val/loss: `0.950243` at validation epoch `9`
+- last val/loss: `1.172903`
+- final train/loss_epoch: `0.054379`
+- C4 prompt_abs first/last: `0.030488` / `0.014483`
+- C4 prompt_raw_abs first/last: `0.156883` / `0.013475`
+- C4 prompt_gate_mean first/last: `0.499766` / `0.501595`
+- C4 prompt_gate_std first/last: `0.207389` / `0.206496`
+- checkpoint: `checkpoints/R040_c4_lowrank_depth_prompt_run01/dformerv2_c4_lowrank_depth_prompt-epoch=36-val_mIoU=0.5279.pt`
+- TensorBoard event: `checkpoints/R040_c4_lowrank_depth_prompt_run01/lightning_logs/version_0/events.out.tfevents.1778875233.Administrator.19400.0`
+- saved command: `checkpoints/R040_c4_lowrank_depth_prompt_run01/run_r040.cmd`
+- evidence: `miou_list/R040_c4_lowrank_depth_prompt_run01.md`
+- comparison: R040 is below the stage threshold `0.53` by `-0.002054`, below R016 `0.541121` by `-0.013175`, below R036 `0.539790`, and only slightly above R010 `0.527469`.
+- conclusion: **negative below corrected baseline.** The low-rank c4 prompt avoids R039-style gate explosion and recovers at the final epoch, but late-window dips remain severe and the low ceiling does not improve the fixed-recipe pipeline.
+- next step: do not tune prompt rank/down-ratio/c4 scale. Pivot to a distinct DiffPixelFormer-style c4 differential cue that explicitly models RGB-depth differences before fusion.
+
 ## 2026-05-16 R039 result: MIIM-lite c4 global-local residual negative below R016
 
 - branch: `exp/R039-miim-c4-lite-v1`

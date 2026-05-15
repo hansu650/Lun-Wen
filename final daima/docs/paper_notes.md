@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R040 c4 Low-Rank Depth Prompt Boundary
+
+- R040 completed 50 validation epochs with best val/mIoU `0.527946` at validation epoch `37`; final val/mIoU is `0.524679`.
+- It remains below the `0.53` stage threshold by `-0.002054`, below the corrected R016 baseline `0.541121` by `-0.013175`, and below R036 `0.539790`.
+- The best-to-last drop is small (`0.003267`) because the final epoch recovers, but last-5 and last-10 means remain low (`0.509687` / `0.508256`), so this prompt path is better described as a low-ceiling negative with late-window dips rather than a stable improvement.
+- Diagnostics show the path is active but conservative: prompt_abs moves `0.030488 -> 0.014483`, prompt_raw_abs moves `0.156883 -> 0.013475`, and c4 prompt gate_mean remains near balanced (`0.499766 -> 0.501595`).
+- Paper boundary: do not claim MixPrompt-style c4-only low-rank depth prompting as an improvement. It is a negative diagnostic showing that conservative c4 prompt conditioning is stable but insufficient under the fixed recipe.
+- Literature boundary: MixPrompt motivates low-rank multimodal prompting, but this local c4-only extraction does not reproduce useful gains over the corrected DFormerv2 mid-fusion baseline.
+- Strategic implication: stop prompt rank/down-ratio/c4-scale micro-search. The next experiment should test a distinct DiffPixelFormer-style c4 differential cue rather than another c4 prompt variant.
+
 ## 2026-05-16 R039 MIIM-lite Boundary
 
 - R039 completed 50 validation epochs with best val/mIoU `0.534131` at validation epoch `41`; final val/mIoU is `0.509767`.

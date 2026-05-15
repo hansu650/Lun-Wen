@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R039 MIIM-lite c4 global-local residual completed below R016 with late collapse; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R040 c4 low-rank depth prompt completed below R016 and below `0.53`; continue the Goal-Driven loop toward `0.56` with a distinct differential-cue hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,19 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R040 Result: c4 Low-Rank Depth Prompt Negative Below R016
+
+- `R040_c4_lowrank_depth_prompt_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.527946` at validation epoch `37`; last val/mIoU: `0.524679`.
+- Last-5 mean val/mIoU: `0.509687`; last-10 mean val/mIoU: `0.508256`; best-to-last drop: `0.003267`.
+- C4 prompt_abs first/last: `0.030488` / `0.014483`; prompt_raw_abs first/last: `0.156883` / `0.013475`; prompt_gate_mean first/last: `0.499766` / `0.501595`.
+- Evidence: `final daima/miou_list/R040_c4_lowrank_depth_prompt_run01.md`.
+- Checkpoint: `final daima/checkpoints/R040_c4_lowrank_depth_prompt_run01/dformerv2_c4_lowrank_depth_prompt-epoch=36-val_mIoU=0.5279.pt`.
+- TensorBoard event: `final daima/checkpoints/R040_c4_lowrank_depth_prompt_run01/lightning_logs/version_0/events.out.tfevents.1778875233.Administrator.19400.0`.
+- Saved command: `final daima/checkpoints/R040_c4_lowrank_depth_prompt_run01/run_r040.cmd`.
+- Decision: negative below corrected baseline and below `0.53`. The prompt path avoids gate explosion and recovers at the final epoch, but late-window dips remain and the ceiling is low; do not tune rank/down-ratio/c4 scale.
+- Next: pivot to DiffPixelFormer-style c4 differential cue, not another prompt micro-variant.
 
 ### 2026-05-16 R039 Result: MIIM-lite c4 Global-Local Residual Negative Below R016
 
