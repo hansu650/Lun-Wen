@@ -1,5 +1,36 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R041 result: DiffPixel c4 cue partial positive below R016
+
+- branch: `exp/R041-diffpixel-c4-cue-v1`
+- model: `dformerv2_diffpixel_c4_cue`
+- run: `R041_diffpixel_c4_cue_run01`
+- hypothesis: DiffPixelFormer-style RGB-depth differential cue can improve c4 gate decisions by explicitly modeling local modality disagreement before fusion, without adding an output residual.
+- implementation: added a separate model entry with original c1-c3 `GatedFusion`; c4 computes the normal gate logit from `[rgb, depth_proj]`, then adds a zero-initialized differential gate logit from `[rgb-depth_proj, abs(rgb-depth_proj)]` before the original sigmoid and refine path.
+- literature/code evidence: read DiffPixelFormer (`arXiv:2511.13047`, official repo `github.com/gongyan1/DiffPixelFormer`) and the official differential cue path using `x0 - x1`; ported only the minimal c4 gate-logit correction idea, not the full Transformer/cross-attention framework.
+- smoke status: syntax compile, `train.py --help`, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 `DiffPixelC4CueFusion`, logits `(2, 40, 480, 640)`, finite CE `3.609063`, nonzero diff-gate/depth/gate/refine gradients, and unchanged DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.537098` at validation epoch `44`
+- last val/mIoU: `0.529552`
+- last-5 mean val/mIoU: `0.507803`
+- last-10 mean val/mIoU: `0.516635`
+- best-to-last drop: `0.007546`
+- best val/loss: `0.974793` at validation epoch `12`
+- last val/loss: `1.197305`
+- final train/loss_epoch: `0.071763`
+- DiffPixel c4 gate_mean first/last: `0.500861` / `0.544060`
+- DiffPixel c4 gate_std first/last: `0.208216` / `0.221571`
+- DiffPixel c4 diff_gate_abs first/last: `0.015047` / `0.253500`
+- DiffPixel c4 diff_context_abs first/last: `1.039935` / `0.954306`
+- checkpoint: `checkpoints/R041_diffpixel_c4_cue_run01/dformerv2_diffpixel_c4_cue-epoch=43-val_mIoU=0.5371.pt`
+- TensorBoard event: `checkpoints/R041_diffpixel_c4_cue_run01/lightning_logs/version_0/events.out.tfevents.1778881132.Administrator.43760.0`
+- saved command: `checkpoints/R041_diffpixel_c4_cue_run01/run_r041.cmd`
+- evidence: `miou_list/R041_diffpixel_c4_cue_run01.md`
+- comparison: R041 is above R040 `0.527946`, R038 `0.530810`, and R037 `0.534656`, but below R036 `0.539790` by `-0.002692` and below R016 `0.541121` by `-0.004023`.
+- conclusion: **partial positive below corrected baseline.** The differential cue is the strongest recent c4-only fusion cue and crosses `0.53`, but it does not beat R016 and still has late-window dips.
+- next step: do not promote this exact module as active mainline. Use it as evidence that differential cues are more useful than prompt/sparse c4 variants, then either test a distinct differential-cue extension or pivot to a higher-capacity/stability design.
+
 ## 2026-05-16 R040 result: c4 low-rank depth prompt negative below R016
 
 - branch: `exp/R040-c4-lowrank-depth-prompt-v1`

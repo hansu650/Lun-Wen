@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R041 DiffPixel c4 Cue Boundary
+
+- R041 completed 50 validation epochs with best val/mIoU `0.537098` at validation epoch `44`; final val/mIoU is `0.529552`.
+- It is above R040 `0.527946`, R038 `0.530810`, and R037 `0.534656`, but remains below R036 `0.539790` and the corrected R016 baseline `0.541121`.
+- The best-to-last drop is moderate (`0.007546`), but last-5 and last-10 means remain low (`0.507803` / `0.516635`) because of late-window dips, especially validation epoch `48`.
+- Diagnostics show the path is active: diff_gate_abs moves `0.015047 -> 0.253500`, while gate_mean only moves `0.500861 -> 0.544060`; the module is not exploding like R039.
+- Paper boundary: do not claim DiffPixel c4-only gate-logit correction as an improvement over the corrected DFormerv2 mid-fusion baseline. It is a partial-positive diagnostic showing differential cues are more useful than prompt/sparse c4 variants, but not enough to promote.
+- Literature boundary: DiffPixelFormer motivates differential pixel-aware RGB-D interaction, but this local c4-only extraction does not reproduce a full-method gain over the corrected baseline.
+- Strategic implication: differential cues deserve one distinct follow-up only if it changes the hypothesis, not a micro-search over hidden size or scale. Otherwise pivot to a higher-capacity/stability design.
+
 ## 2026-05-16 R040 c4 Low-Rank Depth Prompt Boundary
 
 - R040 completed 50 validation epochs with best val/mIoU `0.527946` at validation epoch `37`; final val/mIoU is `0.524679`.

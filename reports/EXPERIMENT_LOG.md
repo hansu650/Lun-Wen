@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R040 c4 low-rank depth prompt completed below R016 and below `0.53`; continue the Goal-Driven loop toward `0.56` with a distinct differential-cue hypothesis.
+Current phase: R041 DiffPixel c4 cue completed as a partial positive below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,19 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R041 Result: DiffPixel c4 Cue Partial Positive Below R016
+
+- `R041_diffpixel_c4_cue_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.537098` at validation epoch `44`; last val/mIoU: `0.529552`.
+- Last-5 mean val/mIoU: `0.507803`; last-10 mean val/mIoU: `0.516635`; best-to-last drop: `0.007546`.
+- DiffPixel c4 gate_mean first/last: `0.500861` / `0.544060`; diff_gate_abs first/last: `0.015047` / `0.253500`.
+- Evidence: `final daima/miou_list/R041_diffpixel_c4_cue_run01.md`.
+- Checkpoint: `final daima/checkpoints/R041_diffpixel_c4_cue_run01/dformerv2_diffpixel_c4_cue-epoch=43-val_mIoU=0.5371.pt`.
+- TensorBoard event: `final daima/checkpoints/R041_diffpixel_c4_cue_run01/lightning_logs/version_0/events.out.tfevents.1778881132.Administrator.43760.0`.
+- Saved command: `final daima/checkpoints/R041_diffpixel_c4_cue_run01/run_r041.cmd`.
+- Decision: partial positive below corrected baseline. R041 beats R040/R038/R037 but remains below R036 and R016; do not promote this exact c4-only module.
+- Next: either test a distinct differential-cue extension or pivot to a higher-capacity/stability design; do not tune hidden size/scale.
 
 ### 2026-05-16 R040 Result: c4 Low-Rank Depth Prompt Negative Below R016
 
