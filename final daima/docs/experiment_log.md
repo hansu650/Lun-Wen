@@ -1,5 +1,33 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R038 result: DSCF-lite c4-only negative below R016
+
+- branch: `exp/R038-dscf-c4-lite-v1`
+- model: `dformerv2_dscf_c4_lite`
+- run: `R038_dscf_c4_lite_run01`
+- hypothesis: KTB/CVPR 2025 DSCF-style dynamic sparse cross-modal sampling at c4 may suppress depth noise better than dense c4 `GatedFusion`, while leaving c1-c3, decoder, loss, and training recipe unchanged.
+- implementation: added a separate model entry that replaces only c4 fusion with `DSCFC4LiteFusion`; c1-c3 remain original `GatedFusion`.
+- smoke status: syntax compile, `train.py --help`, registry lookup, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 `DSCFC4LiteFusion`, logits `(1, 40, 480, 640)`, finite CE `3.778212`, offset/sample-weight/gate/refine gradients nonzero, non-identical K-branch gradients, and unchanged DFormerv2 pretrained load stats.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.530810` at validation epoch `38`
+- last val/mIoU: `0.530308`
+- last-5 mean val/mIoU: `0.526104`
+- last-10 mean val/mIoU: `0.522189`
+- best-to-last drop: `0.000502`
+- best val/loss: `0.936448` at validation epoch `10`
+- last val/loss: `1.218423`
+- final train/loss_epoch: `0.056458`
+- DSCF c4 offset_abs first/last: `0.961821` / `1.675011`
+- DSCF c4 weight_entropy first/last: `1.376656` / `1.336370`
+- checkpoint: `checkpoints/R038_dscf_c4_lite_run01/dformerv2_dscf_c4_lite-epoch=37-val_mIoU=0.5308.pt`
+- TensorBoard event: `checkpoints/R038_dscf_c4_lite_run01/lightning_logs/version_0/events.out.tfevents.1778863547.Administrator.8372.0`
+- saved command: `checkpoints/R038_dscf_c4_lite_run01/run_r038.cmd`
+- evidence: `miou_list/R038_dscf_c4_lite_run01.md`
+- comparison: R038 is below R016 `0.541121` by `-0.010311`, below R037 `0.534656`, and below R036 `0.539790`.
+- conclusion: **negative below corrected baseline.** DSCF-lite c4 sampling opens and is stable, but suppresses peak performance; do not tune K or offset scale.
+- next step: pivot to a distinct global-local interaction hypothesis such as HDBFormer MIIM-lite c4-only, or reassess the R016 contract gap before more fusion swaps.
+
 ## 2026-05-15 R037 result: DGL minimal stable but below R016
 
 - branch: `exp/R037-dgl-minimal-v1`

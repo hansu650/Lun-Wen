@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R037 DGL minimal completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R038 DSCF-lite c4-only completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,19 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R038 Result: DSCF-lite c4-only Negative Below R016
+
+- `R038_dscf_c4_lite_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.530810` at validation epoch `38`; last val/mIoU: `0.530308`.
+- Last-5 mean val/mIoU: `0.526104`; last-10 mean val/mIoU: `0.522189`; best-to-last drop: `0.000502`.
+- DSCF c4 offset_abs first/last: `0.961821` / `1.675011`; weight_entropy first/last: `1.376656` / `1.336370`.
+- Evidence: `final daima/miou_list/R038_dscf_c4_lite_run01.md`.
+- Checkpoint: `final daima/checkpoints/R038_dscf_c4_lite_run01/dformerv2_dscf_c4_lite-epoch=37-val_mIoU=0.5308.pt`.
+- TensorBoard event: `final daima/checkpoints/R038_dscf_c4_lite_run01/lightning_logs/version_0/events.out.tfevents.1778863547.Administrator.8372.0`.
+- Saved command: `final daima/checkpoints/R038_dscf_c4_lite_run01/run_r038.cmd`.
+- Decision: negative below corrected baseline. The module is active and stable, but the peak is below R016 by `-0.010311`; do not tune K or offset scale.
+- Next: pivot to a distinct global-local interaction hypothesis such as HDBFormer MIIM-lite c4-only, or reassess the R016 contract gap before more fusion swaps.
 
 ### 2026-05-15 R037 Result: DGL Minimal Stable but Below R016
 

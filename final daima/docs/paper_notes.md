@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-16 R038 DSCF-lite Boundary
+
+- R038 completed 50 validation epochs with best val/mIoU `0.530810` at validation epoch `38`; final val/mIoU is `0.530308`.
+- It is stable, with best-to-last drop `0.000502`, but remains below the corrected R016 baseline `0.541121` by `-0.010311`.
+- DSCF diagnostics show the module is active: c4 offset_abs moves `0.961821 -> 1.675011` and entropy moves `1.376656 -> 1.336370`.
+- Paper boundary: do not claim DSCF-lite c4-only fusion as an improvement. It is a negative diagnostic showing that a minimal sparse c4 sampler is stable but too weak or misaligned to beat R016.
+- Literature boundary: KTB/CVPR 2025 DSCF motivates dynamic sparse cross-modality fusion, but this local c4-only extraction does not capture enough of the full method to improve the fixed-recipe pipeline.
+- Strategic implication: stop K/offset-scale micro-search. If continuing fusion-operator work, use a distinct global-local interaction hypothesis such as HDBFormer MIIM-lite rather than another DSCF-lite variant.
+
 ## 2026-05-15 R037 DGL Boundary
 
 - R037 completed 50 validation epochs with best val/mIoU `0.534656` at validation epoch `42`; final val/mIoU is `0.530153`.

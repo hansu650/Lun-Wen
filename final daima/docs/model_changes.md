@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-16 R038 DSCF-lite c4-only Fusion
+
+- Added `DSCFC4LiteFusion` in `src/models/mid_fusion.py`.
+- Added `DFormerV2DSCFC4LiteSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2DSCFC4Lite` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_dscf_c4_lite` in `train.py`.
+- The new entry preserves c1-c3 original `GatedFusion` and replaces only c4 with dynamic sparse depth sampling over four learned offset branches.
+- `grid_sample` uses `align_corners=True`, `padding_mode="border"`, and normalized offsets consistent with pixel offsets.
+- Offset bias uses four small directional seeds to avoid exact K-sample collapse; sample logits start uniform.
+- Logged `train/dscf_c4_offset_abs` and `train/dscf_c4_weight_entropy`.
+- Smoke verification confirmed non-collapsed K branches and nonzero gradients for offset, sample weight, gate, refine, and depth projection.
+- Full-train result: best val/mIoU `0.530810` at validation epoch `38`, last val/mIoU `0.530308`, best-to-last drop `0.000502`.
+- Decision: reject as active mainline because it remains below R016 `0.541121`.
+- Cleanup: remove `dformerv2_dscf_c4_lite` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r038_20260516/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 R037 DGL Minimal Gradient Disentanglement
 
 - Added `DFormerV2DGLMinimalSegmentor` in `src/models/mid_fusion.py`.
