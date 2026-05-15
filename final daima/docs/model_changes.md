@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R035 Gate Balance Regularizer
+
+- Added `GatedFusionWithBalanceStats` in `src/models/mid_fusion.py`.
+- Added `DFormerV2GateBalanceRegSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2GateBalanceReg` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_gate_balance_reg` in `train.py`.
+- The new fusion module preserves the original `GatedFusion` computation and stores each stage gate for training-only logging and regularization.
+- The Lightning wrapper adds `0.01 * mean((gate_mean - 0.5)^2)` to CE during training and logs `train/gate_balance_loss`, `train/gate_mean_c1..c4`, and `train/gate_std_c1..c4`.
+- The baseline `dformerv2_mid_fusion` entry and original `GatedFusion` class remain unchanged.
+- Smoke verification confirmed finite real-batch loss `3.750904`, gate means near `0.5`, nonzero `depth_proj` gradient, and successful DFormerv2 pretrained loading.
+- Full-train result: best val/mIoU `0.529498` at validation epoch `38`, last val/mIoU `0.521308`, best-to-last drop `0.008190`.
+- Decision: reject as active mainline because it falls below the `0.53` stage threshold and far below R016 `0.541121`.
+- Cleanup: removed `dformerv2_gate_balance_reg` from the active registry after recording evidence; archived the implementation snippet under `feiqi/failed_experiments_r035_20260515/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder structure, SimpleFPNDecoder, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 R034 MASG Gate-Only Depth Stop-Gradient
 
 - Added `GatedFusionGateStopGrad` in `src/models/mid_fusion.py`.

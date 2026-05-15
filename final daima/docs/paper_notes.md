@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-15 R035 Gate Balance Boundary
+
+- R035 completed 50 validation epochs with best val/mIoU `0.529498` at validation epoch `38`; final val/mIoU is `0.521308`.
+- It is below the `0.53` stage threshold and below the corrected R016 baseline `0.541121` by `-0.011623`.
+- The best-to-last drop is only `0.008190`, but the regularizer suppresses peak performance too much to be useful.
+- Paper boundary: do not claim simple global gate balancing as an improvement or as a viable modality-balance method. It is a negative diagnostic showing that forcing global gate means toward `0.5` is too blunt for this pipeline.
+- Literature boundary: ICCV 2025 unimodal-bias work motivates modality balance, but this local gate-mean proxy is insufficient and should not be equated with full functional entropy regularization.
+- Strategic implication: stop gate-balance lambda tuning. The next run should use a distinct structural hypothesis, with c3/c4 bounded low-amplitude depth residual as the highest-value candidate.
+
 ## 2026-05-15 R034 MASG Boundary
 
 - R034 completed 50 validation epochs with best val/mIoU `0.539322` at validation epoch `40`; final val/mIoU is `0.518738`.

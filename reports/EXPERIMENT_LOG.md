@@ -1,8 +1,8 @@
-# Experiment Loop Log
+﻿# Experiment Loop Log
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R034 MASG gate-only depth stop-gradient completed below R016 with worse late instability; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R035 gate balance regularizer completed below `0.53`; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R035 Result: Gate Balance Regularizer Negative
+
+- `R035_gate_balance_reg_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.529498` at validation epoch `38`; last val/mIoU: `0.521308`.
+- Last-5 mean val/mIoU: `0.506682`; last-10 mean val/mIoU: `0.510080`; best-to-last drop: `0.008190`.
+- Evidence: `final daima/miou_list/R035_gate_balance_reg_run01.md`.
+- Checkpoint: `final daima/checkpoints/R035_gate_balance_reg_run01/dformerv2_gate_balance_reg-epoch=37-val_mIoU=0.5295.pt`.
+- TensorBoard event: `final daima/checkpoints/R035_gate_balance_reg_run01/lightning_logs/version_0/events.out.tfevents.1778845626.Administrator.38684.0`.
+- Decision: negative. The run is below the `0.53` stage threshold and below R016 `0.541121` by `-0.011623`, so do not tune the gate-balance lambda.
+- Next: pivot to c3/c4 bounded low-amplitude depth residual on top of the R016 GatedFusion base.
 
 ### 2026-05-15 R034 Result: MASG Gate-Only Depth Stop-Gradient Negative Unstable
 
@@ -487,3 +498,4 @@ Baseline reference:
 - Added `codex/WINDOW_OPERATION_GUIDE.md` for concrete multi-window usage.
 - No training was run.
 - No model, training script, data, optimizer, scheduler, metric, loader, or augmentation code was modified.
+

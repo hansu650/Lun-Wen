@@ -1,4 +1,29 @@
-# Experiment Log
+﻿# Experiment Log
+
+## 2026-05-15 R035 result: Gate balance regularizer negative
+
+- branch: `exp/R035-gate-balance-reg-v1`
+- model: `dformerv2_gate_balance_reg`
+- run: `R035_gate_balance_reg_run01`
+- hypothesis: a tiny training-only regularizer on global GatedFusion gate means may reduce modality bias and late instability without changing inference architecture.
+- implementation: added a separate gate-stat model entry with `0.01 * mean((gate_mean - 0.5)^2)` during training only; the baseline `dformerv2_mid_fusion`, dataset, metric, val loader, loss type, optimizer, scheduler, batch size, epoch count, learning rate, workers, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder, and SimpleFPNDecoder remain unchanged.
+- smoke status: syntax compile, `train.py --help`, registry lookup, and real NYU batch CUDA forward/backward passed. Smoke confirmed finite loss `3.750904`, gate means `[0.500235, 0.499949, 0.499781, 0.499728]`, nonzero `depth_proj` gradient, and unchanged DFormerv2 pretrained load stats.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.529498` at validation epoch `38`
+- last val/mIoU: `0.521308`
+- last-5 mean val/mIoU: `0.506682`
+- last-10 mean val/mIoU: `0.510080`
+- best-to-last drop: `0.008190`
+- best val/loss: `0.966273` at validation epoch `11`
+- last val/loss: `1.177837`
+- final train/loss_epoch: `0.068845`
+- checkpoint: `checkpoints/R035_gate_balance_reg_run01/dformerv2_gate_balance_reg-epoch=37-val_mIoU=0.5295.pt`
+- TensorBoard event: `checkpoints/R035_gate_balance_reg_run01/lightning_logs/version_0/events.out.tfevents.1778845626.Administrator.38684.0`
+- evidence: `miou_list/R035_gate_balance_reg_run01.md`
+- comparison: R035 is below the `0.53` stage threshold by `-0.000502` and below R016 `0.541121` by `-0.011623`.
+- conclusion: **negative.** Gate balance regularization slightly constrains late drop but suppresses peak performance below `0.53`; do not tune its lambda.
+- next step: pivot to the distinct R036 candidate: c3/c4 bounded low-amplitude depth residual on top of the R016 GatedFusion base.
 
 ## 2026-05-15 R034 result: MASG gate-only depth stop-gradient negative unstable
 
@@ -1291,7 +1316,7 @@
 - delta vs w=0.15 4-run mean (excl run05): `-0.009791`
 - checkpoint: `checkpoints/dformerv2_primkd_logit_only_w015_t4_run05/dformerv2_primkd_logit_only-epoch=40-val_mIoU=0.5142.pt`
 - evidence: `miou_list/dformerv2_primkd_logit_only_w015_t4_run05.md`
-- conclusion: **negative outlier.** This run pulled the 5-run mean down. Below baseline mean. The w=0.15 signal is not perfectly stable — 1/5 runs falls below baseline.
+- conclusion: **negative outlier.** This run pulled the 5-run mean down. Below baseline mean. The w=0.15 signal is not perfectly stable 鈥?1/5 runs falls below baseline.
 
 ## 2026-05-11 dformerv2_primkd_logit_only_w015_t4_run04
 
@@ -1492,7 +1517,7 @@
 ## 2026-05-10 dformerv2_mid_fusion_gate_baseline_repeat5 summary
 
 - model: `dformerv2_mid_fusion`
-- change: baseline sanity check — 5 repeated runs of the exact same baseline config after C4 PPM and CE+Dice experiments both yielded ~0.507
+- change: baseline sanity check 鈥?5 repeated runs of the exact same baseline config after C4 PPM and CE+Dice experiments both yielded ~0.507
 - purpose: verify whether the baseline itself has shifted, or whether the ~0.507 results are genuine negatives
 - settings: `batch_size=2`, `max_epochs=50`, `lr=6e-5`, `num_workers=4`, `early_stop_patience=30`, `loss_type=ce`
 - pretrained: `C:/Users/qintian/Desktop/qintian/dformer_work/checkpoints/pretrained/DFormerv2_Small_pretrained.pth`
@@ -1513,7 +1538,7 @@
 - original 10-run baseline best single: `0.524425`
 - delta repeat5 mean vs original mean: `-0.005504` (1.12 original std units)
 - evidence: `miou_list/dformerv2_mid_fusion_gate_baseline_repeat5_run01.md` through `run05.md`, and `miou_list/dformerv2_mid_fusion_gate_baseline_repeat5_summary.md`
-- conclusion: **the repeat5 baseline is ~0.005 below the original 10-run mean.** No run exceeded 0.518; the upper tail (0.519-0.524) observed in the original 10 runs is missing. The distribution is compressed (std=0.003 vs 0.005). This suggests either random variance with only 5 samples, or a mild environmental shift. Relative to the repeat5 mean (0.5119), the CE+Dice (0.5070) and C4 PPM (0.5073) experiments are only ~1.6σ below — still negative, but less anomalous than when measured against the original mean. The baseline code is confirmed clean; the gap is likely due to seed/environment variance rather than code contamination.
+- conclusion: **the repeat5 baseline is ~0.005 below the original 10-run mean.** No run exceeded 0.518; the upper tail (0.519-0.524) observed in the original 10 runs is missing. The distribution is compressed (std=0.003 vs 0.005). This suggests either random variance with only 5 samples, or a mild environmental shift. Relative to the repeat5 mean (0.5119), the CE+Dice (0.5070) and C4 PPM (0.5073) experiments are only ~1.6蟽 below 鈥?still negative, but less anomalous than when measured against the original mean. The baseline code is confirmed clean; the gap is likely due to seed/environment variance rather than code contamination.
 - next step: the two 0.507 experiments remain negative relative to both baselines. Use the repeat5 mean (0.5119) as the more conservative reference for future comparisons. If further experiments also fall below 0.510, investigate environmental factors (GPU state, driver version, data integrity).
 
 ## 2026-05-10 dformerv2_context_decoder_c4ppm_run01
@@ -1590,7 +1615,7 @@
 - comparison run01 best: `0.522688`
 - delta vs run01: `-0.006788`
 - evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run02.md`
-- conclusion: negative result. Below baseline mean. Severe late collapse (best 0.5159 → last 0.443).
+- conclusion: negative result. Below baseline mean. Severe late collapse (best 0.5159 鈫?last 0.443).
 
 ## 2026-05-09 dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run03
 
@@ -1605,7 +1630,7 @@
 - comparison run01 best: `0.522688`
 - delta vs run01: `-0.008188`
 - evidence: `miou_list/dformerv2_fft_freq_enhance_hh_w1111_c025_g01_run03.md`
-- conclusion: negative result. Below baseline mean. Late collapse (best 0.5145 → last 0.489).
+- conclusion: negative result. Below baseline mean. Late collapse (best 0.5145 鈫?last 0.489).
 
 ## 2026-05-09 dformerv2_fft_hilo_enhance_w1111_c025_ah01_al003_am05_run01
 
@@ -1656,9 +1681,9 @@
 - delta in baseline std units: `-0.599`
 - comparison clean 10-run baseline best single run: `0.524425`
 - delta vs clean baseline best single run: `-0.009964`
-- late collapse: epoch 46 `0.514461` → epoch 49 `0.498469`, drop `0.015992` in 3 epochs.
+- late collapse: epoch 46 `0.514461` 鈫?epoch 49 `0.498469`, drop `0.015992` in 3 epochs.
 - evidence: `miou_list/dformerv2_cm_infonce_c34_lam005_t01_s256_run01.md`
-- conclusion: negative single-run result. InfoNCE contrast loss converges (5.57→3.09, 45% drop), but the alignment signal does not improve validation mIoU above the clean repeated baseline mean. The run shows late collapse similar to other auxiliary loss experiments. The contrast loss is learning, but the learned cross-modal alignment is either not beneficial for segmentation or too weak to overcome the noise it introduces.
+- conclusion: negative single-run result. InfoNCE contrast loss converges (5.57鈫?.09, 45% drop), but the alignment signal does not improve validation mIoU above the clean repeated baseline mean. The run shows late collapse similar to other auxiliary loss experiments. The contrast loss is learning, but the learned cross-modal alignment is either not beneficial for segmentation or too weak to overcome the noise it introduces.
 - next step: do not claim as improvement. If continuing InfoNCE, test `lambda_contrast=0.01` or `0.02` to see if stronger contrast signal helps; alternatively test `contrast_stage_weights=0,1,1,1` to include c2. If both negative, pivot away from contrastive losses entirely.
 
 ## 2026-05-08 dformerv2_cm_infonce implementation
@@ -2145,3 +2170,4 @@
 - delta vs baseline mean: `-0.030049`
 - conclusion: GatedFusion + co-attention residual correction severely underperformed the repeated DFormerv2 mid-fusion baseline, so this branch is deprecated.
 - evidence: `miou_list/dformerv2_gated_coattn_res_fusion_run01_partial.md`
+
