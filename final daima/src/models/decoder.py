@@ -192,3 +192,29 @@ class OfficialHamDecoder(nn.Module):
         x = self.align(x)
         x = self.classifier(self.dropout(x))
         return F.interpolate(x, size=input_size, mode="bilinear", align_corners=False)
+
+
+class SimpleFPNHamLogitFusionDecoder(nn.Module):
+    def __init__(self, in_channels, out_channels=128, ham_channels=512, num_classes=40):
+        super().__init__()
+        self.simple_fpn = SimpleFPNDecoder(
+            in_channels,
+            out_channels=out_channels,
+            num_classes=num_classes,
+        )
+        self.ham_decoder = OfficialHamDecoder(
+            in_channels,
+            channels=ham_channels,
+            num_classes=num_classes,
+        )
+        self.ham_logit_logit = nn.Parameter(torch.tensor(-2.944439))
+
+    @property
+    def ham_logit_alpha(self):
+        return torch.sigmoid(self.ham_logit_logit)
+
+    def forward(self, features, input_size):
+        simple_logits = self.simple_fpn(features, input_size)
+        ham_logits = self.ham_decoder(features, input_size)
+        alpha = self.ham_logit_alpha.to(dtype=simple_logits.dtype)
+        return simple_logits + alpha * ham_logits

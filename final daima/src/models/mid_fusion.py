@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from .base_lit import BaseLitSeg
 from .decoder import (
     OfficialHamDecoder,
+    SimpleFPNHamLogitFusionDecoder,
     SimpleFPNDecoder,
     SimpleFPNDecoderC1DetailGate,
     SimpleFPNDecoderWithClassifierDropout,
@@ -241,6 +242,15 @@ class DFormerV2SimpleFPNC1DetailGateSegmentor(DFormerV2MidFusionSegmentor):
         )
 
 
+class DFormerV2SimpleFPNHamLogitFusionSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.decoder = SimpleFPNHamLogitFusionDecoder(
+            self.rgb_encoder.out_channels,
+            num_classes=num_classes,
+        )
+
+
 class DFormerV2GatedFusionResidualTopSegmentor(DFormerV2MidFusionSegmentor):
     def __init__(self, num_classes=40, dformerv2_pretrained=None):
         super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
@@ -470,6 +480,35 @@ class LitDFormerV2SimpleFPNC1DetailGate(BaseLitSeg):
     def training_step(self, batch, batch_idx):
         loss = super().training_step(batch, batch_idx)
         self.log("train/c1_detail_alpha", self.model.decoder.c1_detail_alpha.detach(), prog_bar=False, on_step=False, on_epoch=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2SimpleFPNHamLogitFusion(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2SimpleFPNHamLogitFusionSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def training_step(self, batch, batch_idx):
+        loss = super().training_step(batch, batch_idx)
+        self.log("train/ham_logit_alpha", self.model.decoder.ham_logit_alpha.detach(), prog_bar=False, on_step=False, on_epoch=True)
         return loss
 
     def configure_optimizers(self):
