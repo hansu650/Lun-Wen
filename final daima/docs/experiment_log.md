@@ -1,5 +1,33 @@
 ﻿# Experiment Log
 
+## 2026-05-15 R037 result: DGL minimal stable but below R016
+
+- branch: `exp/R037-dgl-minimal-v1`
+- model: `dformerv2_dgl_minimal`
+- run: `R037_dgl_minimal_run01`
+- hypothesis: DGL-style gradient disentanglement may reduce multimodal optimization conflict by routing fused CE gradients only through fusion/decoder and routing encoder gradients through primary/depth auxiliary CE heads.
+- implementation: added a separate model entry where the fused logits are computed from detached primary/depth features; training uses `fusion CE + 0.03 * (primary aux CE + depth aux CE)`. Validation/inference returns only fused logits and does not use the auxiliary heads.
+- smoke status: syntax compile, `train.py --help`, registry lookup, and real NYU batch CUDA forward/backward passed. Smoke confirmed fused CE gradients are zero for DFormerv2/DepthEncoder and nonzero for fusion/decoder; aux CE gradients are nonzero for encoders/aux heads and zero for fusion/decoder.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.534656` at validation epoch `42`
+- last val/mIoU: `0.530153`
+- last-5 mean val/mIoU: `0.526926`
+- last-10 mean val/mIoU: `0.526304`
+- best-to-last drop: `0.004503`
+- best val/loss: `0.949518` at validation epoch `12`
+- last val/loss: `1.118480`
+- final train/loss_epoch: `0.056264`
+- DGL aux weight: `0.03`
+- primary aux CE first/last: `2.388133` / `0.066309`
+- depth aux CE first/last: `2.517628` / `0.131319`
+- checkpoint: `checkpoints/R037_dgl_minimal_run01/dformerv2_dgl_minimal-epoch=41-val_mIoU=0.5347.pt`
+- TensorBoard event: `checkpoints/R037_dgl_minimal_run01/lightning_logs/version_0/events.out.tfevents.1778857094.Administrator.1736.0`
+- evidence: `miou_list/R037_dgl_minimal_run01.md`
+- comparison: R037 is below R016 `0.541121` by `-0.006465`; it is stable but not competitive with the current best.
+- conclusion: **stable but below corrected baseline.** DGL-style gradient disentanglement reduces late drop, but the peak is suppressed; do not promote or tune aux weight as a micro-search.
+- next step: pivot to a distinct fusion-operator hypothesis, with KTB/CVPR 2025 DSCF-lite c4-only as the next highest-value R038 candidate.
+
 ## 2026-05-15 R036 result: c3/c4 bounded depth residual partial positive below R016
 
 - branch: `exp/R036-c34-bounded-depth-residual-v1`

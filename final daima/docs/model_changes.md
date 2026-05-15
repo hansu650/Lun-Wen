@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R037 DGL Minimal Gradient Disentanglement
+
+- Added `DFormerV2DGLMinimalSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2DGLMinimal` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_dgl_minimal` in `train.py`.
+- The new entry preserves the R016 inference path shape and returns only fused logits at validation/inference time.
+- During training, fused logits are computed from detached primary/depth features so fused CE updates fusion/decoder but not DFormerv2/DepthEncoder.
+- Added training-only `primary_aux_decoder` and `depth_aux_decoder`; their CE losses train the encoders and aux heads without updating fusion/decoder.
+- Fixed DGL aux weight is `0.03`; no CLI sweep knob was added.
+- Smoke verification confirmed the intended gradient routing on a real NYU CUDA batch.
+- Full-train result: best val/mIoU `0.534656` at validation epoch `42`, last val/mIoU `0.530153`, best-to-last drop `0.004503`.
+- Decision: reject as active mainline because it remains below R016 `0.541121`.
+- Cleanup: remove `dformerv2_dgl_minimal` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r037_20260515/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 R036 c3/c4 Bounded Depth Residual
 
 - Added `GatedFusionC34BoundedDepthResidual` in `src/models/mid_fusion.py`.

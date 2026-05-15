@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R037 DGL Boundary
+
+- R037 completed 50 validation epochs with best val/mIoU `0.534656` at validation epoch `42`; final val/mIoU is `0.530153`.
+- It is stable, with best-to-last drop `0.004503`, but remains below the corrected R016 baseline `0.541121` by `-0.006465`.
+- Paper boundary: do not claim DGL-style gradient disentanglement as an improvement in this pipeline. It can be cited as a negative/stability diagnostic: this run shows a smaller late drop, but the peak is suppressed.
+- Literature boundary: ICCV 2025 DGL motivates gradient routing, but the local minimal implementation does not reproduce a useful gain under the fixed RGB-D recipe.
+- Strategic implication: stop DGL aux-weight micro-search. Move to a distinct fusion-operator hypothesis such as KTB/CVPR 2025 DSCF-lite c4-only.
+
 ## 2026-05-15 R036 c3/c4 Bounded Residual Boundary
 
 - R036 completed 50 validation epochs with best val/mIoU `0.539790` at validation epoch `44`; final val/mIoU is `0.528882`.

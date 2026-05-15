@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R036 c3/c4 bounded depth residual completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R037 DGL minimal completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,18 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R037 Result: DGL Minimal Stable but Below R016
+
+- `R037_dgl_minimal_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.534656` at validation epoch `42`; last val/mIoU: `0.530153`.
+- Last-5 mean val/mIoU: `0.526926`; last-10 mean val/mIoU: `0.526304`; best-to-last drop: `0.004503`.
+- DGL aux weight: `0.03`; primary aux CE first/last: `2.388133` / `0.066309`; depth aux CE first/last: `2.517628` / `0.131319`.
+- Evidence: `final daima/miou_list/R037_dgl_minimal_run01.md`.
+- Checkpoint: `final daima/checkpoints/R037_dgl_minimal_run01/dformerv2_dgl_minimal-epoch=41-val_mIoU=0.5347.pt`.
+- TensorBoard event: `final daima/checkpoints/R037_dgl_minimal_run01/lightning_logs/version_0/events.out.tfevents.1778857094.Administrator.1736.0`.
+- Decision: stable but below corrected baseline. The run is below R016 `0.541121` by `-0.006465`, so do not promote it or tune aux weight.
+- Next: pivot to a distinct fusion-operator hypothesis, likely KTB/CVPR 2025 DSCF-lite c4-only.
 
 ### 2026-05-15 R036 Result: c3/c4 Bounded Depth Residual Partial Positive Below R016
 
