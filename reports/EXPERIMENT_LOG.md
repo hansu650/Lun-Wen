@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R026 official-style local init is negative; next step is primary-preserving residual depth injection.
+Current phase: R027 primary residual depth injection is partial-positive but unstable; next step is residual-on-top of R016 GatedFusion.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R027 Result: Primary Residual Depth Injection Partial Positive, Stability Negative
+
+- `R027_primary_residual_depth_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.536739` at validation epoch `41`; last val/mIoU: `0.505286`.
+- Last-5 mean val/mIoU: `0.519799`; last-10 mean val/mIoU: `0.522758`; best-to-last drop: `0.031453`.
+- Evidence: `final daima/miou_list/R027_primary_residual_depth_run01.md`.
+- Checkpoint: `final daima/checkpoints/R027_primary_residual_depth_run01/dformerv2_primary_residual_depth-epoch=40-val_mIoU=0.5367.pt`.
+- TensorBoard event: `final daima/checkpoints/R027_primary_residual_depth_run01/lightning_logs/version_0/events.out.tfevents.1778808666.Administrator.14000.0`.
+- Decision: partial-positive peak but unstable. R027 crosses `0.53` but is below R016 `0.541121`, below the final `0.56` goal, and has a `0.031453` best-to-last drop.
+- Next: preserve the R016 `GatedFusion` path and add a zero-initialized residual correction on top, instead of replacing the fusion path or tuning R027 scales.
 
 ### 2026-05-15 R026 Result: Official-Style Local Init Negative
 

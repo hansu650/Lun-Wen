@@ -1,5 +1,19 @@
 # Model Changes
 
+## 2026-05-15 R027 Primary Residual Depth Injection
+
+- Added `PrimaryResidualDepthInjection` in `src/models/mid_fusion.py`.
+- Added `DFormerV2PrimaryResidualDepthInjectionSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2PrimaryResidualDepthInjection` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_primary_residual_depth` in `train.py`.
+- The new fusion module projects DepthEncoder features to the DFormerv2 channel width, computes `abs(rgb_feat - depth_proj)`, and predicts a residual correction from `cat(depth_proj, abs_diff)`.
+- The final residual `Conv2d` weight and bias are zero-initialized, so the initial fused feature is exactly `rgb_feat`.
+- This model intentionally replaces all four `GatedFusion` modules to test one fusion-form hypothesis; it does not change the decoder, loss, optimizer, scheduler, data path, or DFormerv2-S pretrained loading.
+- Smoke verification confirmed all four fusions are `PrimaryResidualDepthInjection`, initial identity max diffs are `[0.0, 0.0, 0.0, 0.0]`, final residual conv gradients are nonzero after backward, logits are `(2, 40, 480, 640)`, CE loss is `3.815064`, and peak memory is about `5730.3 MB`.
+- Full-train result: best val/mIoU `0.536739` at validation epoch `41`, last val/mIoU `0.505286`.
+- Decision: keep as partial-positive evidence but do not use it as the next base; replacing R016 `GatedFusion` produces a high peak but unstable late behavior.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, SimpleFPNDecoder, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R026 Official-Style Local Module Init
 
 - Added `init_official_style_local_modules` in `src/models/mid_fusion.py`.

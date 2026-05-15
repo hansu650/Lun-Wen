@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-15 R027 Primary Residual Depth Injection Boundary
+
+- R027 completed 50 validation epochs with best val/mIoU `0.536739` at validation epoch `41`; final val/mIoU is `0.505286`.
+- It crosses the fixed-recipe `0.53` stage threshold and is above R022 `0.534332`, but remains below the corrected R016 baseline `0.541121` by `-0.004382`.
+- The best-to-last drop is `0.031453`, with last-5 mean `0.519799`, so late stability remains poor.
+- Paper boundary: do not claim R027 as the main method or as an improvement over the corrected baseline. It can be cited only as a partial-positive fusion-form diagnostic.
+- Method implication: primary-preserving residual depth has useful peak signal, but replacing the existing R016 `GatedFusion` path removes too much of the strongest corrected baseline behavior.
+- Strategic implication: the next fixed-recipe experiment should preserve R016 `GatedFusion` and add a zero-initialized residual correction on top, rather than tuning R027 or repeating all-stage replacement variants.
+
 ## 2026-05-15 R026 Official-Style Init Boundary
 
 - R026 completed 50 validation epochs with best val/mIoU `0.507906` at validation epoch `33`; final val/mIoU is `0.499770`.

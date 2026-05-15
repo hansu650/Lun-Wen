@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R027 result: primary residual depth injection partial positive but unstable
+
+- branch: `exp/R027-primary-residual-depth-injection-v1`
+- model: `dformerv2_primary_residual_depth`
+- run: `R027_primary_residual_depth_run01`
+- hypothesis: the main fusion issue may be feature replacement; preserve DFormerv2 primary features and inject external DepthEncoder information only through a zero-initialized residual branch.
+- implementation: replaced the four `GatedFusion` modules with `PrimaryResidualDepthInjection`, where `out = rgb_feat + residual(depth_proj, abs(rgb_feat - depth_proj))` and the last residual conv is zero-initialized.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.536739` at validation epoch `41`
+- last val/mIoU: `0.505286`
+- last-5 mean val/mIoU: `0.519799`
+- last-10 mean val/mIoU: `0.522758`
+- best-to-last drop: `0.031453`
+- best val/loss: `0.964226` at validation epoch `9`
+- final train/loss_epoch: `0.122960`
+- checkpoint: `checkpoints/R027_primary_residual_depth_run01/dformerv2_primary_residual_depth-epoch=40-val_mIoU=0.5367.pt`
+- TensorBoard event: `checkpoints/R027_primary_residual_depth_run01/lightning_logs/version_0/events.out.tfevents.1778808666.Administrator.14000.0`
+- evidence: `miou_list/R027_primary_residual_depth_run01.md`
+- comparison: R027 crosses the fixed-recipe `0.53` threshold, but is below R016 `0.541121` by `-0.004382` and below the final `0.56` goal by `-0.023261`.
+- conclusion: **partial-positive peak, stability negative.** Primary residual depth injection has signal, but replacing the proven R016 `GatedFusion` path is too unstable to promote.
+- next step: do not tune R027 scales. Run a narrower residual-on-top experiment that preserves R016 `GatedFusion` output at initialization and adds only a zero-initialized correction.
+
 ## 2026-05-15 R026 result: official-style local init negative
 
 - branch: `exp/R026-official-init-local-modules-v1`
