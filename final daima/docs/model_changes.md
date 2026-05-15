@@ -1,5 +1,20 @@
 # Model Changes
 
+## 2026-05-15 R036 c3/c4 Bounded Depth Residual
+
+- Added `GatedFusionC34BoundedDepthResidual` in `src/models/mid_fusion.py`.
+- Added `DFormerV2C34BoundedDepthResidualSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2C34BoundedDepthResidual` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_c34_bounded_depth_residual` in `train.py`.
+- The new fusion path preserves original `GatedFusion` at c1/c2 and replaces only c3/c4 with `base + alpha * residual`, where `alpha <= 0.05` and the final residual projection is zero-initialized.
+- The baseline `dformerv2_mid_fusion` entry and original `GatedFusion` class remain unchanged.
+- Smoke verification confirmed exact initial parity with the base fusion path, finite real-batch loss `3.837778`, nonzero c3/c4 residual gradients, and successful DFormerv2 pretrained loading.
+- Full-train result: best val/mIoU `0.539790` at validation epoch `44`, last val/mIoU `0.528882`, best-to-last drop `0.010908`.
+- c3 residual alpha first/last: `0.025097` / `0.026970`; c4 residual alpha first/last: `0.025034` / `0.025553`.
+- Decision: reject as active mainline because it remains below R016 `0.541121`.
+- Cleanup: remove `dformerv2_c34_bounded_depth_residual` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r036_20260515/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder structure, SimpleFPNDecoder, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 R035 Gate Balance Regularizer
 
 - Added `GatedFusionWithBalanceStats` in `src/models/mid_fusion.py`.

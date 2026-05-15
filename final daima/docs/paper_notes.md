@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R036 c3/c4 Bounded Residual Boundary
+
+- R036 completed 50 validation epochs with best val/mIoU `0.539790` at validation epoch `44`; final val/mIoU is `0.528882`.
+- It remains below the corrected R016 baseline `0.541121` by `-0.001331`, although it is stronger than R034 and R035.
+- The c3/c4 residual alphas open only slightly (`0.025097 -> 0.026970` and `0.025034 -> 0.025553`), so the high-stage residual path carries weak signal but not enough to justify promotion.
+- Paper boundary: do not claim c3/c4 bounded depth residual as an improvement over the corrected baseline. It can be cited only as a partial-positive diagnostic that high-stage residual depth is safer than gate-only detach or global gate balance, but still below the current best.
+- Strategic implication: stop bounded-residual micro-search. The next fixed-recipe experiment should be a distinct hypothesis, not another c3/c4 alpha/bound variant.
+
 ## 2026-05-15 R035 Gate Balance Boundary
 
 - R035 completed 50 validation epochs with best val/mIoU `0.529498` at validation epoch `38`; final val/mIoU is `0.521308`.

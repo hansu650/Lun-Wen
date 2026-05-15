@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R035 gate balance regularizer completed below `0.53`; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R036 c3/c4 bounded depth residual completed below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,18 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R036 Result: c3/c4 Bounded Depth Residual Partial Positive Below R016
+
+- `R036_c34_bounded_depth_residual_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.539790` at validation epoch `44`; last val/mIoU: `0.528882`.
+- Last-5 mean val/mIoU: `0.516304`; last-10 mean val/mIoU: `0.521443`; best-to-last drop: `0.010908`.
+- c3 residual alpha first/last: `0.025097` / `0.026970`; c4 residual alpha first/last: `0.025034` / `0.025553`.
+- Evidence: `final daima/miou_list/R036_c34_bounded_depth_residual_run01.md`.
+- Checkpoint: `final daima/checkpoints/R036_c34_bounded_depth_residual_run01/dformerv2_c34_bounded_depth_residual-epoch=43-val_mIoU=0.5398.pt`.
+- TensorBoard event: `final daima/checkpoints/R036_c34_bounded_depth_residual_run01/lightning_logs/version_0/events.out.tfevents.1778851092.Administrator.20952.0`.
+- Decision: partial-positive below corrected baseline. The run is below R016 `0.541121` by `-0.001331`, so do not promote it or tune the bounded-residual family.
+- Next: pivot to a distinct hypothesis such as geometry-prior consistency or a better-supported 2025/2026 modality-balance mechanism.
 
 ### 2026-05-15 R035 Result: Gate Balance Regularizer Negative
 

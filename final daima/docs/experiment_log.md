@@ -1,5 +1,32 @@
 ﻿# Experiment Log
 
+## 2026-05-15 R036 result: c3/c4 bounded depth residual partial positive below R016
+
+- branch: `exp/R036-c34-bounded-depth-residual-v1`
+- model: `dformerv2_c34_bounded_depth_residual`
+- run: `R036_c34_bounded_depth_residual_run01`
+- hypothesis: c3/c4-only, zero-initialized, low-amplitude bounded depth residual after the proven R016 `GatedFusion` output may recover residual-depth signal without all-stage instability.
+- implementation: added a separate model entry with c1/c2 original `GatedFusion`, c3/c4 `GatedFusionC34BoundedDepthResidual`, and `alpha_max=0.05`; the corrected baseline `dformerv2_mid_fusion`, dataset, metric, val loader, loss type, optimizer, scheduler, batch size, epoch count, learning rate, workers, early stopping, DFormerv2-S level, pretrained loading, DepthEncoder, and SimpleFPNDecoder remain unchanged.
+- smoke status: syntax compile, `train.py --help`, registry lookup, and real NYU batch CUDA forward/backward passed. Smoke confirmed exact initial parity with the base GatedFusion path, finite CE loss `3.837778`, nonzero c3/c4 residual gradients, and DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.539790` at validation epoch `44`
+- last val/mIoU: `0.528882`
+- last-5 mean val/mIoU: `0.516304`
+- last-10 mean val/mIoU: `0.521443`
+- best-to-last drop: `0.010908`
+- best val/loss: `0.950258` at validation epoch `8`
+- last val/loss: `1.208208`
+- final train/loss_epoch: `0.052817`
+- c3 residual alpha first/last: `0.025097` / `0.026970`
+- c4 residual alpha first/last: `0.025034` / `0.025553`
+- checkpoint: `checkpoints/R036_c34_bounded_depth_residual_run01/dformerv2_c34_bounded_depth_residual-epoch=43-val_mIoU=0.5398.pt`
+- TensorBoard event: `checkpoints/R036_c34_bounded_depth_residual_run01/lightning_logs/version_0/events.out.tfevents.1778851092.Administrator.20952.0`
+- evidence: `miou_list/R036_c34_bounded_depth_residual_run01.md`
+- comparison: R036 is below R016 `0.541121` by `-0.001331`, but stronger than R034 `0.539322` and R035 `0.529498`.
+- conclusion: **partial-positive below corrected baseline.** The c3/c4 bounded residual path opens slightly, but does not beat R016 and still has a `0.010908` best-to-last drop.
+- next step: do not continue bounded-residual micro-search; choose a distinct next hypothesis, likely geometry-prior consistency or a better-supported 2025/2026 modality-balance mechanism.
+
 ## 2026-05-15 R035 result: Gate balance regularizer negative
 
 - branch: `exp/R035-gate-balance-reg-v1`
