@@ -148,6 +148,26 @@ class DFormerV2DepthEncoderBNEvalSegmentor(DFormerV2MidFusionSegmentor):
         return self
 
 
+def init_official_style_local_modules(module: nn.Module):
+    for child in module.modules():
+        if isinstance(child, nn.Conv2d):
+            nn.init.kaiming_normal_(child.weight, mode="fan_in", nonlinearity="relu")
+            if child.bias is not None:
+                nn.init.zeros_(child.bias)
+        elif isinstance(child, nn.BatchNorm2d):
+            child.eps = 1e-3
+            child.momentum = 0.1
+            nn.init.ones_(child.weight)
+            nn.init.zeros_(child.bias)
+
+
+class DFormerV2OfficialInitLocalModulesSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        init_official_style_local_modules(self.fusions)
+        init_official_style_local_modules(self.decoder)
+
+
 class LitDFormerV2MidFusion(BaseLitSeg):
     def __init__(
         self,
@@ -265,6 +285,30 @@ class LitDFormerV2DepthEncoderBNEval(BaseLitSeg):
             dice_weight=dice_weight,
         )
         self.model = DFormerV2DepthEncoderBNEvalSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2OfficialInitLocalModules(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2OfficialInitLocalModulesSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )

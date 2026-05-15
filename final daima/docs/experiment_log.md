@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R026 result: official-style local init negative
+
+- branch: `exp/R026-official-init-local-modules-v1`
+- model: `dformerv2_official_init_local_modules`
+- run: `R026_official_init_local_modules_run01`
+- hypothesis: local random fusion/decoder modules may be under-initialized relative to the official DFormer decode head contract.
+- implementation: added a model entry that applies official-style initialization only to `GatedFusion` and `SimpleFPNDecoder`: Conv2d Kaiming fan-in/relu, BatchNorm2d `eps=1e-3`, `momentum=0.1`, weight `1`, bias `0`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.507906` at validation epoch `33`
+- last val/mIoU: `0.499770`
+- last-5 mean val/mIoU: `0.496476`
+- last-10 mean val/mIoU: `0.495483`
+- best-to-last drop: `0.008136`
+- best val/loss: `1.073346` at validation epoch `5`
+- final train/loss_epoch: `0.054818`
+- checkpoint: `checkpoints/R026_official_init_local_modules_run01/dformerv2_official_init_local_modules-epoch=32-val_mIoU=0.5079.pt`
+- TensorBoard event: `checkpoints/R026_official_init_local_modules_run01/lightning_logs/version_0/events.out.tfevents.1778803189.Administrator.35684.0`
+- evidence: `miou_list/R026_official_init_local_modules_run01.md`
+- comparison: R026 is below R016 `0.541121` by `-0.033215`, below R025 `0.532572` by `-0.024666`, and below the `0.53` stage threshold.
+- conclusion: **negative.** Official-style initialization of only the local random modules hurts this local pipeline and should not be continued.
+- next step: switch to a fusion-form hypothesis: primary-preserving residual depth injection initialized as DFormerv2 identity.
+
 ## 2026-05-15 R025 result: DepthEncoder BN eval peak positive but unstable
 
 - branch: `exp/R025-depth-encoder-bn-eval-v1`

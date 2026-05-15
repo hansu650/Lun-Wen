@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R026 Official-Style Init Boundary
+
+- R026 completed 50 validation epochs with best val/mIoU `0.507906` at validation epoch `33`; final val/mIoU is `0.499770`.
+- It is far below R016 `0.541121`, R025 `0.532572`, and the fixed-recipe `0.53` stage threshold.
+- Paper boundary: do not claim official-style init as helpful. It should be logged as a negative contract/stability check.
+- Method implication: the performance gap is not solved by Kaiming/BN init parity of local fusion/decoder modules. The current default initialization appears better for this pipeline.
+- Strategic implication: stop local-init experiments. Next fixed-recipe work should target fusion form: preserve DFormerv2 primary features and add depth as a residual rather than replacing features through gated mixing.
+
 ## 2026-05-15 R025 DepthEncoder BN Eval Boundary
 
 - R025 completed 50 validation epochs with best val/mIoU `0.532572` at validation epoch `47`; final val/mIoU dropped to `0.496030`.

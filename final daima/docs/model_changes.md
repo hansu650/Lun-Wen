@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-15 R026 Official-Style Local Module Init
+
+- Added `init_official_style_local_modules` in `src/models/mid_fusion.py`.
+- Added `DFormerV2OfficialInitLocalModulesSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2OfficialInitLocalModules` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_official_init_local_modules` in `train.py`.
+- The new model keeps `dformerv2_mid_fusion` unchanged and uses a separate model name to avoid silently changing the corrected baseline entry.
+- Initialization is applied only to `self.fusions` and `self.decoder`: Conv2d Kaiming normal fan-in/relu, BatchNorm2d `eps=1e-3`, `momentum=0.1`, weight `1`, bias `0`.
+- Smoke verification confirmed fusion/decoder BN modules changed to `eps=0.001`, DepthEncoder BN stayed at `1e-5` and training mode, logits `(2, 40, 480, 640)`, CE loss `3.754482`, and peak memory about `5724.3 MB`.
+- Full-train result: best val/mIoU `0.507906` at validation epoch `33`, last val/mIoU `0.499770`.
+- Decision: reject this initialization direction; do not use it as a base for future fusion experiments.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, GatedFusion equations, SimpleFPNDecoder topology, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R025 DepthEncoder BN Eval
 
 - Added `DFormerV2DepthEncoderBNEvalSegmentor` in `src/models/mid_fusion.py`.

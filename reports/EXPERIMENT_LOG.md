@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R025 DepthEncoder BN eval is unstable; next step is local random-module initialization.
+Current phase: R026 official-style local init is negative; next step is primary-preserving residual depth injection.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R026 Result: Official-Style Local Init Negative
+
+- `R026_official_init_local_modules_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.507906` at validation epoch `33`; last val/mIoU: `0.499770`.
+- Last-5 mean val/mIoU: `0.496476`; last-10 mean val/mIoU: `0.495483`; best-to-last drop: `0.008136`.
+- Evidence: `final daima/miou_list/R026_official_init_local_modules_run01.md`.
+- Checkpoint: `final daima/checkpoints/R026_official_init_local_modules_run01/dformerv2_official_init_local_modules-epoch=32-val_mIoU=0.5079.pt`.
+- TensorBoard event: `final daima/checkpoints/R026_official_init_local_modules_run01/lightning_logs/version_0/events.out.tfevents.1778803189.Administrator.35684.0`.
+- Decision: negative. Official-style init of the local random modules should not be continued.
+- Next: test primary-preserving residual depth injection initialized as DFormerv2 identity.
 
 ### 2026-05-15 R025 Result: DepthEncoder BN Eval Peak Positive, Stability Negative
 
