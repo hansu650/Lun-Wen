@@ -1,5 +1,13 @@
 # Paper Notes
 
+## 2026-05-15 R030 GatedFusion Residual-Top Boundary
+
+- R030 completed 50 validation epochs with best val/mIoU `0.536454` at validation epoch `42`; final val/mIoU is `0.529803`.
+- It crosses `0.53` and recovers better at the last epoch than R027, but remains below the corrected R016 baseline `0.541121` by `-0.004667`.
+- Paper boundary: do not claim all-stage residual-top correction as the main method or as an improvement over the corrected baseline.
+- Method implication: preserving R016 `GatedFusion` avoids the worst replacement-fusion instability, but residual-depth correction on top is still insufficient to reach the 0.56 target.
+- Strategic implication: stop the residual-family sequence for now. The next fixed-recipe experiment should be a distinct, low-risk regularization hypothesis on the current strongest path, such as SimpleFPN classifier dropout.
+
 ## 2026-05-15 R027 Primary Residual Depth Injection Boundary
 
 - R027 completed 50 validation epochs with best val/mIoU `0.536739` at validation epoch `41`; final val/mIoU is `0.505286`.

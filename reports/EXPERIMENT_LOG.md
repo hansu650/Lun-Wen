@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R027 primary residual depth injection is partial-positive but unstable; next step is residual-on-top of R016 GatedFusion.
+Current phase: R030 GatedFusion residual-top is partial-positive but below R016; next step is SimpleFPN classifier dropout.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,17 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-15 R030 Result: GatedFusion Residual-Top Partial Positive Below R016
+
+- `R030_gated_fusion_residual_top_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.536454` at validation epoch `42`; last val/mIoU: `0.529803`.
+- Last-5 mean val/mIoU: `0.506209`; last-10 mean val/mIoU: `0.511101`; best-to-last drop: `0.006651`.
+- Evidence: `final daima/miou_list/R030_gated_fusion_residual_top_run01.md`.
+- Checkpoint: `final daima/checkpoints/R030_gated_fusion_residual_top_run01/dformerv2_gated_fusion_residual_top-epoch=41-val_mIoU=0.5365.pt`.
+- TensorBoard event: `final daima/checkpoints/R030_gated_fusion_residual_top_run01/lightning_logs/version_0/events.out.tfevents.1778813976.Administrator.33508.0`.
+- Decision: partial-positive below R016. The all-stage residual-top correction crosses `0.53` but does not beat the corrected baseline `0.541121`.
+- Next: pivot away from residual-family variants and test SimpleFPN classifier dropout in a separate model entry.
 
 ### 2026-05-15 R027 Result: Primary Residual Depth Injection Partial Positive, Stability Negative
 

@@ -1,5 +1,28 @@
 # Experiment Log
 
+## 2026-05-15 R030 result: GatedFusion residual-top partial positive below R016
+
+- branch: `exp/R030-gated-fusion-residual-top-v1`
+- model: `dformerv2_gated_fusion_residual_top`
+- run: `R030_gated_fusion_residual_top_run01`
+- hypothesis: R027's residual-depth signal may help if it is added on top of the proven R016 `GatedFusion` path instead of replacing it.
+- implementation: added `GatedFusionResidualTop`, which computes the original `GatedFusion` base and then adds a zero-initialized residual from `rgb_feat`, `depth_proj`, `base`, and `abs(rgb_feat - depth_proj)`.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.536454` at validation epoch `42`
+- last val/mIoU: `0.529803`
+- last-5 mean val/mIoU: `0.506209`
+- last-10 mean val/mIoU: `0.511101`
+- best-to-last drop: `0.006651`
+- best val/loss: `0.975530` at validation epoch `13`
+- final train/loss_epoch: `0.057927`
+- checkpoint: `checkpoints/R030_gated_fusion_residual_top_run01/dformerv2_gated_fusion_residual_top-epoch=41-val_mIoU=0.5365.pt`
+- TensorBoard event: `checkpoints/R030_gated_fusion_residual_top_run01/lightning_logs/version_0/events.out.tfevents.1778813976.Administrator.33508.0`
+- evidence: `miou_list/R030_gated_fusion_residual_top_run01.md`
+- comparison: R030 crosses `0.53`, but is below R016 `0.541121` by `-0.004667`, below R027 peak `0.536739` by `-0.000285`, and below the final `0.56` goal by `-0.023546`.
+- conclusion: **partial-positive below corrected baseline.** Preserving R016 `GatedFusion` improves late recovery versus R027, but all-stage residual-top correction still does not beat the corrected baseline.
+- next step: stop residual-family variants for now. Pivot to a distinct low-risk R031 hypothesis: add `Dropout2d(0.1)` only before the SimpleFPN classifier in a separate model entry, inspired by the R022 Ham dropout parity gain.
+
 ## 2026-05-15 R027 result: primary residual depth injection partial positive but unstable
 
 - branch: `exp/R027-primary-residual-depth-injection-v1`

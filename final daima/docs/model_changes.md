@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-15 R030 GatedFusion Residual-Top
+
+- Added `GatedFusionResidualTop` in `src/models/mid_fusion.py`.
+- Added `DFormerV2GatedFusionResidualTopSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2GatedFusionResidualTop` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_gated_fusion_residual_top` in `train.py`.
+- The new fusion module preserves the original `GatedFusion` computation as `base`, then predicts a residual correction from `cat(rgb_feat, depth_proj, base, abs(rgb_feat - depth_proj))`.
+- The final residual `Conv2d` weight and bias are zero-initialized, so the initial output exactly equals the `GatedFusion` base.
+- Smoke verification confirmed all four fusions are `GatedFusionResidualTop`, initial base max diffs are `[0.0, 0.0, 0.0, 0.0]`, final residual conv gradients are nonzero after backward, logits are `(2, 40, 480, 640)`, CE loss is `3.742640`, and peak memory is about `5956.9 MB`.
+- Full-train result: best val/mIoU `0.536454` at validation epoch `42`, last val/mIoU `0.529803`.
+- Decision: keep as partial-positive evidence but do not promote; all-stage residual-top correction remains below R016 `0.541121`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, pretrained DFormerv2 weights, pretrained DepthEncoder weights, SimpleFPNDecoder, checkpoint artifacts, or TensorBoard event files were changed.
+
 ## 2026-05-15 R027 Primary Residual Depth Injection
 
 - Added `PrimaryResidualDepthInjection` in `src/models/mid_fusion.py`.

@@ -50,6 +50,27 @@ class PrimaryResidualDepthInjection(nn.Module):
         return rgb_feat + residual
 
 
+class GatedFusionResidualTop(nn.Module):
+    def __init__(self, rgb_channels, depth_channels):
+        super().__init__()
+        self.base_fusion = GatedFusion(rgb_channels, depth_channels)
+        self.residual = nn.Sequential(
+            nn.Conv2d(rgb_channels * 4, rgb_channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(rgb_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(rgb_channels, rgb_channels, 1),
+        )
+        nn.init.zeros_(self.residual[-1].weight)
+        nn.init.zeros_(self.residual[-1].bias)
+
+    def forward(self, rgb_feat, depth_feat):
+        d = self.base_fusion.depth_proj(depth_feat)
+        g = self.base_fusion.gate(torch.cat([rgb_feat, d], dim=1))
+        base = self.base_fusion.refine(g * rgb_feat + (1 - g) * d)
+        residual = self.residual(torch.cat([rgb_feat, d, base, torch.abs(rgb_feat - d)], dim=1))
+        return base + residual
+
+
 class MidFusionSegmentor(nn.Module):
     def __init__(self, num_classes=40):
         super().__init__()
@@ -192,6 +213,15 @@ class DFormerV2PrimaryResidualDepthInjectionSegmentor(DFormerV2MidFusionSegmento
         super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
         self.fusions = nn.ModuleList([
             PrimaryResidualDepthInjection(rgb_ch, depth_ch)
+            for rgb_ch, depth_ch in zip(self.rgb_encoder.out_channels, self.depth_encoder.out_channels)
+        ])
+
+
+class DFormerV2GatedFusionResidualTopSegmentor(DFormerV2MidFusionSegmentor):
+    def __init__(self, num_classes=40, dformerv2_pretrained=None):
+        super().__init__(num_classes=num_classes, dformerv2_pretrained=dformerv2_pretrained)
+        self.fusions = nn.ModuleList([
+            GatedFusionResidualTop(rgb_ch, depth_ch)
             for rgb_ch, depth_ch in zip(self.rgb_encoder.out_channels, self.depth_encoder.out_channels)
         ])
 
@@ -361,6 +391,30 @@ class LitDFormerV2PrimaryResidualDepthInjection(BaseLitSeg):
             dice_weight=dice_weight,
         )
         self.model = DFormerV2PrimaryResidualDepthInjectionSegmentor(
+            num_classes=num_classes,
+            dformerv2_pretrained=dformerv2_pretrained,
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=0.01)
+
+
+class LitDFormerV2GatedFusionResidualTop(BaseLitSeg):
+    def __init__(
+        self,
+        num_classes=40,
+        lr=1e-4,
+        dformerv2_pretrained=None,
+        loss_type: str = "ce",
+        dice_weight: float = 0.5,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            lr=lr,
+            loss_type=loss_type,
+            dice_weight=dice_weight,
+        )
+        self.model = DFormerV2GatedFusionResidualTopSegmentor(
             num_classes=num_classes,
             dformerv2_pretrained=dformerv2_pretrained,
         )
