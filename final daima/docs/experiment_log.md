@@ -1,5 +1,15 @@
 # Experiment Log
 
+## 2026-05-15 Post-R033 cleanup checkpoint
+
+- purpose: pause the experiment loop after R033, summarize all `0.53+` runs, and clean active code before the next discussion.
+- active best remains R016 `dformerv2_mid_fusion`, best val/mIoU `0.541121`.
+- active registry now keeps only the corrected baseline and two stable reference diagnostics: `dformerv2_mid_fusion`, `dformerv2_ham_decoder`, and `dformerv2_geometry_primary_ham_decoder`.
+- archived code path: `feiqi/failed_experiments_r019_r033_20260515/`.
+- archived directions: R019/R020 depth adapter/blend, R025 DepthEncoder BN eval, R026 official init, R027 primary residual depth injection, R030 residual-top, R031 SimpleFPN classifier dropout, R032 c1 detail gate, and R033 SimpleFPN+Ham logit fusion.
+- evidence status: all reports, mIoU lists, metrics, leaderboard entries, and experiment ledgers are retained.
+- next status: pause for user discussion; do not launch R034 until explicitly resumed.
+
 ## 2026-05-15 R033 result: SimpleFPN Ham logit fusion below corrected baseline
 
 - branch: `exp/R033-simplefpn-ham-logit-fusion-v1`

@@ -33,43 +33,17 @@ from lightning.pytorch.callbacks import Callback, EarlyStopping, TQDMProgressBar
 from src.data_module import NYUDataModule
 from src.models.early_fusion import LitEarlyFusion
 from src.models.mid_fusion import (
-    LitDFormerV2BranchDepthAdapter,
-    LitDFormerV2BranchDepthBlendAdapter,
-    LitDFormerV2DepthEncoderBNEval,
-    LitDFormerV2GatedFusionResidualTop,
     LitDFormerV2HamDecoder,
     LitDFormerV2MidFusion,
-    LitDFormerV2OfficialInitLocalModules,
-    LitDFormerV2PrimaryResidualDepthInjection,
-    LitDFormerV2SimpleFPNC1DetailGate,
-    LitDFormerV2SimpleFPNClassifierDropout,
-    LitDFormerV2SimpleFPNHamLogitFusion,
     LitMidFusion,
 )
-from src.models.primkd_lit import LitDFormerV2PrimKD
-from src.models.teacher_model import (
-    LitDFormerV2GeometryPrimaryHamDecoder,
-    LitDFormerV2GeometryPrimaryTeacher,
-)
-from src.models.tgga_adapter import LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1
+from src.models.teacher_model import LitDFormerV2GeometryPrimaryHamDecoder
 
 
 ACTIVE_MODEL_REGISTRY = {
     "dformerv2_mid_fusion": LitDFormerV2MidFusion,
     "dformerv2_ham_decoder": LitDFormerV2HamDecoder,
-    "dformerv2_branch_depth_adapter": LitDFormerV2BranchDepthAdapter,
-    "dformerv2_branch_depth_blend_adapter": LitDFormerV2BranchDepthBlendAdapter,
-    "dformerv2_depth_encoder_bn_eval": LitDFormerV2DepthEncoderBNEval,
-    "dformerv2_official_init_local_modules": LitDFormerV2OfficialInitLocalModules,
-    "dformerv2_primary_residual_depth": LitDFormerV2PrimaryResidualDepthInjection,
-    "dformerv2_gated_fusion_residual_top": LitDFormerV2GatedFusionResidualTop,
-    "dformerv2_simplefpn_classifier_dropout": LitDFormerV2SimpleFPNClassifierDropout,
-    "dformerv2_simplefpn_c1_detail_gate": LitDFormerV2SimpleFPNC1DetailGate,
-    "dformerv2_simplefpn_ham_logit_fusion": LitDFormerV2SimpleFPNHamLogitFusion,
-    "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1": LitDFormerV2TGGAC4OnlyBeta002Aux003DetachSemSimpleFPNV1,
     "dformerv2_geometry_primary_ham_decoder": LitDFormerV2GeometryPrimaryHamDecoder,
-    "dformerv2_geometry_primary_teacher": LitDFormerV2GeometryPrimaryTeacher,
-    "dformerv2_primkd_logit_only": LitDFormerV2PrimKD,
 }
 
 LEGACY_MODEL_REGISTRY = {
@@ -163,31 +137,10 @@ def build_datamodule(args):
 
 def build_model(args):
     model_cls = MODEL_REGISTRY[args.model]
-    if args.model == "dformerv2_primkd_logit_only":
-        return model_cls(
-            num_classes=args.num_classes,
-            lr=args.lr,
-            dformerv2_pretrained=args.dformerv2_pretrained,
-            teacher_ckpt=args.teacher_ckpt,
-            kd_weight=args.kd_weight,
-            kd_temperature=args.kd_temperature,
-            loss_type=args.loss_type,
-        )
     if args.model in {
         "dformerv2_mid_fusion",
         "dformerv2_ham_decoder",
-        "dformerv2_branch_depth_adapter",
-        "dformerv2_branch_depth_blend_adapter",
-        "dformerv2_depth_encoder_bn_eval",
-        "dformerv2_official_init_local_modules",
-        "dformerv2_primary_residual_depth",
-        "dformerv2_gated_fusion_residual_top",
-        "dformerv2_simplefpn_classifier_dropout",
-        "dformerv2_simplefpn_c1_detail_gate",
-        "dformerv2_simplefpn_ham_logit_fusion",
-        "dformerv2_tgga_c4only_beta002_aux003_detachsem_simplefpn_v1",
         "dformerv2_geometry_primary_ham_decoder",
-        "dformerv2_geometry_primary_teacher",
     }:
         return model_cls(
             num_classes=args.num_classes,

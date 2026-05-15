@@ -1,5 +1,14 @@
 # Model Changes
 
+## 2026-05-15 Post-R033 Mainline Cleanup
+
+- Removed non-mainline R019/R020/R025/R026/R027/R030/R031/R032/R033 entries from the active `train.py` registry.
+- Removed the corresponding inactive experimental classes from `src/models/mid_fusion.py` and `src/models/decoder.py`.
+- Archived code summaries/snippets under `feiqi/failed_experiments_r019_r033_20260515/`.
+- Kept active entries focused on `dformerv2_mid_fusion` (R016 current best), `dformerv2_ham_decoder` (R022 stable reference), and `dformerv2_geometry_primary_ham_decoder` (R024 stable structure diagnostic).
+- Kept all evidence in `docs/`, `miou_list/`, `reports/`, `metrics/`, and `experiments/`; checkpoint and TensorBoard event files remain untracked and were not committed.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-15 R033 SimpleFPN Ham Logit Fusion
 
 - Added `SimpleFPNHamLogitFusionDecoder` in `src/models/decoder.py`.

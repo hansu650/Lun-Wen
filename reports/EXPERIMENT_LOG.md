@@ -18,6 +18,14 @@ Baseline reference:
 
 ## Entries
 
+### 2026-05-15 Post-R033 Mainline Cleanup
+
+- Active best remains R016 `dformerv2_mid_fusion`, best val/mIoU `0.541121`.
+- Active registry was narrowed to `dformerv2_mid_fusion`, `dformerv2_ham_decoder`, and `dformerv2_geometry_primary_ham_decoder`.
+- R019/R020/R025/R026/R027/R030/R031/R032/R033 implementation code was archived under `final daima/feiqi/failed_experiments_r019_r033_20260515/`.
+- Evidence ledgers remain intact: `docs/`, `miou_list/`, `reports/`, `metrics/`, and `experiments/`.
+- The loop is paused for discussion; no R034 full train is launched in this cleanup step.
+
 ### 2026-05-15 R033 Result: SimpleFPN Ham Logit Fusion Partial Positive Below R016
 
 - `R033_simplefpn_ham_logit_fusion_run01` completed 50 validation epochs with exit code `0`.
