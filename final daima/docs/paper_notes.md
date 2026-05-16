@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-17 R051 C4 Query-Conditioned Gate Boundary
+
+R051 tested a CAFuser-inspired idea: use a compact scene/query signal from DFormerv2 c4 to condition only the existing c4 GatedFusion gate logits. The experiment kept c1-c3 original GatedFusion and preserved the c4 mixture/refine path, adding only a zero-initialized query delta to the c4 gate logit.
+
+The result reached best val/mIoU `0.536702` at validation epoch `46`, with last `0.507323` and best-to-last drop `0.029379`. It is above R050 c4 bypass `0.533066`, but below R016 `0.541121`, R036 `0.539790`, R049 `0.537890`, and R041 `0.537098`.
+
+Paper boundary: do not claim CAFuser-style query conditioning as an improvement in this pipeline. It supports the narrower diagnostic that preserving c4 fusion is better than bypassing it, but query-conditioned gate deltas introduce a late instability pattern and do not beat the corrected mainline.
+
+Durable direction update: stop c4 query-gate hidden-size or delta-scale micro-search. The next experiment should not be another c4 gate-conditioning variant unless it tests a clearly distinct mechanism with a stability constraint.
+
 ## 2026-05-16 R050 C4 Geometry-Primary Bypass Boundary
 
 R050 tested whether external ResNet-18 DepthEncoder fusion at c4 harms DFormerv2's own geometry-conditioned high-level representation. The run kept c1-c3 original GatedFusion and passed raw DFormerv2 c4 directly to the unchanged SimpleFPNDecoder.

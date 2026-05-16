@@ -1,5 +1,33 @@
 # Experiment Log
 
+## 2026-05-17 R051 result: c4 query-conditioned gate negative
+
+- branch: `exp/R051-c4-query-conditioned-gate-v1`
+- model: `dformerv2_c4_query_conditioned_gate`
+- run: `R051_c4_query_conditioned_gate_run01`
+- hypothesis: a compact DFormerv2 c4 scene/query signal can condition the existing c4 GatedFusion gate logits and make high-stage RGB/depth fusion more selective while preserving R016's useful c4 fusion path.
+- implementation: added an independent c4-only query-conditioned gate wrapper during the experiment branch. c1-c3 original `GatedFusion` stayed unchanged, c4 kept `depth_proj`, gate mixture `g * rgb + (1 - g) * depth`, and refine, with a zero-initialized query delta added to the c4 gate logit. DFormerv2-S, DepthEncoder, SimpleFPNDecoder, loss, data, eval, and fixed recipe were unchanged.
+- literature/code evidence: CAFuser RA-L 2025 official code uses condition/query-guided multimodal fusion; only the minimal condition-to-gate idea was ported, not OneFormer, text/contrastive losses, weather labels, or window attention.
+- smoke status: `py_compile`, `train.py --help`, pretrained load check, random tensor forward/backward, static review, and reproducer review passed.
+- full train status: completed; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.536702` at validation epoch `46`
+- last val/mIoU: `0.507323`
+- last-5 mean val/mIoU: `0.498532`
+- last-10 mean val/mIoU: `0.514932`
+- best-to-last drop: `0.029379`
+- best val/loss: `0.981511` at validation epoch `8`
+- last val/loss: `1.200262`
+- final train/loss_epoch: `0.094568`
+- final qc c4 delta abs: `0.305460`
+- final qc c4 gate mean/std: `0.550471` / `0.213387`
+- checkpoint: `checkpoints\R051_c4_query_conditioned_gate_run01\dformerv2_c4_query_conditioned_gate-epoch=45-val_mIoU=0.5367.pt`
+- TensorBoard event: `checkpoints\R051_c4_query_conditioned_gate_run01\lightning_logs\version_0\events.out.tfevents.1778947060.Administrator.8956.0`
+- evidence: `miou_list/R051_c4_query_conditioned_gate_run01.md`
+- comparison: below R016 `0.541121` by `-0.004419`, below R036 `0.539790` by `-0.003088`, below R049 `0.537890` by `-0.001188`, below R041 `0.537098` by `-0.000396`, and above R050 `0.533066` by `+0.003636`.
+- conclusion: **negative below corrected baseline and unstable.** Query-conditioned c4 gate is better than deleting c4 fusion but worse than the strongest corrected mainline and has severe late-window collapse.
+- next step: archive code under `feiqi/failed_experiments_r051_20260517/`, remove the active registry entry, and do not tune query hidden size or delta scale. Pivot to a distinct mechanism or broader stability/contract hypothesis.
+
 ## 2026-05-16 R050 result: c4 geometry-primary bypass negative
 
 - branch: `exp/R050-c4-geometry-primary-bypass-v1`

@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-17 R051 C4 Query-Conditioned Gate
+
+- Added independent experiment entry `dformerv2_c4_query_conditioned_gate` for R051 during the experiment branch.
+- Added `QueryConditionedGatedFusion`, `DFormerV2C4QueryConditionedGateSegmentor`, and `LitDFormerV2C4QueryConditionedGate` in `src/models/mid_fusion.py`.
+- The variant replaced only the c4 fusion block. c1-c3 original `GatedFusion` stayed unchanged.
+- c4 preserved the original `depth_proj`, logit `BatchNorm2d`, gate mixture, and refine block, while adding a zero-initialized query delta from pooled DFormerv2 c4 to the gate logit.
+- Logged `train/qc_c4_delta_abs`, `train/qc_c4_gate_mean`, and `train/qc_c4_gate_std`.
+- `dformerv2_mid_fusion`, DepthEncoder, SimpleFPNDecoder, loss, data, eval, DFormerv2-S level, pretrained loading, and training recipe were not modified.
+- Full-train result: best val/mIoU `0.536702` at validation epoch `46`, last `0.507323`, best-to-last drop `0.029379`.
+- Decision: reject active promotion. The run remains below R016 `0.541121`, has severe late collapse, and should not be continued as hidden-size/delta-scale micro-search. Archive code under `feiqi/failed_experiments_r051_20260517/`.
+
 ## 2026-05-16 R050 C4 Geometry-Primary Bypass
 
 - Added independent experiment entry `dformerv2_c4_geometry_primary_bypass` for R050 during the experiment branch.

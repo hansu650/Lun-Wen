@@ -1,5 +1,17 @@
 # Experiment Loop Log
 
+## R051 - C4 query-conditioned gate
+
+- branch: `exp/R051-c4-query-conditioned-gate-v1`
+- model/run: `dformerv2_c4_query_conditioned_gate` / `R051_c4_query_conditioned_gate_run01`
+- status: `completed_negative_query_gate_below_corrected_baseline`
+- best val/mIoU: `0.536702` at validation epoch `46`
+- last val/mIoU: `0.507323`
+- drop: `0.029379`
+- evidence: `final daima/miou_list/R051_c4_query_conditioned_gate_run01.md`
+- report: `reports/R051-c4-query-conditioned-gate-v1.md`
+- conclusion: query-conditioned c4 gate is better than c4 bypass but below R016/R036/R049/R041 and unstable; archive code and pivot away from c4 gate-conditioning micro-search.
+
 ## R050 - C4 geometry-primary bypass
 
 - branch: `exp/R050-c4-geometry-primary-bypass-v1`
@@ -50,7 +62,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R050 c4 geometry-primary bypass completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct high-stage conditioning or rectification hypothesis.
+Current phase: R051 c4 query-conditioned gate completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct stability or representation hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
