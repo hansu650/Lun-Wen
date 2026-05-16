@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R049 Backbone SyncBN Norm-Eval Boundary
+
+R049 tested an official-contract nuance rather than a new fusion block: local DFormerv2 uses `SyncBatchNorm` in patch embedding / patch merging, while the inherited `norm_eval=True` train hook only checks `nn.BatchNorm2d`. The experiment froze DFormerv2 backbone BN/SyncBN running stats through an independent model entry.
+
+The result reached best val/mIoU `0.537890` at validation epoch `41`, but final val/mIoU fell to `0.517793` and best-to-last drop was `0.020097`. This is below R016 `0.541121` and does not reduce late instability.
+
+Paper boundary: do not claim DFormerv2 SyncBN norm-eval alignment as an improvement. It is useful negative evidence that simply freezing backbone SyncBN running stats is not the missing official-contract detail under the fixed recipe.
+
+Durable direction update: stop norm-freeze micro-variants. The next higher-value question is whether high-level external DepthEncoder fusion is hurting DFormerv2's own geometry-primary c4 representation; test this as a c4 geometry-primary bypass rather than another normalization tweak.
+
 ## 2026-05-16 R048 Decoder Refinement Interpretation
 
 R048 tested a distinct decoder-refinement hypothesis after several local fusion/depth-cue variants underperformed. The refined multilevel FPN decoder reached best val/mIoU `0.534154` and last `0.530318`. The stable ending is useful, but the peak remains below R016/R036/R041. The paper should not claim that simply increasing SimpleFPN multilevel refinement solves the 0.55/0.56 gap.

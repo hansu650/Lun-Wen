@@ -1,5 +1,31 @@
 # Experiment Log
 
+## 2026-05-16 R049 result: backbone SyncBN norm-eval negative
+
+- branch: `exp/R049-backbone-syncbn-normeval-v1`
+- model: `dformerv2_backbone_syncbn_normeval`
+- run: `R049_backbone_syncbn_normeval_run01`
+- hypothesis: DFormerv2's official `norm_eval=True` intent may not be fully honored locally because `DFormerv2.train()` freezes `nn.BatchNorm2d` but not `nn.SyncBatchNorm`; freezing backbone SyncBN running stats might reduce batch-size-2 late instability.
+- implementation: added an independent model entry that sets only `rgb_encoder` `BatchNorm2d` / `SyncBatchNorm` modules to eval in `train(True)`. DepthEncoder, GatedFusion, SimpleFPNDecoder, loss, data, eval, and fixed training recipe remain unchanged.
+- literature/code evidence: official DFormer/DFormerv2 code uses `norm_eval=True` and `SyncBatchNorm` in patch embedding / patch merging. Local smoke verified PyTorch `SyncBatchNorm` is not a `BatchNorm2d` subclass, so this is a real contract diagnostic.
+- smoke status: `py_compile`, `train.py --help`, pretrained load check, random tensor forward/backward, and static/reproducer reviews passed.
+- full train status: completed; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.537890` at validation epoch `41`
+- last val/mIoU: `0.517793`
+- last-5 mean val/mIoU: `0.507274`
+- last-10 mean val/mIoU: `0.515344`
+- best-to-last drop: `0.020097`
+- best val/loss: `0.965282` at validation epoch `14`
+- last val/loss: `1.193775`
+- final train/loss_epoch: `0.054875`
+- checkpoint: `checkpoints\R049_backbone_syncbn_normeval_run01\dformerv2_backbone_syncbn_normeval-epoch=41-val_mIoU=0.5379.pt`
+- TensorBoard event: `checkpoints\R049_backbone_syncbn_normeval_run01\lightning_logs\version_0\events.out.tfevents.1778935513.Administrator.38220.0`
+- evidence: `miou_list/R049_backbone_syncbn_normeval_run01.md`
+- comparison: below R016 `0.541121` by `-0.003231`, below R036 `0.539790` by `-0.001900`, and above R041 `0.537098` by `+0.000792`; late drop is worse than R016.
+- conclusion: **negative contract diagnostic.** Freezing DFormerv2 backbone SyncBN running stats does not solve the fixed-recipe peak or late-instability gap.
+- next step: archive code under `feiqi/failed_experiments_r049_20260516/`, remove the active registry entry, and move to R050 `c4 geometry-primary bypass`.
+
 ## 2026-05-16 R048 result: refined FPN decoder stable but below R016
 
 - branch: `exp/R048-multilevel-fpn-refine-v1`

@@ -1,5 +1,17 @@
 # Experiment Loop Log
 
+## R049 - Backbone SyncBN norm-eval
+
+- branch: `exp/R049-backbone-syncbn-normeval-v1`
+- model/run: `dformerv2_backbone_syncbn_normeval` / `R049_backbone_syncbn_normeval_run01`
+- status: `completed_negative_normeval_below_corrected_baseline`
+- best val/mIoU: `0.537890` at validation epoch `41`
+- last val/mIoU: `0.517793`
+- drop: `0.020097`
+- evidence: `final daima/miou_list/R049_backbone_syncbn_normeval_run01.md`
+- report: `reports/R049-backbone-syncbn-normeval-v1.md`
+- conclusion: DFormerv2 backbone SyncBN norm-eval is a real contract diagnostic, but it stays below R016 and worsens late drop; archive code and pivot to c4 geometry-primary bypass.
+
 ## R048 - Refined FPN decoder
 
 - branch: `exp/R048-multilevel-fpn-refine-v1`
@@ -26,7 +38,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R048 refined FPN decoder completed as stable but below R016/R036/R041; continue the Goal-Driven loop toward `0.56` with a distinct R049 hypothesis.
+Current phase: R049 backbone SyncBN norm-eval completed as a negative contract diagnostic below R016; continue the Goal-Driven loop toward `0.56` with R050 c4 geometry-primary bypass.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 

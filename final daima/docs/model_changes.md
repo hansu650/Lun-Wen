@@ -1,5 +1,15 @@
 # Model Changes
 
+## 2026-05-16 R049 Backbone SyncBN Norm-Eval
+
+- Added independent experiment entry `dformerv2_backbone_syncbn_normeval` for R049.
+- Added `DFormerV2BackboneSyncBNNormEvalSegmentor` and `LitDFormerV2BackboneSyncBNNormEval` in `src/models/mid_fusion.py` during the experiment branch.
+- The variant preserved the R016 model path except for training state: in `train(True)`, only DFormerv2 `rgb_encoder` `BatchNorm2d` / `SyncBatchNorm` modules were set to eval.
+- `dformerv2_mid_fusion`, DepthEncoder, original `GatedFusion`, SimpleFPNDecoder, loss, data, eval, and training recipe were not modified.
+- Smoke verification showed all 7 DFormerv2 `SyncBatchNorm` modules were eval while DepthEncoder and GatedFusion BN modules stayed trainable; gradients still reached DFormerv2, DepthEncoder, GatedFusion, and decoder.
+- Full-train result: best val/mIoU `0.537890` at validation epoch `41`, last `0.517793`, best-to-last drop `0.020097`.
+- Decision: reject active promotion. The run remains below R016 `0.541121` and has a worse late drop; archive code under `feiqi/failed_experiments_r049_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R048 Refined FPN Decoder
 
 - Added independent experiment entry `dformerv2_refined_fpn_decoder` for R048.
