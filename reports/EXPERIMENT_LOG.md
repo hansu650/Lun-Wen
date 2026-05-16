@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R043 raw-depth geometry c4 cue completed as a partial signal below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R044 conditioned c3/c4 bounded residual completed as a negative/diagnostic result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,23 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R044 Result: conditioned c3/c4 residual negative below R016
+
+- `R044_conditioned_c34_bounded_residual_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.535663` at validation epoch `49`; last val/mIoU: `0.520020`.
+- Last-5 mean val/mIoU: `0.521228`; last-10 mean val/mIoU: `0.519138`; best-to-last drop: `0.015643`.
+- c3 alpha mean first/last/max: `0.027802` / `0.049420` / `0.049420`.
+- c3 alpha max first/last/max: `0.030972` / `0.049999` / `0.049999`.
+- c3 residual_abs first/last/max: `0.066489` / `0.737136` / `0.737921`.
+- c4 alpha mean first/last/max: `0.025361` / `0.027943` / `0.028668`.
+- c4 residual_abs first/last/max: `0.088054` / `0.708959` / `0.708959`.
+- Evidence: `final daima/miou_list/R044_conditioned_c34_bounded_residual_run01.md`.
+- Checkpoint: `final daima/checkpoints/R044_conditioned_c34_bounded_residual_run01/dformerv2_conditioned_c34_bounded_residual-epoch=48-val_mIoU=0.5357.pt`.
+- TensorBoard event: `final daima/checkpoints/R044_conditioned_c34_bounded_residual_run01/lightning_logs/version_0/events.out.tfevents.1778900799.Administrator.11996.0`.
+- Saved command: `final daima/checkpoints/R044_conditioned_c34_bounded_residual_run01/run_r044.cmd`.
+- Decision: negative/diagnostic below corrected baseline. R044 is below R016/R036/R041, c3 alpha saturates near its cap, and late drop crosses `0.015`; do not promote this code.
+- Next: archive the code under `feiqi/failed_experiments_r044_20260516/`, remove the active registry entry, and pivot to a distinct non-microsearch hypothesis.
 
 ### 2026-05-16 R043 Result: raw depth geometry c4 cue partial signal below R016
 

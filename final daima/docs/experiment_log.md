@@ -1,5 +1,38 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R044 result: conditioned c3/c4 residual negative below R016
+
+- branch: `exp/R044-conditioned-c34-bounded-residual-v1`
+- model: `dformerv2_conditioned_c34_bounded_residual`
+- run: `R044_conditioned_c34_bounded_residual_run01`
+- hypothesis: condition the c3/c4 bounded depth residual amplitude on DFormerv2 c4 global pooled features to test whether image/channel-specific residual opening improves over R036 static alpha while preserving original GatedFusion as the base.
+- implementation: added a separate model entry. c1/c2 used original `GatedFusion`; c3/c4 used original `GatedFusion` as `base` plus `alpha * residual`, where `alpha <= 0.05` is generated from c4 global pooled DFormerv2 features by a zero-initialized channel head. The residual final projection was zero-initialized.
+- literature/code evidence: motivated by CAFuser condition-aware fusion and DGFusion depth-guided fusion, but only a minimal conditioned residual amplitude unit was ported. No full framework, condition classifier, cross-attention stack, auxiliary depth loss, decoder change, or training recipe change was added.
+- smoke status: syntax compile, `train.py --help`, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1/c2 original `GatedFusion`, c3/c4 `ImageConditionedC34BoundedDepthResidual`, finite CE, unchanged DFormerv2 pretrained load stats, and nonzero gradients through residual/depth paths after one optimizer step.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.535663` at validation epoch `49`
+- last val/mIoU: `0.520020`
+- last-5 mean val/mIoU: `0.521228`
+- last-10 mean val/mIoU: `0.519138`
+- best-to-last drop: `0.015643`
+- best val/loss: `0.955417` at validation epoch `10`
+- last val/loss: `1.279686`
+- final train/loss_epoch: `0.051134`
+- c3 conditioned alpha mean first/last/max: `0.027802` / `0.049420` / `0.049420`
+- c3 conditioned alpha max first/last/max: `0.030972` / `0.049999` / `0.049999`
+- c3 residual_abs first/last/max: `0.066489` / `0.737136` / `0.737921`
+- c4 conditioned alpha mean first/last/max: `0.025361` / `0.027943` / `0.028668`
+- c4 conditioned alpha max first/last/max: `0.026435` / `0.044898` / `0.045183`
+- c4 residual_abs first/last/max: `0.088054` / `0.708959` / `0.708959`
+- checkpoint: `checkpoints/R044_conditioned_c34_bounded_residual_run01/dformerv2_conditioned_c34_bounded_residual-epoch=48-val_mIoU=0.5357.pt`
+- TensorBoard event: `checkpoints/R044_conditioned_c34_bounded_residual_run01/lightning_logs/version_0/events.out.tfevents.1778900799.Administrator.11996.0`
+- saved command: `checkpoints/R044_conditioned_c34_bounded_residual_run01/run_r044.cmd`
+- evidence: `miou_list/R044_conditioned_c34_bounded_residual_run01.md`
+- comparison: R044 is below R016 `0.541121` by `-0.005458`, below R036 `0.539790` by `-0.004127`, and below R041 `0.537098` by `-0.001435`. It is only `+0.000071` over R043, which is not meaningful.
+- conclusion: **negative/diagnostic below corrected baseline.** The conditioned residual path opens, especially c3, but it saturates near the alpha cap and residual magnitude grows without improving the fixed-recipe peak. The final drop also crosses the `0.015` instability tripwire.
+- next step: do not promote this exact module and do not tune alpha bound or hidden size. Archive the implementation under `feiqi/failed_experiments_r044_20260516/` and pivot to a distinct hypothesis rather than another conditioned c3/c4 residual micro-variant.
+
 ## 2026-05-16 R043 result: raw depth geometry c4 cue partial signal below R016
 
 - branch: `exp/R043-depthgeo-c4-cue-v1`

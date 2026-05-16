@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-16 R044 Conditioned C34 Bounded Residual
+
+- Added `ImageConditionedC34BoundedDepthResidual` in `src/models/mid_fusion.py` for the experiment branch.
+- Added `DFormerV2ConditionedC34BoundedResidualSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2ConditionedC34BoundedResidual` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_conditioned_c34_bounded_residual` in `train.py`.
+- The experiment preserved c1/c2 original `GatedFusion` and used c3/c4 original `GatedFusion` as the base inside a residual wrapper.
+- The c3/c4 residual form was `base + alpha * residual`, with `alpha_max=0.05`. Alpha was generated from DFormerv2 c4 global pooled features by a zero-initialized channel head.
+- The residual input was `[depth_proj, abs(rgb - depth_proj)]`; the final residual projection was zero-initialized.
+- Logged c3/c4 alpha mean/std/min/max/delta_abs and residual_abs for audit.
+- Smoke verification confirmed c1/c2 original `GatedFusion`, c3/c4 conditioned residual wrappers, finite real-batch CE, unchanged pretrained load stats, and nonzero residual/condition gradients after one optimizer step.
+- Full-train result: best val/mIoU `0.535663` at validation epoch `49`, last val/mIoU `0.520020`, best-to-last drop `0.015643`.
+- Decision: do not promote as active mainline because it remains below R041 `0.537098`, R036 `0.539790`, and R016 `0.541121`, and late drop crosses the `0.015` tripwire.
+- Cleanup: remove `dformerv2_conditioned_c34_bounded_residual` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r044_20260516/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-16 R043 DepthGeo c4 Cue
 
 - Added `DepthGeometryC4CueFusion` in `src/models/mid_fusion.py` for the experiment branch.

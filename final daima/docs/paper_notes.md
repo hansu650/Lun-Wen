@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R044 Conditioned C34 Residual Boundary
+
+- R044 completed 50 validation epochs with best val/mIoU `0.535663` at validation epoch `49`; final val/mIoU is `0.520020`.
+- It crosses `0.53`, but remains below R041 `0.537098`, R036 `0.539790`, and the corrected R016 baseline `0.541121`.
+- The best-to-last drop is `0.015643`, slightly beyond the R044 instability tripwire; last-5 and last-10 means are weak (`0.521228` / `0.519138`).
+- Diagnostics show the residual path opens but not selectively enough: c3 alpha mean moves `0.027802 -> 0.049420`, c3 alpha max reaches `0.049999`, and c3 residual_abs grows `0.066489 -> 0.737136`. c4 alpha mean stays much smaller (`0.025361 -> 0.027943`) while c4 residual_abs also grows.
+- Paper boundary: do not claim condition-aware c3/c4 bounded residual as an improvement over the corrected DFormerv2 mid-fusion baseline. It is negative evidence that image-conditioned residual amplitude alone does not solve the late-instability/0.56 gap.
+- Literature boundary: CAFuser/DGFusion support condition-aware or depth-guided fusion at a conceptual level, but this minimal port saturated the residual branch without improving the fixed-recipe peak. Do not equate it with the full papers.
+- Strategic implication: stop alpha-bound/hidden-size micro-search for conditioned c3/c4 residual. If continuing this family at all, only a clearly distinct stage-isolation hypothesis is defensible; otherwise pivot to a different adapter or modality-balance mechanism.
+
 ## 2026-05-16 R043 DepthGeo c4 Cue Boundary
 
 - R043 completed 50 validation epochs with best val/mIoU `0.535592` at validation epoch `42`; final val/mIoU is `0.522214`.
