@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R043 DepthGeo c4 Cue Boundary
+
+- R043 completed 50 validation epochs with best val/mIoU `0.535592` at validation epoch `42`; final val/mIoU is `0.522214`.
+- It crosses `0.53` and is much healthier than R042, but remains below R041 `0.537098`, R036 `0.539790`, and the corrected R016 baseline `0.541121`.
+- The best-to-last drop is `0.013378`; this is below the severe R042 collapse but still large enough that the late-window mean stays weak (`last-5=0.518946`, `last-10=0.522097`).
+- Diagnostics show the explicit geometry path opens conservatively: `geo_logit_abs` moves `0.015203 -> 0.153483`, while c4 gate_mean only moves `0.499898 -> 0.512162`.
+- Paper boundary: do not claim raw-depth Sobel/normal-like c4 geometry cue as an improvement over the corrected DFormerv2 mid-fusion baseline. It is partial evidence that explicit geometry cues are safer than c3-propagated feature disagreement, but not enough to promote.
+- Literature boundary: DFormerv2 and geometry-aware RGB-D work motivate depth derivatives/normal cues, but this local c4-only gate-logit extraction does not reproduce a useful gain over the corrected baseline.
+- Strategic implication: avoid Sobel/normal hidden-size or scale micro-search. The next step should be a distinct hypothesis, likely one that changes capacity/stability rather than another c4 gate cue.
+
 ## 2026-05-16 R042 DiffPixel C3-to-C4 Cue Boundary
 
 - R042 completed 50 validation epochs with best val/mIoU `0.530729` at validation epoch `43`; final val/mIoU is `0.458179`.

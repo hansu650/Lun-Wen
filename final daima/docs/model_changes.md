@@ -1,5 +1,21 @@
 # Model Changes
 
+## 2026-05-16 R043 DepthGeo c4 Cue
+
+- Added `DepthGeometryC4CueFusion` in `src/models/mid_fusion.py` for the experiment branch.
+- Added `DFormerV2DepthGeoC4CueSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2DepthGeoC4Cue` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_depthgeo_c4_cue` in `train.py`.
+- The experiment preserved c1-c3 original `GatedFusion` and replaced only c4 with a depth geometry gate-logit correction.
+- The c4 branch computes Sobel `dx/dy`, magnitude, and normal-like `nx/ny/nz` from the already-loaded depth tensor inside the model, z-scores the 4-channel cue per sample, interpolates it to c4 size, and adds a zero-initialized `geo_gate(cue)` logit to the original c4 gate logit before `sigmoid`.
+- The final fusion form remains `refine(g * rgb + (1 - g) * depth_proj)`; no output residual, auxiliary loss, c3 path, decoder change, dataloader preprocessing, or recipe change was added.
+- Logged `train/depthgeo_c4_geo_logit_abs`, `train/depthgeo_c4_gate_mean`, `train/depthgeo_c4_gate_std`, `train/depthgeo_c4_edge_mean`, and `train/depthgeo_c4_edge_std`.
+- Smoke verification confirmed c1-c3 original `GatedFusion`, c4 `DepthGeometryC4CueFusion`, finite real-batch CE, nonzero geo-gate/depth/gate/refine gradients, and unchanged DFormerv2 pretrained load stats.
+- Full-train result: best val/mIoU `0.535592` at validation epoch `42`, last val/mIoU `0.522214`, best-to-last drop `0.013378`.
+- Decision: do not promote as active mainline because it remains below R041 `0.537098`, R036 `0.539790`, and R016 `0.541121`.
+- Cleanup: remove `dformerv2_depthgeo_c4_cue` from the active registry after recording evidence; archive the implementation snippet under `feiqi/failed_experiments_r043_20260516/`.
+- No dataset split, dataloader, augmentation, evaluation metric, mIoU calculation, loss, optimizer, scheduler, batch size, epoch count, learning rate, worker count, early stopping, DFormerv2-S level, pretrained loading, checkpoint artifacts, dataset files, pretrained weights, or TensorBoard event files were changed.
+
 ## 2026-05-16 R042 DiffPixel C3-to-C4 Cue
 
 - Added `C3ToC4DiffPixelCueFusion` in `src/models/mid_fusion.py` for the experiment branch.

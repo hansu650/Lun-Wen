@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R042 c3-to-c4 DiffPixel cue completed negative and unstable; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R043 raw-depth geometry c4 cue completed as a partial signal below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,20 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R043 Result: raw depth geometry c4 cue partial signal below R016
+
+- `R043_depthgeo_c4_cue_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.535592` at validation epoch `42`; last val/mIoU: `0.522214`.
+- Last-5 mean val/mIoU: `0.518946`; last-10 mean val/mIoU: `0.522097`; best-to-last drop: `0.013378`.
+- depthgeo c4 geo_logit_abs first/last/max: `0.015203` / `0.153483` / `0.153980`.
+- depthgeo c4 gate_mean first/last/max: `0.499898` / `0.512162` / `0.512432`.
+- Evidence: `final daima/miou_list/R043_depthgeo_c4_cue_run01.md`.
+- Checkpoint: `final daima/checkpoints/R043_depthgeo_c4_cue_run01/dformerv2_depthgeo_c4_cue-epoch=41-val_mIoU=0.5356.pt`.
+- TensorBoard event: `final daima/checkpoints/R043_depthgeo_c4_cue_run01/lightning_logs/version_0/events.out.tfevents.1778893712.Administrator.9528.0`.
+- Saved command: `final daima/checkpoints/R043_depthgeo_c4_cue_run01/run_r043.cmd`.
+- Decision: partial geometry-cue signal below corrected baseline. R043 is safer than R042 but below R041/R036/R016, so do not promote it.
+- Next: archive the code under `feiqi/failed_experiments_r043_20260516/`, remove the active registry entry, and pivot to a distinct R044 hypothesis.
 
 ### 2026-05-16 R042 Result: c3-to-c4 DiffPixel Cue Negative
 

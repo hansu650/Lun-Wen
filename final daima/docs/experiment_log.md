@@ -1,5 +1,36 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R043 result: raw depth geometry c4 cue partial signal below R016
+
+- branch: `exp/R043-depthgeo-c4-cue-v1`
+- model: `dformerv2_depthgeo_c4_cue`
+- run: `R043_depthgeo_c4_cue_run01`
+- hypothesis: a c4-only raw-depth Sobel/normal-like geometry cue can improve high-level gate decisions more safely than RGB-depth feature disagreement, aligning with DFormerv2's geometry-prior motivation.
+- implementation: added a separate model entry. c1-c3 outputs use the original `GatedFusion`; inherited c4 fusion is disabled with `Identity`; c4 uses the original gate/refine form plus a zero-initialized gate-logit correction from on-the-fly depth Sobel `dx/dy`, magnitude, and normal-like `nx/ny/nz`.
+- literature/code evidence: R043 builds on DFormerv2 geometry-prior motivation plus geometry-aware depth/normal cue patterns from 2025 RGB-D literature. It ports only a minimal c4 gate-logit cue, not a new backbone, dataloader preprocessing, or large framework.
+- smoke status: syntax compile, `train.py --help`, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 `DepthGeometryC4CueFusion`, logits `(2, 40, 480, 640)`, finite CE `3.770108`, unchanged DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`, finite raw-depth geometry cue tensors, and nonzero gradients through the geo gate, c4 depth projection, base gate, and refine path.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.535592` at validation epoch `42`
+- last val/mIoU: `0.522214`
+- last-5 mean val/mIoU: `0.518946`
+- last-10 mean val/mIoU: `0.522097`
+- best-to-last drop: `0.013378`
+- best val/loss: `0.961905` at validation epoch `11`
+- last val/loss: `1.208118`
+- final train/loss_epoch: `0.052872`
+- depthgeo c4 geo_logit_abs first/last/max: `0.015203` / `0.153483` / `0.153980`
+- depthgeo c4 gate_mean first/last/max: `0.499898` / `0.512162` / `0.512432`
+- depthgeo c4 gate_std first/last/max: `0.207853` / `0.212319` / `0.213092`
+- depth edge mean first/last: `0.145911` / `0.145908`
+- checkpoint: `checkpoints/R043_depthgeo_c4_cue_run01/dformerv2_depthgeo_c4_cue-epoch=41-val_mIoU=0.5356.pt`
+- TensorBoard event: `checkpoints/R043_depthgeo_c4_cue_run01/lightning_logs/version_0/events.out.tfevents.1778893712.Administrator.9528.0`
+- saved command: `checkpoints/R043_depthgeo_c4_cue_run01/run_r043.cmd`
+- evidence: `miou_list/R043_depthgeo_c4_cue_run01.md`
+- comparison: R043 is above R042 by `+0.004863` and far less unstable, but below R041 `0.537098` by `-0.001506`, below R036 `0.539790` by `-0.004198`, and below R016 `0.541121` by `-0.005529`.
+- conclusion: **partial geometry-cue signal below corrected baseline.** The explicit depth geometry cue opens conservatively and is safer than c3-propagated feature disagreement, but it does not beat the strongest fixed-recipe results and late-window dips remain.
+- next step: do not promote this exact module and do not tune Sobel/normal hidden size or scale. Archive the code under `feiqi/failed_experiments_r043_20260516/` and pivot to a distinct R044 hypothesis.
+
 ## 2026-05-16 R042 result: c3-to-c4 DiffPixel cue negative
 
 - branch: `exp/R042-diffpixel-c3toc4-cue-v1`
