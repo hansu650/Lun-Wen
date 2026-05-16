@@ -999,3 +999,13 @@
 - Active model entries after restore: `early`, `mid_fusion`, `dformerv2_mid_fusion`.
 - `dformerv2_mid_fusion` still supports `--dformerv2_pretrained`.
 - Verification: `py_compile` passed for `src/models/fusion_blocks.py`, `src/models/mid_fusion.py`, and `train.py`.
+## 2026-05-17 R052 C3 Bounded Depth Residual
+
+- Added independent experiment entry `dformerv2_c3_bounded_depth_residual` during the R052 branch.
+- Added `GatedFusionC3BoundedDepthResidual`, `DFormerV2C3BoundedDepthResidualSegmentor`, and `LitDFormerV2C3BoundedDepthResidual` in `src/models/mid_fusion.py`.
+- The experiment preserved c1, c2, and c4 original `GatedFusion`; only c3 used the bounded residual wrapper.
+- Residual form: `base + alpha * residual([depth_proj, abs(rgb-depth_proj)])`, with `alpha_max=0.05`.
+- The final residual projection was zero-initialized, so initial c3 output matched the base `GatedFusion` exactly.
+- Logged `train/c3_residual_alpha` and `train/c3_residual_abs` for audit.
+- Full-train result: best val/mIoU `0.535289` at validation epoch `31`, last `0.515195`, best-to-last drop `0.020095`.
+- Decision: reject active promotion. The run stays below R016 `0.541121` and R036 `0.539790`, and late drop crosses the `0.015` instability tripwire. Archive code under `feiqi/failed_experiments_r052_20260517/` and remove the registry entry after recording evidence.

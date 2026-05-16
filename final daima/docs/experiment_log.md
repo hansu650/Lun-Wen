@@ -2635,3 +2635,26 @@
 - conclusion: GatedFusion + co-attention residual correction severely underperformed the repeated DFormerv2 mid-fusion baseline, so this branch is deprecated.
 - evidence: `miou_list/dformerv2_gated_coattn_res_fusion_run01_partial.md`
 
+## 2026-05-17 R052 result: c3-only bounded depth residual negative
+
+- branch: `exp/R052-c3-bounded-depth-residual-v1`
+- model: `dformerv2_c3_bounded_depth_residual`
+- run: `R052_c3_bounded_depth_residual_run01`
+- hypothesis: R036's near-R016 bounded residual signal may come mainly from c3; keep c1/c2/c4 on original `GatedFusion` and isolate the residual only at c3.
+- implementation: added an independent experiment entry during the branch. c3 used `base + alpha * residual([depth_proj, abs(rgb-depth_proj)])` with `alpha_max=0.05` and a zero-initialized final residual projection. c1, c2, c4 original `GatedFusion`, DFormerv2-S, DepthEncoder, SimpleFPNDecoder, loss, data, eval, and fixed recipe were unchanged.
+- dry-check: `py_compile`, `train.py --help`, and CUDA random forward/backward smoke passed. The c3 wrapper initially matched base `GatedFusion` exactly with max diff `0.0`; pretrained load stats stayed `loaded_keys=774, missing_keys=6, unexpected_keys=11`.
+- full train: completed 50 validation epochs; `Trainer.fit` reached `max_epochs=50`.
+- best val/mIoU: `0.535289` at validation epoch `31`
+- last val/mIoU: `0.515195`
+- last-5 mean val/mIoU: `0.521096`
+- last-10 mean val/mIoU: `0.520507`
+- best-to-last drop: `0.020095`
+- c3 residual alpha first/last: `0.025108` / `0.026631`
+- c3 residual abs first/last/max: `0.070006` / `1.037385` / `1.076362`
+- comparison: below R016 `0.541121` by `-0.005832`, below R036 `0.539790` by `-0.004501`, below R051 `0.536702` by `-0.001413`, and above R050 `0.533066` by `+0.002223`.
+- checkpoint: `checkpoints\R052_c3_bounded_depth_residual_run01\dformerv2_c3_bounded_depth_residual-epoch=30-val_mIoU=0.5353.pt`
+- TensorBoard event: `checkpoints\R052_c3_bounded_depth_residual_run01\lightning_logs\version_0\events.out.tfevents.1778953571.Administrator.43316.0`
+- evidence: `miou_list/R052_c3_bounded_depth_residual_run01.md`
+- report: `reports/R052-c3-bounded-depth-residual-v1.md`
+- conclusion: **negative below corrected baseline and below R036.** c3-only residual isolates a weaker signal than c3+c4 residual and does not solve late instability.
+- next step: archive code under `feiqi/failed_experiments_r052_20260517/`, remove the active registry entry, and do not continue c3-only alpha/stage micro-search. Pivot to a non-residual representation mechanism such as OCR-Lite decoder context if R053 passes gate.

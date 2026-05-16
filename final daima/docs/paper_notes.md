@@ -936,3 +936,12 @@ Durable direction update: deprioritize local fusion normalization tweaks unless 
 - This is far below the repeated `dformerv2_mid_fusion` baseline mean `0.513406`.
 - Main active branch is restored to `dformerv2_mid_fusion`.
 - This ablation can be cited only as a negative record, not as an improved paper result.
+## 2026-05-17 R052 C3-Only Residual Boundary
+
+R052 isolated R036's c3/c4 bounded residual by keeping c1, c2, and c4 on the original R016 `GatedFusion` path and adding the bounded zero-initialized residual only at c3.
+
+The result reached best val/mIoU `0.535289` at validation epoch `31`, with last `0.515195` and best-to-last drop `0.020095`. It is below R016 `0.541121`, below R036 `0.539790`, and below R051 `0.536702`.
+
+Paper boundary: do not claim c3-only bounded depth residual as an improvement. The result suggests that R036's partial signal was not explained by c3 alone; if bounded residuals have value, c4 interaction was part of the weak effect, but the family is still below the corrected mainline.
+
+Durable direction update: stop c3-only bounded residual alpha/stage micro-search. R053 should pivot to a non-residual representation mechanism, with OCR-Lite decoder context currently the cleanest fallback if it passes code and contract gate.

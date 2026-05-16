@@ -1,5 +1,17 @@
 # Experiment Loop Log
 
+## R052 - C3 bounded depth residual
+
+- branch: `exp/R052-c3-bounded-depth-residual-v1`
+- model/run: `dformerv2_c3_bounded_depth_residual` / `R052_c3_bounded_depth_residual_run01`
+- status: `completed_negative_c3_only_residual_below_corrected_baseline`
+- best val/mIoU: `0.535289` at validation epoch `31`
+- last val/mIoU: `0.515195`
+- drop: `0.020095`
+- evidence: `final daima/miou_list/R052_c3_bounded_depth_residual_run01.md`
+- report: `reports/R052-c3-bounded-depth-residual-v1.md`
+- conclusion: c3-only bounded residual is weaker than R036 c3+c4 bounded residual and remains below R016; archive code and pivot away from residual-stage isolation.
+
 ## R051 - C4 query-conditioned gate
 
 - branch: `exp/R051-c4-query-conditioned-gate-v1`
@@ -62,7 +74,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R051 c4 query-conditioned gate completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct stability or representation hypothesis.
+Current phase: R052 c3-only bounded residual completed as a negative result below R016/R036; continue the Goal-Driven loop toward `0.56` with a non-residual representation hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
