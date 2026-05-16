@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-16 R042 DiffPixel C3-to-C4 Cue Boundary
+
+- R042 completed 50 validation epochs with best val/mIoU `0.530729` at validation epoch `43`; final val/mIoU is `0.458179`.
+- It is below R041 `0.537098`, R036 `0.539790`, and the corrected R016 baseline `0.541121`.
+- The best-to-last drop is severe (`0.072551`), and the final epoch collapses despite the cue branch opening.
+- Diagnostics show `c3toc4_cue_abs` moves `0.018134 -> 0.246822` and gate_mean moves `0.500000 -> 0.545177`; the path is active but harmful.
+- Paper boundary: do not claim c3-propagated differential cue as a useful method. It is negative evidence that mid-level differential disagreement should not be injected into c4 under the current fixed recipe.
+- Strategic implication: keep R041's c4-only differential cue as a partial diagnostic, but avoid c3-to-c4 cue propagation and avoid hidden-size/scale micro-search. Future directions should test a different mechanism, such as explicit depth derivative/normal-like geometry cue or decoder/refinement stability.
+
 ## 2026-05-16 R041 DiffPixel c4 Cue Boundary
 
 - R041 completed 50 validation epochs with best val/mIoU `0.537098` at validation epoch `44`; final val/mIoU is `0.529552`.

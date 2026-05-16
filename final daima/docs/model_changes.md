@@ -1,5 +1,18 @@
 # Model Changes
 
+## 2026-05-16 R042 DiffPixel C3-to-C4 Cue
+
+- Added `C3ToC4DiffPixelCueFusion` in `src/models/mid_fusion.py` for the experiment branch.
+- Added `DFormerV2DiffPixelC3ToC4CueSegmentor` in `src/models/mid_fusion.py`.
+- Added `LitDFormerV2DiffPixelC3ToC4Cue` in `src/models/mid_fusion.py`.
+- Registered `dformerv2_diffpixel_c3toc4_cue` in `train.py`.
+- The experiment preserved c1-c3 original `GatedFusion` outputs and used a separate c4 fusion block conditioned by a c3 differential cue.
+- The c3 cue branch projects c3 depth, computes `c3_diff = c3_rgb - c3_depth_proj`, builds `[c3_diff, abs(c3_diff)]`, maps it to c4 channels, downsamples to c4 size, and adds it to the c4 base gate logit before `sigmoid`.
+- The inherited c4 `GatedFusion` is replaced with `Identity` so unused c4 parameters are not left in the model.
+- The decoder, loss, optimizer, scheduler, batch size, epoch count, learning rate, dataloaders, metrics, DFormerv2-S level, and pretrained loading path were not changed.
+- Full-train result: best val/mIoU `0.530729` at validation epoch `43`, last val/mIoU `0.458179`, best-to-last drop `0.072551`.
+- Decision: do not promote as active mainline. Archive the implementation under `feiqi/failed_experiments_r042_20260516/` and remove the registry entry after recording evidence.
+
 ## 2026-05-16 R041 DiffPixel c4 Differential Cue
 
 - Added `DiffPixelC4CueFusion` in `src/models/mid_fusion.py` for the experiment branch.

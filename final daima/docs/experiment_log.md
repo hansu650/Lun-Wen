@@ -1,5 +1,34 @@
 ﻿# Experiment Log
 
+## 2026-05-16 R042 result: c3-to-c4 DiffPixel cue negative
+
+- branch: `exp/R042-diffpixel-c3toc4-cue-v1`
+- model: `dformerv2_diffpixel_c3toc4_cue`
+- run: `R042_diffpixel_c3toc4_cue_run01`
+- hypothesis: a c3 RGB-depth differential cue propagated to c4 can condition high-level `GatedFusion` better than R041's c4-only local difference, without changing c3 outputs or adding output residuals.
+- implementation: added a separate model entry. c1-c3 outputs use the original `GatedFusion`; inherited c4 fusion is disabled with `Identity`; c4 uses a new fusion block whose gate logit adds a zero-initialized, downsampled cue from c3 `[rgb-depth_proj, abs(rgb-depth_proj)]`.
+- literature/code evidence: R042 builds on DiffPixelFormer (`arXiv:2511.13047`, official repo `github.com/gongyan1/DiffPixelFormer`) and the R041 partial-positive c4 differential cue result. It ports only a minimal cross-stage differential cue, not the full paper framework.
+- smoke status: syntax compile, `train.py --help`, and real NYU batch CUDA forward/backward passed. Smoke confirmed c1-c3 original `GatedFusion`, c4 extra `C3ToC4DiffPixelCueFusion`, logits `(2, 40, 480, 640)`, finite CE `3.726418`, unchanged DFormerv2 pretrained load stats `loaded_keys=774`, `missing_keys=6`, `unexpected_keys=11`, and nonzero gradients through the final c3 cue projection, c4 depth projection, gate, and refine path.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.530729` at validation epoch `43`
+- last val/mIoU: `0.458179`
+- last-5 mean val/mIoU: `0.505197`
+- last-10 mean val/mIoU: `0.510157`
+- best-to-last drop: `0.072551`
+- best val/loss: `0.957006` at validation epoch `10`
+- last val/loss: `1.417108`
+- final train/loss_epoch: `0.065262`
+- c3-to-c4 cue_abs first/last: `0.018134` / `0.246822`
+- c3-to-c4 gate_mean first/last: `0.500000` / `0.545177`
+- checkpoint: `checkpoints/R042_diffpixel_c3toc4_cue_run01/dformerv2_diffpixel_c3toc4_cue-epoch=42-val_mIoU=0.5307.pt`
+- TensorBoard event: `checkpoints/R042_diffpixel_c3toc4_cue_run01/lightning_logs/version_0/events.out.tfevents.1778887449.Administrator.10152.0`
+- saved command: `checkpoints/R042_diffpixel_c3toc4_cue_run01/run_r042.cmd`
+- evidence: `miou_list/R042_diffpixel_c3toc4_cue_run01.md`
+- comparison: R042 is below R041 `0.537098` by `-0.006369`, below R036 `0.539790` by `-0.009061`, and below R016 `0.541121` by `-0.010392`.
+- conclusion: **negative and unstable.** The c3 cue branch opens, but propagating c3 disagreement into c4 appears to amplify mid-level noise and worsens late collapse.
+- next step: do not continue c3-propagated differential cue or hidden-size/scale variants. Pivot to a distinct hypothesis such as explicit geometry derivative/normal-like depth cue or a higher-capacity stability module.
+
 ## 2026-05-16 R041 result: DiffPixel c4 cue partial positive below R016
 
 - branch: `exp/R041-diffpixel-c4-cue-v1`

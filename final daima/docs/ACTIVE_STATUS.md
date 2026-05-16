@@ -4,7 +4,7 @@
 
 - Active fixed-recipe baseline: `dformerv2_mid_fusion`.
 - Corrected-label/reference result: R016 best val/mIoU `0.541121` at validation epoch `49`, last `0.527420`.
-- Current stage: R041 has been recorded as partial positive below R016; continue the Goal-Driven loop toward `0.56`.
+- Current stage: R042 has been recorded as negative and unstable below R016; continue the Goal-Driven loop toward `0.56`.
 - Active registry should stay clean: only mainline/teaching entries and reusable stable entries belong in `train.py`.
 
 ## Active Model Entries
@@ -35,6 +35,7 @@
 ## Archived / Deprecated
 
 - R041 DiffPixel c4 cue: partial positive below R016; code archived under `feiqi/failed_experiments_r041_20260516/`.
+- R042 DiffPixel c3-to-c4 cue: negative and unstable below R016; code archived under `feiqi/failed_experiments_r042_20260516/`.
 - R040 c4 low-rank depth prompt: negative below `0.53`; code archived under `feiqi/failed_experiments_r040_20260516/`.
 - R039 MIIM c4 lite, R038 DSCF c4 lite, R037 DGL minimal, R036 bounded residual, R034 MASG, and R035 gate-balance regularizer: not promoted to active registry.
 - PMAD/TGGA small-parameter search, hard filtering KD, global FreqFPN/FFT, Lovasz/OHEM/Focal/CE+Dice, LMLP decoder, SimpleFPN classifier dropout, Ham-logit scalar tuning, all-stage residual, c1/c2 residual, official local init, and DepthEncoder BN eval remain deprecated unless a future branch restores them for reproduction only.
