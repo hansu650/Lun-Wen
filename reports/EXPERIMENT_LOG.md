@@ -1,8 +1,20 @@
-﻿# Experiment Loop Log
+# Experiment Loop Log
+
+## R047 - GatedFusion local GroupNorm
+
+- branch: `exp/R047-gatedfusion-local-gn-v1`
+- model/run: `dformerv2_gatedfusion_gn` / `R047_gatedfusion_local_gn_run01`
+- status: `completed_negative_gn_below_corrected_baseline`
+- best val/mIoU: `0.528301` at validation epoch `25`
+- last val/mIoU: `0.472746`
+- drop: `0.055555`
+- evidence: `final daima/miou_list/R047_gatedfusion_local_gn_run01.md`
+- report: `reports/R047-gatedfusion-local-gn-v1.md`
+- conclusion: full BN-to-GN replacement inside local `GatedFusion` is negative below R016/R036/R041 and worsens late collapse. Archive code and pivot.
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R046 DGFusion c4 depth-token completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R047 GatedFusion local GroupNorm completed as a negative result below R016/R036/R041; continue the Goal-Driven loop toward `0.56` with a distinct R048 hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 

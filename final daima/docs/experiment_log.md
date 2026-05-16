@@ -1,5 +1,31 @@
 # Experiment Log
 
+## 2026-05-16 R047 result: GatedFusion local GroupNorm negative
+
+- branch: `exp/R047-gatedfusion-local-gn-v1`
+- model: `dformerv2_gatedfusion_gn`
+- run: `R047_gatedfusion_local_gn_run01`
+- hypothesis: replace batch-dependent normalization inside the local `GatedFusion` blocks with `GroupNorm(32, C)` to test whether batch_size=2 fusion-statistics drift explains R016 late instability.
+- implementation: added independent model entry; original `GatedFusion` and baseline remain unchanged. `GatedFusionGN` keeps the original depth projection, gate equation, fused mixture, and refine shape, but uses GroupNorm in gate/refine.
+- literature/code evidence: Group Normalization ECCV 2018 / arXiv `1803.08494`; direct PyTorch `torch.nn.GroupNorm`; MoBaNet 2026 multimodal gated fusion as recent supporting pattern.
+- smoke status: `py_compile`, `train.py --help`, random tensor forward/backward, and static code review passed.
+- full train status: completed; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.528301` at validation epoch `25`
+- last val/mIoU: `0.472746`
+- last-5 mean val/mIoU: `0.509970`
+- last-10 mean val/mIoU: `0.513930`
+- best-to-last drop: `0.055555`
+- best val/loss: `0.971623` at validation epoch `15`
+- last val/loss: `1.294296`
+- final train/loss_epoch: `0.103899`
+- checkpoint: `checkpoints\R047_gatedfusion_local_gn_run01\dformerv2_gatedfusion_gn-epoch=24-val_mIoU=0.5283.pt`
+- TensorBoard event: `checkpoints\R047_gatedfusion_local_gn_run01\lightning_logs\version_0\events.out.tfevents.1778920890.Administrator.5584.0`
+- evidence: `miou_list/R047_gatedfusion_local_gn_run01.md`
+- comparison: below R016 `0.541121` by `-0.012820`, below R036 `0.539790` by `-0.011489`, and below R041 `0.537098` by `-0.008797`.
+- conclusion: **negative.** Full BN-to-GN replacement in `GatedFusion` lowers the peak and worsens late collapse; do not continue full GN replacement.
+- next step: archive code under `feiqi/failed_experiments_r047_20260516/` and pivot to a distinct R048 hypothesis, preferably outside another local fusion normalization tweak.
+
 ## 2026-05-16 R046 result: DGFusion c4 depth-token negative below R016
 
 - branch: `exp/R046-dgfusion-c4-depth-token-v1`

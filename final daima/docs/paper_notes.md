@@ -1,5 +1,11 @@
 # Paper Notes
 
+## 2026-05-16 R047 GN Fusion Interpretation
+
+R047 tested whether batch-size-2 `BatchNorm2d` inside the local fusion blocks was a primary source of R016 late instability. The result was negative: `dformerv2_gatedfusion_gn` reached best val/mIoU `0.528301` and last `0.472746`, below R016 and with a severe final drop. This means the paper should not claim that simply making GatedFusion BN-free solves stability. GroupNorm remains valid background for small-batch normalization, but in this architecture full gate/refine GN replacement appears to damage the useful fusion calibration.
+
+Durable direction update: deprioritize local fusion normalization tweaks unless a future diagnostic isolates gate-only BN as the issue. The next search should move to a distinct hypothesis such as decoder feature refinement, official DFormerv2 contract details, or a more global stability mechanism that does not disturb the calibrated GatedFusion path.
+
 ## 2026-05-16 R046 DGFusion Depth-Token Boundary
 
 - R046 completed 50 validation epochs with best val/mIoU `0.531838` at validation epoch `44`; final val/mIoU is `0.527239`.

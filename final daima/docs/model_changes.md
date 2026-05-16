@@ -1,5 +1,14 @@
 # Model Changes
 
+## 2026-05-16 R047 GatedFusion Local GroupNorm
+
+- Added independent experiment entry `dformerv2_gatedfusion_gn` for R047.
+- Added `GatedFusionGN`, `DFormerV2GatedFusionGNSegmentor`, and `LitDFormerV2GatedFusionGN` in `src/models/mid_fusion.py`.
+- `GatedFusionGN` preserves the original fusion equation but replaces the gate/refine `BatchNorm2d` layers with `GroupNorm(32, C)`.
+- `dformerv2_mid_fusion`, original `GatedFusion`, `DepthEncoder`, `DFormerv2_S`, `SimpleFPNDecoder`, loss, data, eval, and training recipe were not modified.
+- Full-train result: best val/mIoU `0.528301` at validation epoch `25`, last `0.472746`, best-to-last drop `0.055555`.
+- Decision: reject active promotion. Full GN replacement remains below R016 `0.541121` and worsens late collapse; archive code under `feiqi/failed_experiments_r047_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R046 DGFusion c4 Depth-Token Lite
 
 - Added independent active experiment entry `dformerv2_dgfusion_c4_depth_token` for R046.
