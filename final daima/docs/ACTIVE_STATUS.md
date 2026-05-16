@@ -4,7 +4,7 @@
 
 - Active fixed-recipe baseline: `dformerv2_mid_fusion`.
 - Corrected-label/reference result: R016 best val/mIoU `0.541121` at validation epoch `49`, last `0.527420`.
-- Current stage: R049 has been recorded as a negative SyncBN norm-eval contract diagnostic below R016; continue the Goal-Driven loop toward `0.56` with R050 c4 geometry-primary bypass.
+- Current stage: R050 has been recorded as a negative c4 geometry-primary bypass below R016; continue the Goal-Driven loop toward `0.56` with a distinct high-stage conditioning or rectification hypothesis.
 - Active registry should stay clean: only mainline/teaching entries and reusable stable entries belong in `train.py`.
 
 ## Active Model Entries
@@ -35,6 +35,7 @@
 ## Archived / Deprecated
 
 - R041 DiffPixel c4 cue: partial positive below R016; code archived under `feiqi/failed_experiments_r041_20260516/`.
+- R050 c4 geometry-primary bypass: negative below R016; code archived under `feiqi/failed_experiments_r050_20260516/`.
 - R049 backbone SyncBN norm-eval: negative contract diagnostic below R016; code archived under `feiqi/failed_experiments_r049_20260516/`.
 - R042 DiffPixel c3-to-c4 cue: negative and unstable below R016; code archived under `feiqi/failed_experiments_r042_20260516/`.
 - R043 DepthGeo c4 cue: partial geometry-cue signal below R016; code archived under `feiqi/failed_experiments_r043_20260516/`.

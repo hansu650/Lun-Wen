@@ -1,5 +1,15 @@
 # Paper Notes
 
+## 2026-05-16 R050 C4 Geometry-Primary Bypass Boundary
+
+R050 tested whether external ResNet-18 DepthEncoder fusion at c4 harms DFormerv2's own geometry-conditioned high-level representation. The run kept c1-c3 original GatedFusion and passed raw DFormerv2 c4 directly to the unchanged SimpleFPNDecoder.
+
+The result reached best val/mIoU `0.533066` at validation epoch `49`, with last `0.526781` and best-to-last drop `0.006285`. It is below R016 `0.541121`, R036 `0.539790`, R049 `0.537890`, and R041 `0.537098`.
+
+Paper boundary: do not claim high-stage external depth fusion is harmful in general. This local c4-bypass test says the opposite for the current pipeline: removing c4 external fusion lowers the fixed-recipe peak. R016's c4 GatedFusion path remains part of the strongest corrected mainline.
+
+Durable direction update: do not extend this family to c3+c4 bypass unless future evidence changes the premise. The next experiment should preserve the useful R016 c4 fusion and test a distinct, paper-code-supported high-stage conditioning/rectification mechanism rather than removing the path.
+
 ## 2026-05-16 R049 Backbone SyncBN Norm-Eval Boundary
 
 R049 tested an official-contract nuance rather than a new fusion block: local DFormerv2 uses `SyncBatchNorm` in patch embedding / patch merging, while the inherited `norm_eval=True` train hook only checks `nn.BatchNorm2d`. The experiment froze DFormerv2 backbone BN/SyncBN running stats through an independent model entry.

@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-16 R050 C4 Geometry-Primary Bypass
+
+- Added independent experiment entry `dformerv2_c4_geometry_primary_bypass` for R050 during the experiment branch.
+- Added `DFormerV2C4GeometryPrimaryBypassSegmentor` and `LitDFormerV2C4GeometryPrimaryBypass` in `src/models/mid_fusion.py`.
+- The variant preserved c1-c3 original `GatedFusion` and used raw DFormerv2 c4 output directly as the fourth decoder input.
+- The model used exactly three `GatedFusion` blocks, avoiding unused c4 fusion parameters.
+- `dformerv2_mid_fusion`, DepthEncoder, original `GatedFusion`, SimpleFPNDecoder, loss, data, eval, DFormerv2-S level, pretrained loading, and training recipe were not modified.
+- Smoke verification showed unchanged pretrained load stats, finite CE, correct output shape, and gradients through DFormerv2, DepthEncoder, c1-c3 fusions, and decoder.
+- Full-train result: best val/mIoU `0.533066` at validation epoch `49`, last `0.526781`, best-to-last drop `0.006285`.
+- Decision: reject active promotion. The run is below R016 `0.541121`, R036 `0.539790`, R049 `0.537890`, and R041 `0.537098`; archive code under `feiqi/failed_experiments_r050_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R049 Backbone SyncBN Norm-Eval
 
 - Added independent experiment entry `dformerv2_backbone_syncbn_normeval` for R049.

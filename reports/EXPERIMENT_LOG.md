@@ -1,5 +1,17 @@
 # Experiment Loop Log
 
+## R050 - C4 geometry-primary bypass
+
+- branch: `exp/R050-c4-geometry-primary-bypass-v1`
+- model/run: `dformerv2_c4_geometry_primary_bypass` / `R050_c4_geometry_primary_bypass_run01`
+- status: `completed_negative_c4_bypass_below_corrected_baseline`
+- best val/mIoU: `0.533066` at validation epoch `49`
+- last val/mIoU: `0.526781`
+- drop: `0.006285`
+- evidence: `final daima/miou_list/R050_c4_geometry_primary_bypass_run01.md`
+- report: `reports/R050-c4-geometry-primary-bypass-v1.md`
+- conclusion: bypassing external DepthEncoder c4 fusion lowers the peak below R016/R036/R049/R041; archive code and pivot to a distinct high-stage conditioning/rectification hypothesis.
+
 ## R049 - Backbone SyncBN norm-eval
 
 - branch: `exp/R049-backbone-syncbn-normeval-v1`
@@ -38,7 +50,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R049 backbone SyncBN norm-eval completed as a negative contract diagnostic below R016; continue the Goal-Driven loop toward `0.56` with R050 c4 geometry-primary bypass.
+Current phase: R050 c4 geometry-primary bypass completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct high-stage conditioning or rectification hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 

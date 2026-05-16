@@ -1,5 +1,31 @@
 # Experiment Log
 
+## 2026-05-16 R050 result: c4 geometry-primary bypass negative
+
+- branch: `exp/R050-c4-geometry-primary-bypass-v1`
+- model: `dformerv2_c4_geometry_primary_bypass`
+- run: `R050_c4_geometry_primary_bypass_run01`
+- hypothesis: DFormerv2 c4 is already raw-depth-conditioned by geometry self-attention, so external ResNet-18 DepthEncoder c4 fusion might add high-level mismatch; bypassing only c4 external fusion might improve the corrected R016 path.
+- implementation: added an independent model entry with exactly three `GatedFusion` blocks for c1-c3; c4 is passed directly from DFormerv2 to the unchanged `SimpleFPNDecoder`. DFormerv2-S, DepthEncoder, c1-c3 GatedFusion, decoder, loss, data, eval, and fixed training recipe remain unchanged.
+- literature/code evidence: official DFormer/DFormerv2 code supports the geometry-primary reading because DFormerv2 consumes raw depth in its encoder. R050 tests the minimal local consequence: whether the extra high-stage external DepthEncoder fusion is harmful.
+- smoke status: `py_compile`, `train.py --help`, pretrained load check, random tensor forward/backward, static review, and reproducer review passed.
+- full train status: completed; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.533066` at validation epoch `49`
+- last val/mIoU: `0.526781`
+- last-5 mean val/mIoU: `0.523733`
+- last-10 mean val/mIoU: `0.517746`
+- best-to-last drop: `0.006285`
+- best val/loss: `0.961802` at validation epoch `8`
+- last val/loss: `1.279369`
+- final train/loss_epoch: `0.059589`
+- checkpoint: `checkpoints\R050_c4_geometry_primary_bypass_run01\dformerv2_c4_geometry_primary_bypass-epoch=48-val_mIoU=0.5331.pt`
+- TensorBoard event: `checkpoints\R050_c4_geometry_primary_bypass_run01\lightning_logs\version_0\events.out.tfevents.1778941335.Administrator.29296.0`
+- evidence: `miou_list/R050_c4_geometry_primary_bypass_run01.md`
+- comparison: below R016 `0.541121` by `-0.008055`, below R036 `0.539790` by `-0.006724`, below R049 `0.537890` by `-0.004824`, and below R041 `0.537098` by `-0.004032`.
+- conclusion: **negative below corrected baseline.** Removing the external c4 depth fusion lowers the fixed-recipe peak; the calibrated R016 c4 fusion path remains useful.
+- next step: archive code under `feiqi/failed_experiments_r050_20260516/`, remove the active registry entry, and do not extend this to c3+c4 bypass. Pivot to a distinct high-stage mechanism such as c4 gate conditioning or c4-only pre-gate rectification.
+
 ## 2026-05-16 R049 result: backbone SyncBN norm-eval negative
 
 - branch: `exp/R049-backbone-syncbn-normeval-v1`
