@@ -955,3 +955,13 @@ The result reached best val/mIoU `0.536867` at validation epoch `49`, with last 
 Paper boundary: do not claim OCR-Lite object context as an improvement over the corrected mainline. It is a partial positive that crosses `0.53`, but not a goal path toward `0.56` in this exact form.
 
 Durable direction update: avoid OCR-Lite decoder micro-tuning. The branch opened (`ocr_context_update_abs` rose from `0.768868` to `0.909595`) without enough mIoU gain, so the bottleneck is unlikely to be solved by another lightweight class-context decoder variant alone. Next-round priority should move to input geometry contract/prompting or a diagnostic repeat of the corrected R016 mainline, depending on whether the master chooses novelty or variance estimation.
+
+## 2026-05-17 R054 GeomPrompt-Lite Boundary
+
+R054 tested a model-internal GeomPrompt-Lite depth correction before both DFormerv2-S geometry attention and the external DepthEncoder. The implementation was zero-initialized and bounded, and it did not change the loader, stored depth maps, data augmentation, eval, loss, DFormerv2-S level, or pretrained loading.
+
+The result reached best val/mIoU `0.532737` at validation epoch `50`, with last `0.532737`, last-5 mean `0.522253`, and best-to-last drop `0.000000`. It is below R016 `0.541121`, R036 `0.539790`, R034 `0.539322`, R053 `0.536867`, and R050 `0.533066`.
+
+Paper boundary: do not claim GeomPrompt-Lite as an improvement over the corrected mainline. It is a stable run above `0.53`, but the depth prompt stayed nearly closed (`depth_prompt_alpha=0.000777`, `prompt_update_abs=0.000259`), so the exact prompt mechanism did not provide the missing route toward `0.56`.
+
+Durable direction update: avoid GeomPrompt-Lite alpha/hidden-size micro-tuning. Because R054 behaved like a low-tail stable corrected-baseline variant, the next high-decision step is a corrected R016 repeat to calibrate whether the `0.541121` anchor is reproducible before judging future architecture changes against it.

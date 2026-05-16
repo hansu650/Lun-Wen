@@ -1021,3 +1021,15 @@
 - Logged `train/ocr_context_update_abs` and `train/ocr_prior_entropy` for audit.
 - Full-train result: best val/mIoU `0.536867` at validation epoch `49`, last `0.522340`, best-to-last drop `0.014527`.
 - Decision: reject active promotion. The run crosses `0.53` but stays below R016 `0.541121` and R036 `0.539790`; archive code under `feiqi/failed_experiments_r053_20260517/` and remove the registry entry after recording evidence.
+
+## 2026-05-17 R054 GeomPrompt-Lite
+
+- Added independent experiment entry `dformerv2_geomprompt_lite` during the R054 branch.
+- Added `DepthGeometryPrompt`, `DFormerV2GeomPromptLiteSegmentor`, and `LitDFormerV2GeomPromptLite` in `src/models/mid_fusion.py`.
+- Prompt form: `prompted_depth = depth + alpha * tanh(prompt(cat(rgb, depth)))`, with `alpha_max=0.10`.
+- `alpha_logit` was initialized to zero, so the initial prompt update was exactly zero and the initial logits matched `dformerv2_mid_fusion` in eval smoke.
+- The prompted depth was fed to both `DFormerv2_S(rgb, prompted_depth)` and `DepthEncoder(prompted_depth)`.
+- DFormerv2-S level, DFormerv2 pretrained loading, DepthEncoder structure, four-stage `GatedFusion`, SimpleFPNDecoder, CE loss, data, eval, and fixed recipe were unchanged.
+- Logged `train/depth_prompt_alpha`, `train/depth_prompt_raw_abs`, and `train/depth_prompt_update_abs` for audit.
+- Full-train result: best val/mIoU `0.532737` at validation epoch `50`, last `0.532737`, best-to-last drop `0.000000`.
+- Decision: reject active promotion. The run is stable but below R016 `0.541121`, R036 `0.539790`, and R053 `0.536867`; the learned update stayed tiny (`prompt_update_abs=0.000259`). Archive code under `feiqi/failed_experiments_r054_20260517/` and remove the registry entry after recording evidence.

@@ -2682,3 +2682,26 @@
 - report: `reports/R053-ocr-lite-object-context-decoder-v1.md`
 - conclusion: **partial positive but rejected as active mainline.** OCR-Lite crosses `0.53` and the context branch opens, but it remains below R016/R036 and does not solve late instability.
 - next step: archive code under `feiqi/failed_experiments_r053_20260517/`, remove the active registry entry, and do not continue OCR-Lite width/context/dropout micro-search. The next round should pivot to an input-geometry prompt/contract hypothesis or a high-decision-value corrected-mainline repeat if variance estimation is prioritized.
+
+## 2026-05-17 R054 result: GeomPrompt-Lite negative below R016
+
+- branch: `exp/R054-geomprompt-lite-v1`
+- model: `dformerv2_geomprompt_lite`
+- run: `R054_geomprompt_lite_run01`
+- hypothesis: the corrected R016 input geometry contract may still lack a small segmentation-aware depth correction; add a zero-initialized bounded depth prompt before both DFormerv2-S geometry attention and the external DepthEncoder.
+- implementation: added an independent experiment entry during the branch. The model computed `prompted_depth = depth + alpha * tanh(prompt(cat(rgb, depth)))`, with `alpha_max=0.10` and `alpha_logit=0` at initialization. `prompted_depth` was passed to both `DFormerv2_S(rgb, prompted_depth)` and `DepthEncoder(prompted_depth)`. DFormerv2-S, pretrained loading, DepthEncoder structure, GatedFusion, SimpleFPNDecoder, loss, data, eval, and fixed recipe were unchanged.
+- dry-check: `py_compile`, `train.py --help`, CUDA random forward/backward smoke, static reviewer, evidence auditor, and reproducer checks passed. Initial logits matched `dformerv2_mid_fusion` exactly in eval smoke (`max_diff=0.0`), and pretrained load stats stayed `loaded_keys=774, missing_keys=6, unexpected_keys=11`.
+- full train: completed 50 validation epochs; `Trainer.fit` reached `max_epochs=50`.
+- best val/mIoU: `0.532737` at validation epoch `50`
+- last val/mIoU: `0.532737`
+- last-5 mean val/mIoU: `0.522253`
+- last-10 mean val/mIoU: `0.516237`
+- best-to-last drop: `0.000000`
+- depth prompt diagnostics at epoch 50: `depth_prompt_alpha=0.000777`, `prompt_update_abs=0.000259`, `prompt_raw_abs=0.333468`
+- comparison: below R016 `0.541121` by `-0.008384`, below R036 `0.539790` by `-0.007053`, below R034 `0.539322` by `-0.006585`, below R053 `0.536867` by `-0.004130`, and below R050 `0.533066` by `-0.000329`.
+- checkpoint: `checkpoints\R054_geomprompt_lite_run01\dformerv2_geomprompt_lite-epoch=49-val_mIoU=0.5327.pt`
+- TensorBoard event: `checkpoints\R054_geomprompt_lite_run01\lightning_logs\version_0\events.out.tfevents.1778966173.Administrator.9928.0`
+- evidence: `miou_list/R054_geomprompt_lite_run01.md`
+- report: `reports/R054-geomprompt-lite-v1.md`
+- conclusion: **negative below corrected mainline.** R054 crosses `0.53` and ends at its best epoch, but the prompt update stays tiny and the peak is far below R016. Archive code under `feiqi/failed_experiments_r054_20260517/`, remove the active registry entry, and avoid GeomPrompt-Lite alpha/hidden-size micro-search.
+- next step: run a high-decision corrected R016 repeat to calibrate whether R016's `0.541121` is a reproducible mainline level or a high-tail seed before spending more rounds on heavier architecture changes.

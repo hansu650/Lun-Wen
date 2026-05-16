@@ -721,6 +721,21 @@ Baseline reference:
 - TensorBoard event: `final daima/checkpoints/R053_ocr_lite_object_context_run01/lightning_logs/version_0/events.out.tfevents.1778959970.Administrator.39208.0`.
 - Decision: partial positive but rejected as active mainline. It crosses `0.53` but remains below R016 `0.541121` and R036 `0.539790`; archive code and do not tune OCR-Lite width/context/dropout micro-variants.
 
+### 2026-05-17 R054 Result: GeomPrompt-Lite Negative Below R016
+
+- `R054_geomprompt_lite_run01` completed 50 validation epochs.
+- Model: `dformerv2_geomprompt_lite`.
+- Branch: `exp/R054-geomprompt-lite-v1`.
+- Hypothesis: a zero-initialized bounded model-internal depth prompt before both DFormerv2-S and DepthEncoder can test whether the corrected R016 input geometry contract still lacks a learnable segmentation-aware depth correction.
+- Best val/mIoU: `0.532737` at validation epoch `50`; last val/mIoU: `0.532737`.
+- Best-to-last drop: `0.000000`; last-5 mean `0.522253`; last-10 mean `0.516237`.
+- Depth prompt diagnostics at epoch 50: `depth_prompt_alpha=0.000777`, `prompt_update_abs=0.000259`, `prompt_raw_abs=0.333468`.
+- Evidence: `final daima/miou_list/R054_geomprompt_lite_run01.md`.
+- Report: `reports/R054-geomprompt-lite-v1.md`.
+- Checkpoint: `final daima/checkpoints/R054_geomprompt_lite_run01/dformerv2_geomprompt_lite-epoch=49-val_mIoU=0.5327.pt`.
+- TensorBoard event: `final daima/checkpoints/R054_geomprompt_lite_run01/lightning_logs/version_0/events.out.tfevents.1778966173.Administrator.9928.0`.
+- Decision: negative below corrected mainline. It crosses `0.53` and ends at its best epoch, but stays below R016/R036/R053 and the prompt stayed nearly closed; archive code and do not tune GeomPrompt-Lite alpha/hidden-size variants.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.
