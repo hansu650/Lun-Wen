@@ -4,7 +4,7 @@
 
 - Active fixed-recipe baseline: `dformerv2_mid_fusion`.
 - Corrected-label/reference result: R016 best val/mIoU `0.541121` at validation epoch `49`, last `0.527420`.
-- Current stage: R052 has been recorded as a negative c3-only bounded residual below R016/R036; continue the Goal-Driven loop toward `0.56` with a non-residual representation hypothesis.
+- Current stage: R053 has been recorded as a partial positive OCR-Lite decoder result below R016/R036; continue the Goal-Driven loop toward `0.56` with a distinct input-geometry or variance-diagnostic hypothesis.
 - Active registry should stay clean: only mainline/teaching entries and reusable stable entries belong in `train.py`.
 
 ## Active Model Entries
@@ -35,6 +35,7 @@
 ## Archived / Deprecated
 
 - R041 DiffPixel c4 cue: partial positive below R016; code archived under `feiqi/failed_experiments_r041_20260516/`.
+- R053 OCR-Lite object context decoder: partial positive below R016/R036; code archived under `feiqi/failed_experiments_r053_20260517/`.
 - R052 c3-only bounded depth residual: negative below R016/R036; code archived under `feiqi/failed_experiments_r052_20260517/`.
 - R051 c4 query-conditioned gate: negative below R016 and unstable; code archived under `feiqi/failed_experiments_r051_20260517/`.
 - R050 c4 geometry-primary bypass: negative below R016; code archived under `feiqi/failed_experiments_r050_20260516/`.

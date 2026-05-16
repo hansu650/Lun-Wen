@@ -2658,3 +2658,27 @@
 - report: `reports/R052-c3-bounded-depth-residual-v1.md`
 - conclusion: **negative below corrected baseline and below R036.** c3-only residual isolates a weaker signal than c3+c4 residual and does not solve late instability.
 - next step: archive code under `feiqi/failed_experiments_r052_20260517/`, remove the active registry entry, and do not continue c3-only alpha/stage micro-search. Pivot to a non-residual representation mechanism such as OCR-Lite decoder context if R053 passes gate.
+
+## 2026-05-17 R053 result: OCR-Lite object context partial positive below R016
+
+- branch: `exp/R053-ocr-lite-object-context-decoder-v1`
+- model: `dformerv2_ocr_lite_decoder`
+- run: `R053_ocr_lite_object_context_run01`
+- hypothesis: SimpleFPN may be capped by weak class/object context before final classification; replace only the decoder with a CE-only OCR-Lite object-context refinement head.
+- implementation: added an independent experiment entry during the branch. The decoder kept SimpleFPN lateral/top-down p1 construction, gathered class prototypes using a dense prior classifier and class-wise spatial softmax, then applied pixel-to-class attention through a zero-initialized residual context update. No auxiliary CE, no teacher, no hard masks, no mmcv/mmseg dependency, and no change to DFormerv2-S, DepthEncoder, GatedFusion, loss, data, eval, or fixed recipe.
+- dry-check: `py_compile`, `train.py --help`, CUDA random forward/backward smoke, static reviewer, and reproducer checks passed. Pretrained load stats stayed `loaded_keys=774, missing_keys=6, unexpected_keys=11`.
+- full train: completed 50 validation epochs; `Trainer.fit` reached `max_epochs=50`.
+- best val/mIoU: `0.536867` at validation epoch `49`
+- last val/mIoU: `0.522340`
+- last-5 mean val/mIoU: `0.520132`
+- last-10 mean val/mIoU: `0.523362`
+- best-to-last drop: `0.014527`
+- OCR context update abs first/last/max: `0.768868` / `0.909595` / `0.909595`
+- OCR prior entropy first/last: `9.806945` / `9.703479`
+- comparison: below R016 `0.541121` by `-0.004254`, below R036 `0.539790` by `-0.002923`, below R034 `0.539322` by `-0.002455`, below R049 `0.537890` by `-0.001023`, below R041 `0.537098` by `-0.000231`, and above R052 `0.535289` by `+0.001578`.
+- checkpoint: `checkpoints\R053_ocr_lite_object_context_run01\dformerv2_ocr_lite_decoder-epoch=48-val_mIoU=0.5369.pt`
+- TensorBoard event: `checkpoints\R053_ocr_lite_object_context_run01\lightning_logs\version_0\events.out.tfevents.1778959970.Administrator.39208.0`
+- evidence: `miou_list/R053_ocr_lite_object_context_run01.md`
+- report: `reports/R053-ocr-lite-object-context-decoder-v1.md`
+- conclusion: **partial positive but rejected as active mainline.** OCR-Lite crosses `0.53` and the context branch opens, but it remains below R016/R036 and does not solve late instability.
+- next step: archive code under `feiqi/failed_experiments_r053_20260517/`, remove the active registry entry, and do not continue OCR-Lite width/context/dropout micro-search. The next round should pivot to an input-geometry prompt/contract hypothesis or a high-decision-value corrected-mainline repeat if variance estimation is prioritized.

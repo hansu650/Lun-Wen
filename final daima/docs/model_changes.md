@@ -1009,3 +1009,15 @@
 - Logged `train/c3_residual_alpha` and `train/c3_residual_abs` for audit.
 - Full-train result: best val/mIoU `0.535289` at validation epoch `31`, last `0.515195`, best-to-last drop `0.020095`.
 - Decision: reject active promotion. The run stays below R016 `0.541121` and R036 `0.539790`, and late drop crosses the `0.015` instability tripwire. Archive code under `feiqi/failed_experiments_r052_20260517/` and remove the registry entry after recording evidence.
+
+## 2026-05-17 R053 OCR-Lite Object Context Decoder
+
+- Added independent experiment entry `dformerv2_ocr_lite_decoder` during the R053 branch.
+- Added `OCRLiteDecoder`, `DFormerV2OCRLiteDecoderSegmentor`, and `LitDFormerV2OCRLiteDecoder`.
+- The experiment preserved DFormerv2-S, DFormerv2 pretrained loading, DepthEncoder, and all four original `GatedFusion` stages.
+- Decoder form: SimpleFPN p1 feature plus class-prototype object context. The prior classifier produced class-wise spatial probabilities, class prototypes were gathered with `torch.bmm`, and pixel-to-class attention produced a context feature.
+- The context update was residual and zero-initialized so the branch started conservatively.
+- No auxiliary CE, no teacher, no extra loss, no hard masks, and no external mmcv/mmseg dependency were used.
+- Logged `train/ocr_context_update_abs` and `train/ocr_prior_entropy` for audit.
+- Full-train result: best val/mIoU `0.536867` at validation epoch `49`, last `0.522340`, best-to-last drop `0.014527`.
+- Decision: reject active promotion. The run crosses `0.53` but stays below R016 `0.541121` and R036 `0.539790`; archive code under `feiqi/failed_experiments_r053_20260517/` and remove the registry entry after recording evidence.

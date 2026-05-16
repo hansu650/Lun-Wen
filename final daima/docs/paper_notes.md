@@ -945,3 +945,13 @@ The result reached best val/mIoU `0.535289` at validation epoch `31`, with last 
 Paper boundary: do not claim c3-only bounded depth residual as an improvement. The result suggests that R036's partial signal was not explained by c3 alone; if bounded residuals have value, c4 interaction was part of the weak effect, but the family is still below the corrected mainline.
 
 Durable direction update: stop c3-only bounded residual alpha/stage micro-search. R053 should pivot to a non-residual representation mechanism, with OCR-Lite decoder context currently the cleanest fallback if it passes code and contract gate.
+
+## 2026-05-17 R053 OCR-Lite Decoder Boundary
+
+R053 tested a CE-only OCR-style class-prototype decoder as a non-residual representation mechanism. It kept the R016 encoder/fusion contract unchanged and replaced only the decoder with an object-context refinement head.
+
+The result reached best val/mIoU `0.536867` at validation epoch `49`, with last `0.522340`, last-5 mean `0.520132`, and best-to-last drop `0.014527`. It is above R052 `0.535289` but below R016 `0.541121`, R036 `0.539790`, R034 `0.539322`, R049 `0.537890`, and R041 `0.537098`.
+
+Paper boundary: do not claim OCR-Lite object context as an improvement over the corrected mainline. It is a partial positive that crosses `0.53`, but not a goal path toward `0.56` in this exact form.
+
+Durable direction update: avoid OCR-Lite decoder micro-tuning. The branch opened (`ocr_context_update_abs` rose from `0.768868` to `0.909595`) without enough mIoU gain, so the bottleneck is unlikely to be solved by another lightweight class-context decoder variant alone. Next-round priority should move to input geometry contract/prompting or a diagnostic repeat of the corrected R016 mainline, depending on whether the master chooses novelty or variance estimation.

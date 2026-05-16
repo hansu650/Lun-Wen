@@ -706,6 +706,21 @@ Baseline reference:
 - Audit: static review `PASS`; evidence/report audit `PASS`; reproducer audit `audit_passed_no_rerun`.
 - Decision: reject this exact LMLP decoder as a goal path. Pause after R013 per user request; do not launch a next full train.
 
+### 2026-05-17 R053 Result: OCR-Lite Decoder Partial Positive Below R016
+
+- `R053_ocr_lite_object_context_run01` completed 50 validation epochs.
+- Model: `dformerv2_ocr_lite_decoder`.
+- Branch: `exp/R053-ocr-lite-object-context-decoder-v1`.
+- Hypothesis: a CE-only OCR-style object-context decoder can improve over the R016 SimpleFPN ceiling without changing encoder/fusion/data/eval/training recipe.
+- Best val/mIoU: `0.536867` at validation epoch `49`; last val/mIoU: `0.522340`.
+- Best-to-last drop: `0.014527`; last-5 mean `0.520132`; last-10 mean `0.523362`.
+- OCR context update opened from `0.768868` to `0.909595`, so the branch was active, not dead.
+- Evidence: `final daima/miou_list/R053_ocr_lite_object_context_run01.md`.
+- Report: `reports/R053-ocr-lite-object-context-decoder-v1.md`.
+- Checkpoint: `final daima/checkpoints/R053_ocr_lite_object_context_run01/dformerv2_ocr_lite_decoder-epoch=48-val_mIoU=0.5369.pt`.
+- TensorBoard event: `final daima/checkpoints/R053_ocr_lite_object_context_run01/lightning_logs/version_0/events.out.tfevents.1778959970.Administrator.39208.0`.
+- Decision: partial positive but rejected as active mainline. It crosses `0.53` but remains below R016 `0.541121` and R036 `0.539790`; archive code and do not tune OCR-Lite width/context/dropout micro-variants.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.
