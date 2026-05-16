@@ -1,5 +1,17 @@
 # Experiment Loop Log
 
+## R048 - Refined FPN decoder
+
+- branch: `exp/R048-multilevel-fpn-refine-v1`
+- model/run: `dformerv2_refined_fpn_decoder` / `R048_refined_fpn_decoder_run01`
+- status: `completed_stable_but_below_corrected_baseline`
+- best val/mIoU: `0.534154` at validation epoch `42`
+- last val/mIoU: `0.530318`
+- drop: `0.003837`
+- evidence: `final daima/miou_list/R048_refined_fpn_decoder_run01.md`
+- report: `reports/R048-multilevel-fpn-refine-v1.md`
+- conclusion: refined multilevel FPN decoder is stable but below R016/R036/R041; archive code and pivot.
+
 ## R047 - GatedFusion local GroupNorm
 
 - branch: `exp/R047-gatedfusion-local-gn-v1`
@@ -14,7 +26,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R047 GatedFusion local GroupNorm completed as a negative result below R016/R036/R041; continue the Goal-Driven loop toward `0.56` with a distinct R048 hypothesis.
+Current phase: R048 refined FPN decoder completed as stable but below R016/R036/R041; continue the Goal-Driven loop toward `0.56` with a distinct R049 hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 

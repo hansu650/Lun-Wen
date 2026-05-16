@@ -1,5 +1,31 @@
 # Experiment Log
 
+## 2026-05-16 R048 result: refined FPN decoder stable but below R016
+
+- branch: `exp/R048-multilevel-fpn-refine-v1`
+- model: `dformerv2_refined_fpn_decoder`
+- run: `R048_refined_fpn_decoder_run01`
+- hypothesis: replace final-p1-only `SimpleFPNDecoder` with per-level smooth plus p1-p4 concat refinement to test whether decoder feature refinement is the remaining bottleneck.
+- implementation: added independent model entry; DFormerv2-S, DepthEncoder, four original `GatedFusion` blocks, loss, data, eval, and fixed training recipe remain unchanged.
+- literature/code evidence: FPN `1612.03144`, PANet `1803.01534`, UPerNet-style multilevel segmentation heads, and CGRSeg `2405.06228` support decoder-level multiscale refinement. Only the minimal decoder refinement idea was ported.
+- smoke status: `py_compile`, `train.py --help`, random tensor forward/backward, and static code review passed.
+- full train status: completed; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.534154` at validation epoch `42`
+- last val/mIoU: `0.530318`
+- last-5 mean val/mIoU: `0.522281`
+- last-10 mean val/mIoU: `0.522532`
+- best-to-last drop: `0.003837`
+- best val/loss: `0.977211` at validation epoch `7`
+- last val/loss: `1.234661`
+- final train/loss_epoch: `0.058174`
+- checkpoint: `checkpoints\R048_refined_fpn_decoder_run01\dformerv2_refined_fpn_decoder-epoch=41-val_mIoU=0.5342.pt`
+- TensorBoard event: `checkpoints\R048_refined_fpn_decoder_run01\lightning_logs\version_0\events.out.tfevents.1778926901.Administrator.39660.0`
+- evidence: `miou_list/R048_refined_fpn_decoder_run01.md`
+- comparison: below R016 `0.541121` by `-0.006967`, below R036 `0.539790` by `-0.005636`, and below R041 `0.537098` by `-0.002944`.
+- conclusion: **stable but negative below corrected baseline.** The refined decoder improves final stability compared with several fusion variants but does not raise the fixed-recipe peak enough.
+- next step: archive code under `feiqi/failed_experiments_r048_20260516/` and pivot to a distinct R049 hypothesis rather than decoder width/smooth/dropout micro-tuning.
+
 ## 2026-05-16 R047 result: GatedFusion local GroupNorm negative
 
 - branch: `exp/R047-gatedfusion-local-gn-v1`

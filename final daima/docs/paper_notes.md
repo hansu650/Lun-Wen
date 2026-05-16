@@ -1,5 +1,11 @@
 # Paper Notes
 
+## 2026-05-16 R048 Decoder Refinement Interpretation
+
+R048 tested a distinct decoder-refinement hypothesis after several local fusion/depth-cue variants underperformed. The refined multilevel FPN decoder reached best val/mIoU `0.534154` and last `0.530318`. The stable ending is useful, but the peak remains below R016/R036/R041. The paper should not claim that simply increasing SimpleFPN multilevel refinement solves the 0.55/0.56 gap.
+
+Durable direction update: decoder refinement alone is not enough under the fixed recipe. Avoid width/depth/dropout micro-search on this decoder. Future candidates should move toward a genuinely different contract or representation issue, such as official DFormerv2 geometry/depth handling details, class/prototype diagnostics only if supported by confusion evidence, or a training-stability method that does not disturb the calibrated GatedFusion/decoder path.
+
 ## 2026-05-16 R047 GN Fusion Interpretation
 
 R047 tested whether batch-size-2 `BatchNorm2d` inside the local fusion blocks was a primary source of R016 late instability. The result was negative: `dformerv2_gatedfusion_gn` reached best val/mIoU `0.528301` and last `0.472746`, below R016 and with a severe final drop. This means the paper should not claim that simply making GatedFusion BN-free solves stability. GroupNorm remains valid background for small-batch normalization, but in this architecture full gate/refine GN replacement appears to damage the useful fusion calibration.

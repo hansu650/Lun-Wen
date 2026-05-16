@@ -1,5 +1,14 @@
 # Model Changes
 
+## 2026-05-16 R048 Refined FPN Decoder
+
+- Added independent experiment entry `dformerv2_refined_fpn_decoder` for R048.
+- Added `RefinedFPNDecoder` in `src/models/decoder.py`.
+- Added `DFormerV2RefinedFPNDecoderSegmentor` and `LitDFormerV2RefinedFPNDecoder` in `src/models/mid_fusion.py`.
+- The experiment preserved DFormerv2-S, DepthEncoder, original four-stage `GatedFusion`, loss, data, eval, and training recipe; only the decoder was replaced in the independent entry.
+- Full-train result: best val/mIoU `0.534154` at validation epoch `42`, last `0.530318`, best-to-last drop `0.003837`.
+- Decision: reject active promotion. The run is stable but below R016/R036/R041; archive code under `feiqi/failed_experiments_r048_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R047 GatedFusion Local GroupNorm
 
 - Added independent experiment entry `dformerv2_gatedfusion_gn` for R047.
