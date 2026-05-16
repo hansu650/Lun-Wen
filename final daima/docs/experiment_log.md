@@ -1,4 +1,37 @@
-﻿# Experiment Log
+# Experiment Log
+
+## 2026-05-16 R045 result: c3/c4 zero-init modality adapter negative below R016
+
+- branch: `exp/R045-c34-zero-init-modality-adapter-v1`
+- model: `dformerv2_c34_zero_init_modality_adapter`
+- run: `R045_c34_zero_init_modality_adapter_run01`
+- hypothesis: add c3/c4-only zero-initialized modality adapters before the original GatedFusion modules to test whether high-stage feature-stream adaptation improves over R016 without depth input conversion or output residual correction.
+- implementation: c1/c2 stay on the original path; c3/c4 DFormerv2 and aligned DepthEncoder features pass through separate zero-initialized bottleneck adapters before the unchanged `GatedFusion` modules and unchanged `SimpleFPNDecoder`.
+- literature/code evidence: selected from a StitchFusion/KTB-style adapter gate after subagent paper-code reading; only the minimal zero-init bottleneck adapter idea was ported. No full framework, cross-attention stack, auxiliary loss, decoder change, or training recipe change was added.
+- smoke status: `py_compile`, `train.py --help`, and random tensor forward/backward passed. Initial adapter deltas were exactly `0.0`, and gradients reached the zero-initialized final adapter conv.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.531454` at validation epoch `48`
+- last val/mIoU: `0.505130`
+- last-5 mean val/mIoU: `0.511191`
+- last-10 mean val/mIoU: `0.509930`
+- best-to-last drop: `0.026324`
+- best val/loss: `0.981750` at validation epoch `8`
+- last val/loss: `1.161006`
+- final train/loss_epoch: `0.151835`
+- rgb_c3_adapter_delta_abs first/last/max: `0.008236` / `0.043839` / `0.043839`
+- rgb_c4_adapter_delta_abs first/last/max: `0.010011` / `0.040954` / `0.040954`
+- depth_c3_adapter_delta_abs first/last/max: `0.005683` / `0.101323` / `0.108361`
+- depth_c4_adapter_delta_abs first/last/max: `0.018327` / `0.098307` / `0.098307`
+- checkpoint: `checkpoints/R045_c34_zero_init_modality_adapter_run01/dformerv2_c34_zero_init_modality_adapter-epoch=47-val_mIoU=0.5315.pt`
+- TensorBoard event: `checkpoints/R045_c34_zero_init_modality_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778907691.Administrator.38920.0`
+- saved command: `checkpoints/R045_c34_zero_init_modality_adapter_run01/run_r045.ps1`
+- evidence: `miou_list/R045_c34_zero_init_modality_adapter_run01.md`
+- comparison: R045 is below R016 `0.541121` by `-0.009667`, below R036 `0.539790` by `-0.008336`, and below R041 `0.537098` by `-0.005644`.
+- conclusion: **negative below corrected baseline.** The zero-init high-stage adapter opens but does not improve the fixed-recipe peak and has a severe late drop.
+- next step: do not tune adapter scale/reduction/stage. Archive the implementation under `feiqi/failed_experiments_r045_20260516/` and pivot to a distinct hypothesis, with DGFusion-style c4 local depth-token interaction as the current R046 lead if R045 remains the final result.
+
+# Experiment Log
 
 ## 2026-05-16 R044 result: conditioned c3/c4 residual negative below R016
 

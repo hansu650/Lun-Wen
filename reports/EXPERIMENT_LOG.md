@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R044 conditioned c3/c4 bounded residual completed as a negative/diagnostic result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R045 c3/c4 zero-init modality adapter completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,22 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R045 Result: c3/c4 zero-init modality adapter negative below R016
+
+- `R045_c34_zero_init_modality_adapter_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.531454` at validation epoch `48`; last val/mIoU: `0.505130`.
+- Last-5 mean val/mIoU: `0.511191`; last-10 mean val/mIoU: `0.509930`; best-to-last drop: `0.026324`.
+- rgb_c3_adapter_delta_abs first/last/max: `0.008236` / `0.043839` / `0.043839`.
+- rgb_c4_adapter_delta_abs first/last/max: `0.010011` / `0.040954` / `0.040954`.
+- depth_c3_adapter_delta_abs first/last/max: `0.005683` / `0.101323` / `0.108361`.
+- depth_c4_adapter_delta_abs first/last/max: `0.018327` / `0.098307` / `0.098307`.
+- Evidence: `final daima/miou_list/R045_c34_zero_init_modality_adapter_run01.md`.
+- Checkpoint: `final daima/checkpoints/R045_c34_zero_init_modality_adapter_run01/dformerv2_c34_zero_init_modality_adapter-epoch=47-val_mIoU=0.5315.pt`.
+- TensorBoard event: `final daima/checkpoints/R045_c34_zero_init_modality_adapter_run01/lightning_logs/version_0/events.out.tfevents.1778907691.Administrator.38920.0`.
+- Saved command: `final daima/checkpoints/R045_c34_zero_init_modality_adapter_run01/run_r045.ps1`.
+- Decision: negative below corrected baseline. The adapter path opens but remains below R016/R036/R041 and has severe late drop; do not promote or tune this adapter family.
+- Next: archive the code under `feiqi/failed_experiments_r045_20260516/`, remove the active registry entry, and pivot to a distinct R046 hypothesis.
 
 ### 2026-05-16 R044 Result: conditioned c3/c4 residual negative below R016
 

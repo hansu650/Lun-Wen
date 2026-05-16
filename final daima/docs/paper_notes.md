@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-16 R045 Zero-Init Adapter Boundary
+
+- R045 completed 50 validation epochs with best val/mIoU `0.531454` at validation epoch `48`; final val/mIoU is `0.505130`.
+- It crosses `0.53` but remains below R016 `0.541121`, R036 `0.539790`, and R041 `0.537098`.
+- The best-to-last drop is `0.026324`, with weak late-window means (`last-5=0.511191`, `last-10=0.509930`).
+- Adapter deltas opened, especially depth c3/c4, but this did not produce a stronger fixed-recipe peak.
+- Paper boundary: do not claim StitchFusion/KTB-style zero-init modality adapters as an improvement. Treat R045 as a negative diagnostic showing that c3/c4 self-adaptation before GatedFusion is insufficient and can worsen late stability.
+- Strategic implication: avoid adapter reduction/scale/stage micro-search. If continuing toward 0.56, pivot to a distinct local depth-token interaction or other mechanism rather than another self-adapter variant.
+
 ## 2026-05-16 R044 Conditioned C34 Residual Boundary
 
 - R044 completed 50 validation epochs with best val/mIoU `0.535663` at validation epoch `49`; final val/mIoU is `0.520020`.

@@ -1,5 +1,16 @@
 # Model Changes
 
+## 2026-05-16 R045 c3/c4 Zero-Init Modality Adapter
+
+- Added independent active experiment entry `dformerv2_c34_zero_init_modality_adapter` for R045.
+- Added `ZeroInitModalityAdapter`, `DFormerV2C34ZeroInitModalityAdapterSegmentor`, and `LitDFormerV2C34ZeroInitModalityAdapter` in `src/models/mid_fusion.py`.
+- The adapter is `Conv1x1 -> ReLU -> Conv1x1`, with the final convolution zero-initialized; scale is `0.1`.
+- The experiment applies adapters only to c3/c4 DFormerv2 and aligned DepthEncoder features before the original `GatedFusion` modules.
+- `dformerv2_mid_fusion`, `GatedFusion`, `DepthEncoder`, `DFormerv2_S`, `SimpleFPNDecoder`, loss, data, eval, and training recipe were not modified.
+- Logged `train/rgb_c3_adapter_delta_abs`, `train/rgb_c4_adapter_delta_abs`, `train/depth_c3_adapter_delta_abs`, and `train/depth_c4_adapter_delta_abs`.
+- Full-train result: best val/mIoU `0.531454` at validation epoch `48`, last `0.505130`, best-to-last drop `0.026324`.
+- Decision: reject active promotion. The adapter opens but remains below R016 `0.541121`; archive code under `feiqi/failed_experiments_r045_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R044 Conditioned C34 Bounded Residual
 
 - Added `ImageConditionedC34BoundedDepthResidual` in `src/models/mid_fusion.py` for the experiment branch.
