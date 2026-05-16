@@ -2,7 +2,7 @@
 
 This is the top-level ledger for the Goal-Driven RGB-D mIoU loop.
 
-Current phase: R045 c3/c4 zero-init modality adapter completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
+Current phase: R046 DGFusion c4 depth-token completed as a negative result below R016; continue the Goal-Driven loop toward `0.56` with a distinct next hypothesis.
 
 Stage goal: `val/mIoU >= 0.53` under the active fixed recipe.
 
@@ -17,6 +17,21 @@ Baseline reference:
 - Existing evidence: `final daima/miou_list/dformerv2_mid_fusion_gate_baseline_summary_run01_09_run10_retry.md`
 
 ## Entries
+
+### 2026-05-16 R046 Result: DGFusion c4 depth-token negative below R016
+
+- `R046_dgfusion_c4_depth_token_run01` completed 50 validation epochs with exit code `0`.
+- Best val/mIoU: `0.531838` at validation epoch `44`; last val/mIoU: `0.527239`.
+- Last-5 mean val/mIoU: `0.510100`; last-10 mean val/mIoU: `0.514172`; best-to-last drop: `0.004599`.
+- c4_token_delta_abs first/last/min/max: `0.009067` / `0.273799` / `0.009067` / `0.289744`.
+- c4_token_affinity_mean first/last/min/max: `0.623793` / `0.287895` / `0.287302` / `0.623793`.
+- c4_token_affinity_std first/last/min/max: `0.026211` / `0.028371` / `0.026211` / `0.048227`.
+- Evidence: `final daima/miou_list/R046_dgfusion_c4_depth_token_run01.md`.
+- Checkpoint: `final daima/checkpoints/R046_dgfusion_c4_depth_token_run01/dformerv2_dgfusion_c4_depth_token-epoch=43-val_mIoU=0.5318.pt`.
+- TensorBoard event: `final daima/checkpoints/R046_dgfusion_c4_depth_token_run01/lightning_logs/version_0/events.out.tfevents.1778913804.Administrator.33260.0`.
+- Saved command: `final daima/checkpoints/R046_dgfusion_c4_depth_token_run01/run_r046.ps1`.
+- Decision: negative below corrected baseline. The local depth-token path opens and is more stable than R045, but peak remains below R016/R036/R041; do not tune DGFusion-lite.
+- Next: archive the code under `feiqi/failed_experiments_r046_20260516/`, remove the active registry entry, and pivot to a distinct R047 hypothesis.
 
 ### 2026-05-16 R045 Result: c3/c4 zero-init modality adapter negative below R016
 

@@ -1,5 +1,15 @@
 # Model Changes
 
+## 2026-05-16 R046 DGFusion c4 Depth-Token Lite
+
+- Added independent active experiment entry `dformerv2_dgfusion_c4_depth_token` for R046.
+- Added `DGFusionC4DepthTokenLite`, `DFormerV2DGFusionC4DepthTokenSegmentor`, and `LitDFormerV2DGFusionC4DepthToken` in `src/models/mid_fusion.py`.
+- The module preserves c1-c3 original `GatedFusion`; c4 original `GatedFusion` is used as the base and receives a zero-initialized local depth-token residual.
+- Logged `train/c4_token_delta_abs`, `train/c4_token_affinity_mean`, and `train/c4_token_affinity_std`.
+- `dformerv2_mid_fusion`, `GatedFusion`, `DepthEncoder`, `DFormerv2_S`, `SimpleFPNDecoder`, loss, data, eval, and training recipe were not modified.
+- Full-train result: best val/mIoU `0.531838` at validation epoch `44`, last `0.527239`, best-to-last drop `0.004599`.
+- Decision: reject active promotion. The depth-token path opens but remains below R016 `0.541121`; archive code under `feiqi/failed_experiments_r046_20260516/` and remove the active registry entry after recording.
+
 ## 2026-05-16 R045 c3/c4 Zero-Init Modality Adapter
 
 - Added independent active experiment entry `dformerv2_c34_zero_init_modality_adapter` for R045.

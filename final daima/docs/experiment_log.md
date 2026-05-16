@@ -1,5 +1,35 @@
 # Experiment Log
 
+## 2026-05-16 R046 result: DGFusion c4 depth-token negative below R016
+
+- branch: `exp/R046-dgfusion-c4-depth-token-v1`
+- model: `dformerv2_dgfusion_c4_depth_token`
+- run: `R046_dgfusion_c4_depth_token_run01`
+- hypothesis: add a DGFusion-style c4 local depth-token feature residual on top of the original c4 GatedFusion output to test local learned geometry-conditioned interaction without replacing GatedFusion or changing decoder/loss/training recipe.
+- implementation: c1-c3 stay on original GatedFusion. c4 uses original GatedFusion as the base, then a local pooled c4 depth token conditions a zero-initialized feature residual through normalized query/key affinity.
+- literature/code evidence: DGFusion arXiv `2509.09828`, official repo `https://github.com/timbroed/DGFusion`, core `dgfusion/modeling/modality_fusion/depth_token_guided_pca.py`. Only the minimal local depth-token idea was ported; no full framework, global condition token, auxiliary depth head, sampling offset, raw-depth cue, diff cue, or self-adapter was added.
+- smoke status: `py_compile`, `train.py --help`, and random tensor forward/backward passed. Initial `c4_token_delta_abs` was exactly `0.0`, and gradients reached the zero-initialized out projection.
+- full train status: completed with exit code `0`; `Trainer.fit` reached `max_epochs=50`.
+- recorded validation epochs: `50`
+- best val/mIoU: `0.531838` at validation epoch `44`
+- last val/mIoU: `0.527239`
+- last-5 mean val/mIoU: `0.510100`
+- last-10 mean val/mIoU: `0.514172`
+- best-to-last drop: `0.004599`
+- best val/loss: `0.961911` at validation epoch `10`
+- last val/loss: `1.208670`
+- final train/loss_epoch: `0.054207`
+- c4_token_delta_abs first/last/min/max: `0.009067` / `0.273799` / `0.009067` / `0.289744`
+- c4_token_affinity_mean first/last/min/max: `0.623793` / `0.287895` / `0.287302` / `0.623793`
+- c4_token_affinity_std first/last/min/max: `0.026211` / `0.028371` / `0.026211` / `0.048227`
+- checkpoint: `checkpoints/R046_dgfusion_c4_depth_token_run01/dformerv2_dgfusion_c4_depth_token-epoch=43-val_mIoU=0.5318.pt`
+- TensorBoard event: `checkpoints/R046_dgfusion_c4_depth_token_run01/lightning_logs/version_0/events.out.tfevents.1778913804.Administrator.33260.0`
+- saved command: `checkpoints/R046_dgfusion_c4_depth_token_run01/run_r046.ps1`
+- evidence: `miou_list/R046_dgfusion_c4_depth_token_run01.md`
+- comparison: R046 is below R016 `0.541121` by `-0.009283`, below R036 `0.539790` by `-0.007952`, and below R041 `0.537098` by `-0.005260`.
+- conclusion: **negative below corrected baseline.** It is more stable than R045 but the fixed-recipe peak remains too low; local c4 depth-token interaction is insufficient in this minimal form.
+- next step: do not tune DGFusion-lite window/token/scale. Archive the implementation under `feiqi/failed_experiments_r046_20260516/` and pivot to a distinct hypothesis.
+
 ## 2026-05-16 R045 result: c3/c4 zero-init modality adapter negative below R016
 
 - branch: `exp/R045-c34-zero-init-modality-adapter-v1`

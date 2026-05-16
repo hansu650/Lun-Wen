@@ -1,5 +1,14 @@
 # Paper Notes
 
+## 2026-05-16 R046 DGFusion Depth-Token Boundary
+
+- R046 completed 50 validation epochs with best val/mIoU `0.531838` at validation epoch `44`; final val/mIoU is `0.527239`.
+- It crosses `0.53` but remains below R016 `0.541121`, R036 `0.539790`, and R041 `0.537098`.
+- The best-to-last drop is `0.004599`, but late-window means remain weak (`last-5=0.510100`, `last-10=0.514172`).
+- The c4 depth-token residual opens strongly (`c4_token_delta_abs` max `0.289744`), while affinity mean contracts to `0.287895`; this does not improve the fixed-recipe peak.
+- Paper boundary: do not claim DGFusion-style local depth-token interaction as an improvement. Treat this as negative evidence for the minimal c4-only port under the current R016 mainline.
+- Strategic implication: avoid window/token/scale micro-search for DGFusion-lite. Next experiments should be genuinely distinct, such as decoder feature refinement or a broader official contract/architecture audit.
+
 ## 2026-05-16 R045 Zero-Init Adapter Boundary
 
 - R045 completed 50 validation epochs with best val/mIoU `0.531454` at validation epoch `48`; final val/mIoU is `0.505130`.
