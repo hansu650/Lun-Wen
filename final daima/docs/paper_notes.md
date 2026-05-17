@@ -975,3 +975,13 @@ The result reached best val/mIoU `0.531952` at validation epoch `46`, with last 
 Paper boundary: do not claim R016's `0.541121` as a reproducible corrected-repeat expectation from R055. R016 remains a valid historical best checkpoint, but R055 supports treating it as a high-tail anchor unless additional repeats later prove otherwise.
 
 Durable direction update: use R016 as the best-evidence target to beat, but judge future single-run architecture gains with caution. Since prompt, residual, gate, decoder-context, and corrected-repeat paths have not reached the R016/R036 band, the next high-value architecture test should be a distinct external depth-branch representation change, currently the HDBFormer/LDFormer-style lightweight depth encoder replacement.
+
+## 2026-05-17 R056 LDFormer-Style Depth Branch Boundary
+
+R056 tested a local-compatible HDBFormer/LDFormer-style external depth encoder replacement. It only replaced the external ResNet-18 `DepthEncoder`; DFormerv2-S, pretrained loading, original `GatedFusion`, SimpleFPNDecoder, loss, data, eval, and fixed recipe were unchanged.
+
+The result reached best val/mIoU `0.522759` at validation epoch `44`, with last `0.518073`, last-5 mean `0.516419`, and best-to-last drop `0.004686`. It is below R016 `0.541121`, R055 `0.531952`, R054 `0.532737`, R053 `0.536867`, and the clean baseline best single `0.524425`.
+
+Paper boundary: do not describe R056 as an HDBFormer reproduction or improvement. It is an LDFormer-inspired, local-channel-compatible depth branch ablation. The official HDBFormer result depends on a different full system, including Swin-B, LIFormer, MIIM fusion, 3-channel replicated depth, and a different long training recipe.
+
+Durable direction update: the current project still benefits from the pretrained ResNet-18 depth branch. Do not spend immediate rounds on LDFormer width/stage/dropout tuning or full HDBFormer component stacking. Future depth-branch work should preserve pretrained capacity or test a distinct integration mechanism rather than replacing ResNet-18 with a from-scratch lightweight branch.

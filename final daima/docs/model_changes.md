@@ -1033,3 +1033,15 @@
 - Logged `train/depth_prompt_alpha`, `train/depth_prompt_raw_abs`, and `train/depth_prompt_update_abs` for audit.
 - Full-train result: best val/mIoU `0.532737` at validation epoch `50`, last `0.532737`, best-to-last drop `0.000000`.
 - Decision: reject active promotion. The run is stable but below R016 `0.541121`, R036 `0.539790`, and R053 `0.536867`; the learned update stayed tiny (`prompt_update_abs=0.000259`). Archive code under `feiqi/failed_experiments_r054_20260517/` and remove the registry entry after recording evidence.
+
+## 2026-05-17 R056 LDFormer-Style Depth Branch
+
+- Added independent experiment entry `dformerv2_ldformer_depth` during the R056 branch.
+- Added `LDFormerDepthStage` and `LDFormerDepthEncoder` in `src/models/encoder.py`.
+- Added `DFormerV2LDFormerDepthSegmentor` and `LitDFormerV2LDFormerDepth` in `src/models/mid_fusion.py`.
+- Registered the model in `train.py`.
+- The local-compatible depth branch used channels `[1, 32, 64, 128, 256, 512]` and returned `[64, 128, 256, 512]` feature maps to match DFormerv2-S fusion stages.
+- Each depth stage used `DWConv3x3 -> BN -> ReLU -> PWConv1x1 -> BN -> ReLU -> MaxPool2d(2)`, following the HDBFormer LDFormer minimal unit.
+- DFormerv2-S level, DFormerv2 pretrained loading, original `GatedFusion`, SimpleFPNDecoder, CE loss, data, eval, and fixed recipe were unchanged.
+- Full-train result: best val/mIoU `0.522759` at validation epoch `44`, last `0.518073`, best-to-last drop `0.004686`.
+- Decision: reject active promotion. The branch is below R016 `0.541121`, R055 `0.531952`, and the `0.53` threshold. Archive code under `feiqi/failed_experiments_r056_20260517/` and remove the registry entry after recording evidence.

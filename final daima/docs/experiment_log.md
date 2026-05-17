@@ -2731,3 +2731,30 @@
 - report: `reports/R055-r016-corrected-repeat-v1.md`
 - conclusion: **calibration negative.** R055 is a valid corrected-repeat full train, but it does not reproduce R016's `0.541121`. Treat R016 as a valid historical best checkpoint and likely high-tail anchor, not as the expected corrected-repeat level.
 - next step: approve a genuinely distinct depth-branch representation test. Current highest-decision candidate is a narrow HDBFormer/LDFormer-style replacement of the external ResNet-18 DepthEncoder, without MIIM, decoder changes, prompt changes, loss changes, or training-recipe changes.
+
+## 2026-05-17 R056 result: LDFormer-style depth branch negative
+
+- branch: `exp/R056-ldformer-depth-v1`
+- model: `dformerv2_ldformer_depth`
+- run: `R056_ldformer_depth_run01`
+- hypothesis: replace only the external ResNet-18 DepthEncoder with a thin HDBFormer/LDFormer-style lightweight depth branch to test whether the depth representation contract limits the corrected DFormerv2-S mid-fusion mainline.
+- implementation: added an independent experiment entry during the branch. `LDFormerDepthEncoder` used local-compatible channels `[1, 32, 64, 128, 256, 512]` and returned four depth feature maps `[64, 128, 256, 512]` at the same spatial scales as DFormerv2-S. Each stage used depthwise 3x3 convolution, BN/ReLU, pointwise 1x1 convolution, BN/ReLU, and max pooling. DFormerv2-S, pretrained loading, original four-stage `GatedFusion`, SimpleFPNDecoder, loss, data, eval, and fixed recipe were unchanged.
+- paper/code boundary: HDBFormer official LDFormer motivated the depth branch shape, but this is a local-compatible LDFormer-inspired depth encoder, not an HDBFormer reproduction. No MIIM, LIFormer, full HDBFormer, 3-channel depth replication, decoder change, auxiliary loss, or training-recipe change was used.
+- dry-check: `py_compile`, `train.py --help`, CUDA random forward/backward smoke, static reviewer, literature/code verifier, and reproducer checks passed. Smoke verified depth/DFormerv2/fused feature shapes, finite CE, nonzero LDFormer depth gradients, and unchanged DFormerv2 pretrained load stats `loaded_keys=774, missing_keys=6, unexpected_keys=11`.
+- full train: completed 50 validation epochs; `Trainer.fit` reached `max_epochs=50`.
+- best val/mIoU: `0.522759` at validation epoch `44`
+- last val/mIoU: `0.518073`
+- last-5 mean val/mIoU: `0.516419`
+- last-10 mean val/mIoU: `0.517597`
+- best-to-last drop: `0.004686`
+- best val/loss: `1.008049` at validation epoch `8`
+- val/loss at best mIoU: `1.208968`
+- last val/loss: `1.222330`
+- final train/loss_epoch: `0.080565`
+- comparison: below R016 `0.541121` by `-0.018362`, below R055 `0.531952` by `-0.009193`, below R054 `0.532737` by `-0.009978`, below R053 `0.536867` by `-0.014108`, and below clean baseline best single `0.524425` by `-0.001666`.
+- checkpoint: `checkpoints\R056_ldformer_depth_run01\dformerv2_ldformer_depth-epoch=43-val_mIoU=0.5228.pt`
+- TensorBoard event: `checkpoints\R056_ldformer_depth_run01\lightning_logs\version_0\events.out.tfevents.1778977669.Administrator.18304.0`
+- evidence: `miou_list/R056_ldformer_depth_run01.md`
+- report: `reports/R056-ldformer-depth-v1.md`
+- conclusion: **negative.** The from-scratch lightweight LDFormer-style external depth branch is stable but loses too much capacity versus the pretrained ResNet-18 depth encoder in the current fixed recipe.
+- next step: archive code under `feiqi/failed_experiments_r056_20260517/`, remove the active registry entry, and do not tune LDFormer width/stage/dropout variants immediately. The next candidate should be a distinct mechanism that preserves the pretrained depth capacity or moves beyond external depth-branch replacement.

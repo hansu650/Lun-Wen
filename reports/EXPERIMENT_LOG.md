@@ -750,6 +750,20 @@ Baseline reference:
 - TensorBoard event: `final daima/checkpoints/R055_r016_corrected_repeat_run01/lightning_logs/version_0/events.out.tfevents.1778972303.Administrator.13316.0`.
 - Decision: calibration negative. It is a valid corrected-repeat full train, but it does not reproduce R016's `0.541121`; treat R016 as a valid historical best and likely high-tail anchor.
 
+### 2026-05-17 R056 Result: LDFormer-Style Depth Branch Negative
+
+- `R056_ldformer_depth_run01` completed 50 validation epochs.
+- Model: `dformerv2_ldformer_depth`.
+- Branch: `exp/R056-ldformer-depth-v1`.
+- Hypothesis: replace only the external ResNet-18 DepthEncoder with a thin HDBFormer/LDFormer-style lightweight depth branch to test whether the external depth representation contract limits the corrected mainline.
+- Best val/mIoU: `0.522759` at validation epoch `44`; last val/mIoU: `0.518073`.
+- Best-to-last drop: `0.004686`; last-5 mean `0.516419`; last-10 mean `0.517597`.
+- Evidence: `final daima/miou_list/R056_ldformer_depth_run01.md`.
+- Report: `reports/R056-ldformer-depth-v1.md`.
+- Checkpoint: `final daima/checkpoints/R056_ldformer_depth_run01/dformerv2_ldformer_depth-epoch=43-val_mIoU=0.5228.pt`.
+- TensorBoard event: `final daima/checkpoints/R056_ldformer_depth_run01/lightning_logs/version_0/events.out.tfevents.1778977669.Administrator.18304.0`.
+- Decision: negative. The thin from-scratch LDFormer-style depth branch stays below R016/R055 and below `0.53`; archive code and do not tune this family immediately.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.
