@@ -2705,3 +2705,29 @@
 - report: `reports/R054-geomprompt-lite-v1.md`
 - conclusion: **negative below corrected mainline.** R054 crosses `0.53` and ends at its best epoch, but the prompt update stays tiny and the peak is far below R016. Archive code under `feiqi/failed_experiments_r054_20260517/`, remove the active registry entry, and avoid GeomPrompt-Lite alpha/hidden-size micro-search.
 - next step: run a high-decision corrected R016 repeat to calibrate whether R016's `0.541121` is a reproducible mainline level or a high-tail seed before spending more rounds on heavier architecture changes.
+
+## 2026-05-17 R055 result: corrected R016 repeat below R016
+
+- branch: `exp/R055-r016-corrected-repeat-v1`
+- model: `dformerv2_mid_fusion`
+- run: `R055_r016_corrected_repeat_run01`
+- hypothesis: repeat the corrected R016 mainline under the identical fixed recipe to determine whether R016 best val/mIoU `0.541121` is reproducible baseline level or a high-tail seed.
+- implementation: no code changes. DFormerv2-S, DFormerv2 pretrained loading, DepthEncoder, GatedFusion, SimpleFPNDecoder, CE loss, data, eval, and fixed recipe were unchanged.
+- dry-check: `py_compile`, `train.py --help`, CUDA random forward/backward smoke, static reviewer, and reproducer checks passed. Pretrained load stats stayed `loaded_keys=774, missing_keys=6, unexpected_keys=11`.
+- full train: completed 50 validation epochs; `Trainer.fit` reached `max_epochs=50`.
+- best val/mIoU: `0.531952` at validation epoch `46`
+- last val/mIoU: `0.521925`
+- last-5 mean val/mIoU: `0.509650`
+- last-10 mean val/mIoU: `0.512840`
+- best-to-last drop: `0.010027`
+- best val/loss: `0.956022` at validation epoch `7`
+- val/loss at best mIoU: `1.192035`
+- last val/loss: `1.209070`
+- final train/loss_epoch: `0.056808`
+- comparison: below R016 `0.541121` by `-0.009169`, below R036 `0.539790` by `-0.007838`, below R034 `0.539322` by `-0.007370`, below R053 `0.536867` by `-0.004915`, and below R054 `0.532737` by `-0.000785`.
+- checkpoint: `checkpoints\R055_r016_corrected_repeat_run01\dformerv2_mid_fusion-epoch=45-val_mIoU=0.5320.pt`
+- TensorBoard event: `checkpoints\R055_r016_corrected_repeat_run01\lightning_logs\version_0\events.out.tfevents.1778972303.Administrator.13316.0`
+- evidence: `miou_list/R055_r016_corrected_repeat_run01.md`
+- report: `reports/R055-r016-corrected-repeat-v1.md`
+- conclusion: **calibration negative.** R055 is a valid corrected-repeat full train, but it does not reproduce R016's `0.541121`. Treat R016 as a valid historical best checkpoint and likely high-tail anchor, not as the expected corrected-repeat level.
+- next step: approve a genuinely distinct depth-branch representation test. Current highest-decision candidate is a narrow HDBFormer/LDFormer-style replacement of the external ResNet-18 DepthEncoder, without MIIM, decoder changes, prompt changes, loss changes, or training-recipe changes.

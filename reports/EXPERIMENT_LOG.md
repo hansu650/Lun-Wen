@@ -736,6 +736,20 @@ Baseline reference:
 - TensorBoard event: `final daima/checkpoints/R054_geomprompt_lite_run01/lightning_logs/version_0/events.out.tfevents.1778966173.Administrator.9928.0`.
 - Decision: negative below corrected mainline. It crosses `0.53` and ends at its best epoch, but stays below R016/R036/R053 and the prompt stayed nearly closed; archive code and do not tune GeomPrompt-Lite alpha/hidden-size variants.
 
+### 2026-05-17 R055 Result: Corrected R016 Repeat Below R016
+
+- `R055_r016_corrected_repeat_run01` completed 50 validation epochs.
+- Model: `dformerv2_mid_fusion`.
+- Branch: `exp/R055-r016-corrected-repeat-v1`.
+- Hypothesis: repeat the corrected R016 mainline with no code changes to test whether R016 `0.541121` is reproducible or a high-tail seed.
+- Best val/mIoU: `0.531952` at validation epoch `46`; last val/mIoU: `0.521925`.
+- Best-to-last drop: `0.010027`; last-5 mean `0.509650`; last-10 mean `0.512840`.
+- Evidence: `final daima/miou_list/R055_r016_corrected_repeat_run01.md`.
+- Report: `reports/R055-r016-corrected-repeat-v1.md`.
+- Checkpoint: `final daima/checkpoints/R055_r016_corrected_repeat_run01/dformerv2_mid_fusion-epoch=45-val_mIoU=0.5320.pt`.
+- TensorBoard event: `final daima/checkpoints/R055_r016_corrected_repeat_run01/lightning_logs/version_0/events.out.tfevents.1778972303.Administrator.13316.0`.
+- Decision: calibration negative. It is a valid corrected-repeat full train, but it does not reproduce R016's `0.541121`; treat R016 as a valid historical best and likely high-tail anchor.
+
 ### 2026-05-12 Orchestrator Candidate Check
 
 - Read orchestration rules, current reports, metrics, experiment coordination files, and active paper/result notes.

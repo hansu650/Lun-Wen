@@ -965,3 +965,13 @@ The result reached best val/mIoU `0.532737` at validation epoch `50`, with last 
 Paper boundary: do not claim GeomPrompt-Lite as an improvement over the corrected mainline. It is a stable run above `0.53`, but the depth prompt stayed nearly closed (`depth_prompt_alpha=0.000777`, `prompt_update_abs=0.000259`), so the exact prompt mechanism did not provide the missing route toward `0.56`.
 
 Durable direction update: avoid GeomPrompt-Lite alpha/hidden-size micro-tuning. Because R054 behaved like a low-tail stable corrected-baseline variant, the next high-decision step is a corrected R016 repeat to calibrate whether the `0.541121` anchor is reproducible before judging future architecture changes against it.
+
+## 2026-05-17 R055 Corrected Repeat Boundary
+
+R055 repeated `dformerv2_mid_fusion` under the corrected R016 contract and identical fixed recipe. It made no architecture, data, metric, loader, loss, optimizer, scheduler, batch, epoch, or lr changes.
+
+The result reached best val/mIoU `0.531952` at validation epoch `46`, with last `0.521925`, last-5 mean `0.509650`, and best-to-last drop `0.010027`. It is below R016 `0.541121`, R036 `0.539790`, R034 `0.539322`, R053 `0.536867`, and R054 `0.532737`.
+
+Paper boundary: do not claim R016's `0.541121` as a reproducible corrected-repeat expectation from R055. R016 remains a valid historical best checkpoint, but R055 supports treating it as a high-tail anchor unless additional repeats later prove otherwise.
+
+Durable direction update: use R016 as the best-evidence target to beat, but judge future single-run architecture gains with caution. Since prompt, residual, gate, decoder-context, and corrected-repeat paths have not reached the R016/R036 band, the next high-value architecture test should be a distinct external depth-branch representation change, currently the HDBFormer/LDFormer-style lightweight depth encoder replacement.

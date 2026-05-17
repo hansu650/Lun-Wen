@@ -4,7 +4,7 @@
 
 - Active fixed-recipe baseline: `dformerv2_mid_fusion`.
 - Corrected-label/reference result: R016 best val/mIoU `0.541121` at validation epoch `49`, last `0.527420`.
-- Current stage: R054 has been recorded as a stable but negative GeomPrompt-Lite result below R016/R036/R053; continue the Goal-Driven loop toward `0.56` with a corrected R016 repeat before more architecture micro-search.
+- Current stage: R055 has been recorded as a no-code corrected R016 repeat below R016/R036/R053. Treat R016 as the valid historical best and likely high-tail anchor; continue toward `0.56` with a distinct depth-branch representation test rather than more prompt/residual/decoder micro-search.
 - Active registry should stay clean: only mainline/teaching entries and reusable stable entries belong in `train.py`.
 
 ## Active Model Entries
@@ -35,6 +35,7 @@
 ## Archived / Deprecated
 
 - R041 DiffPixel c4 cue: partial positive below R016; code archived under `feiqi/failed_experiments_r041_20260516/`.
+- R055 corrected R016 repeat: no-code calibration run below R016; no code archive needed.
 - R054 GeomPrompt-Lite: stable but negative below R016/R036/R053; code archived under `feiqi/failed_experiments_r054_20260517/`.
 - R053 OCR-Lite object context decoder: partial positive below R016/R036; code archived under `feiqi/failed_experiments_r053_20260517/`.
 - R052 c3-only bounded depth residual: negative below R016/R036; code archived under `feiqi/failed_experiments_r052_20260517/`.
